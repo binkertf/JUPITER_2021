@@ -1,0 +1,80 @@
+#include "jupiter.h"
+
+
+real ItereRS (pguess, rhoL, rhoR, du, aL, aR)
+     real pguess, rhoL, rhoR, du, aL, aR;
+{
+  real f, fprime;
+  f = -aL*log(pguess/rhoL)-aR*(pguess-rhoR)/sqrt(rhoR*pguess)-du;
+  fprime = aL/sqrt(pguess)+.5*aR*(1./sqrt(rhoR)+sqrt(rhoR)/pguess);
+  fprime = -1./sqrt(pguess)*fprime;
+  return -f/fprime + pguess;
+}
+
+
+void GetStar_ITERATIVE (rhoL, rhoR, uL, uR, aL, aR, us, ps)
+real rhoL, rhoR, uL, uR, aL, aR;
+real *us, *ps;
+{
+  real deltau, delta, prs, ust;
+  real srhoL, srhoR, denom;	/* below: exact 2 shocks */
+  rhoL = rhoL*aL*aL;		/* rhoL and rhoR */
+  rhoR = rhoR*aR*aR;		/* are now pressures */
+  srhoL = sqrt(rhoL);
+  srhoR = sqrt(rhoR);
+  denom = (aR*srhoL+aL*srhoR)/(srhoL*srhoR);
+  deltau = uR-uL;		
+  delta = deltau*deltau+4.*(aL*srhoL+aR*srhoR)*denom;
+  prs = (-deltau+sqrt(delta))/2./denom;
+  prs = prs*prs;
+  ust = uR+(prs-rhoR)/sqrt(prs*rhoR)*aR;
+  if ((prs < rhoL) && (prs < rhoR)) { /* exact 2 rarefactions */
+    prs = pow(rhoL,aL/(aR+aL)) * pow(rhoR,aR/(aR+aL)) * exp(-deltau/(aR+aL));
+    ust = uR + aR * log(prs/rhoR);
+  }
+  if ((prs < rhoL) && (prs > rhoR)) { /* Left rarefaction & right shock */
+    prs = ItereRS(prs, rhoL, rhoR, deltau, aL, aR);
+    ust = uR+(prs-rhoR)/sqrt(prs*rhoR)*aR;
+  }
+  if ((prs > rhoL) && (prs < rhoR)) { /* Right rarefaction & left shock */
+    prs = ItereRS(prs, rhoR, rhoL, deltau, aR, aL);
+    ust = uL+(rhoL-prs)/sqrt(prs*rhoL)*aL;
+  }
+  *ps = prs;
+  *us = ust;
+}
+
+void GetStar_TWORAREFACTIONS (rhoL, rhoR, uL, uR, aL, aR, us, ps)
+real rhoL, rhoR, uL, uR, aL, aR;
+real *us, *ps;
+{
+  real deltau, prs, ust;
+  deltau = uR-uL;		/* below: exact two rarefactions */
+  rhoL = rhoL*aL*aL;		/* rhoL and rhoR */
+  rhoR = rhoR*aR*aR;		/* are now pressures */
+  prs = pow(rhoL,aL/(aR+aL)) * pow(rhoR,aR/(aR+aL)) * exp(-deltau/(aR+aL));
+  ust = uR + aR * log(prs/rhoR);
+  *ps = prs;
+  *us = ust;
+}
+
+void GetStar_TWOSHOCKS (rhoL, rhoR, uL, uR, aL, aR, us, ps)
+real rhoL, rhoR, uL, uR, aL, aR;
+real *us, *ps;
+{
+  real deltau, delta, prs, ust;
+  real srhoL, srhoR, denom;	/* below: exact 2 shocks */
+  rhoL = rhoL*aL*aL;		/* rhoL and rhoR */
+  rhoR = rhoR*aR*aR;		/* are now pressures */
+  srhoL = sqrt(rhoL);
+  srhoR = sqrt(rhoR);
+  denom = (aR*srhoL+aL*srhoR)/(srhoL*srhoR);
+  deltau = uR-uL;		
+  delta = deltau*deltau+4.*(aL*srhoL+aR*srhoR)*denom;
+  prs = (-deltau+sqrt(delta))/2./denom;
+  prs = prs*prs;
+  ust = uR+(prs-rhoR)/sqrt(prs*rhoR)*aR;
+  *ps = prs;
+  *us = ust;
+}
+

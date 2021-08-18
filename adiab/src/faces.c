@@ -1,0 +1,40 @@
+#include "jupiter.h"
+
+void ResetFaceFluxes (fp)
+     FluidPatch *fp;
+{
+  long dim[3], i, size[3], j;
+  for (i = 0; i < 3; i++)
+    size[i] = fp->desc->ncell[i]; /* ghosts excluded */
+  for (dim[0] = 0; dim[0] < NDIM; dim[0]++) { /* We reset the conservative quantities fluxes */
+    dim[1] = (dim[0] == 0);	/* and the pressure values on the faces */
+    dim[2] = 2 - (dim[0] == 2);
+    for (i = 0; i < size[dim[1]]*size[dim[2]]; i++) {
+      fp->MassFlux->Flux[dim[0]][INF][i] = fp->MassFlux->Flux[dim[0]][SUP][i] = 0.0;
+      fp->EnergyFlux->Flux[dim[0]][INF][i] = fp->EnergyFlux->Flux[dim[0]][SUP][i] = 0.0;
+      fp->TotalEnergyFlux->Flux[dim[0]][INF][i] = fp->TotalEnergyFlux->Flux[dim[0]][SUP][i] = 0.0;
+      fp->Pressure->Pressure[dim[0]][INF][i]=fp->Pressure->Pressure[dim[0]][SUP][i]=0.0;
+      for (j = 0; j < NDIM; j++)
+	fp->MomentumFlux[j]->Flux[dim[0]][INF][i] = fp->MomentumFlux[j]->Flux[dim[0]][SUP][i] = 0.0;
+    }
+  }
+}
+ 
+void ResetFaceFluxesLevel (level)
+     long level;
+{
+  tGrid_CPU *item;
+  FluidPatch *fluid;
+  item = Grid_CPU_list;
+  while (item != NULL) {
+    if ((item->level == level) && (item->cpu == CPU_Rank)) {
+      fluid = item->Fluid;
+      while (fluid != NULL) {
+	ResetFaceFluxes (fluid);
+	fluid = fluid->next;
+      }
+    }
+    item = item->next;
+  }
+}
+

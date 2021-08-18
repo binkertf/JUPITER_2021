@@ -1,0 +1,336 @@
+#include "jupiter.h"
+
+real Mass (Fluid, OverlapExclude)
+     FluidPatch *Fluid;
+     boolean OverlapExclude;
+{
+  long i, j, k, gncell[3], stride[3], m;
+  real mass = 0.0;
+  getgridsize (Fluid->desc, gncell, stride);
+  for (k = Nghost[2]; k < gncell[2]-Nghost[2]; k++) {
+    for (j = Nghost[1]; j < gncell[1]-Nghost[1]; j++) {
+      for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
+	m = i*stride[0]+j*stride[1]+k*stride[2];
+	if (!(OverlapExclude  && Fluid->desc->Hidden[m]))
+	  mass += Fluid->Density->Field[m] / Fluid->desc->InvVolume[m];
+      }
+    }
+  }
+  return mass;
+}
+
+real Momentum (Fluid, OverlapExclude, dim)
+     FluidPatch *Fluid;
+     boolean OverlapExclude;
+     long dim;
+{
+  long i, j, k, stride[3], gncell[3], m;
+  tGrid_CPU *desc;
+  real momentum = 0.0, rhoom, radius, velocity = 0.0, *InvVolume;
+  boolean angulara = FALSE, angularc = FALSE;
+  desc = Fluid->desc;
+  InvVolume = desc->InvVolume;
+  getgridsize (Fluid->desc, gncell, stride);
+  if (__CYLINDRICAL && (dim == _AZIM_))
+    angulara = TRUE;
+  if (__SPHERICAL && (dim == _AZIM_))
+    angulara = TRUE;
+  if (__SPHERICAL && (dim == _COLAT_))
+    angularc = TRUE;
+  for (k = Nghost[2]; k < gncell[2]-Nghost[2]; k++) {
+    for (j = Nghost[1]; j < gncell[1]-Nghost[1]; j++) {
+      for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
+	m = i*stride[0]+j*stride[1]+k*stride[2];
+	velocity = Fluid->Velocity->Field[dim][m];
+	if (angulara) velocity += OMEGAFRAME;
+	rhoom = velocity * Fluid->Density->Field[m] / InvVolume[m];
+	if (angulara || angularc) {
+	  radius = desc->Center[_RAD_][m];
+	  if (__SPHERICAL && (dim == _AZIM_))
+	    radius *= sin(desc->Center[_COLAT_][m]);
+	  rhoom *= radius * radius;
+	}
+	if (!(OverlapExclude  && Fluid->desc->Hidden[m]))
+	  momentum += rhoom;
+      }
+    }
+  }
+  return momentum;
+}
+
+real KineticEnergy (Fluid, OverlapExclude)
+     FluidPatch *Fluid;
+     boolean OverlapExclude;
+{
+  long i, j, k, stride[3], gncell[3], m, dim;
+  tGrid_CPU *desc;
+  real ekin = 0.0, dekin, radius, velocity, *InvVolume, *rho;
+  boolean angulara, angularc;
+  desc = Fluid->desc;
+  InvVolume = desc->InvVolume;
+  rho = Fluid->Density->Field;
+  getgridsize (Fluid->desc, gncell, stride);
+  for (k = Nghost[2]; k < gncell[2]-Nghost[2]; k++) {
+    for (j = Nghost[1]; j < gncell[1]-Nghost[1]; j++) {
+      for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
+	m = i*stride[0]+j*stride[1]+k*stride[2];
+	dekin = 0.0;
+	for (dim = 0; dim < NDIM; dim++) {
+	  velocity = Fluid->Velocity->Field[dim][m];
+	  angulara = angularc = FALSE;
+	  if (__CYLINDRICAL && (dim == _AZIM_))
+	    angulara = TRUE;
+	  if (__SPHERICAL && (dim == _AZIM_))
+	    angulara = TRUE;
+	  if (__SPHERICAL && (dim == _COLAT_))
+	    angularc = TRUE;
+	  if (angulara) velocity += OMEGAFRAME;
+	  if (angulara || angularc) {
+	    radius = desc->Center[_RAD_][m];
+	    if (__SPHERICAL && (dim == _AZIM_))
+	      radius *= sin(desc->Center[_COLAT_][m]);
+	    velocity *= radius;
+	  }
+	  dekin += .5 * velocity * velocity;
+	}
+	dekin *= rho[m] / InvVolume[m];
+	if (!(OverlapExclude  && Fluid->desc->Hidden[m]))
+	  ekin += dekin;
+      }
+    }
+  }
+  return ekin;
+}
+
+/*
+   torque exerted by the external potential (planet) on the disk - ONE CPU
+*/
+real Torque (Fluid, OverlapExclude, Side, Limit, MinCellSize)
+     FluidPatch *Fluid;
+     boolean OverlapExclude;
+     int Side;
+     real Limit;  // Contains the present colatitude (in colatitude density mode.)
+     real MinCellSize;
+{
+  long i, j, k, gncell[3], stride[3], m;
+  long m_plus, m_minus;
+  real torque = 0.0;
+  real radius, *azimuth, colatitude;
+  real mass, *potential, derivative_potential;
+  real planet_distance=0.0, hills_radius, cutoff, reduction;
+  int level;
+  level = Fluid->desc->level;
+  getgridsize (Fluid->desc, gncell, stride);
+  potential = Fluid->Potential->Field;
+
+  azimuth = Fluid->desc->Center[_AZIM_];
+  hills_radius = pow(PLANETMASS/3.,1./3.);
+  for (k = Nghost[2]; k < gncell[2]-Nghost[2]; k++) {
+    for (j = Nghost[1]; j < gncell[1]-Nghost[1]; j++) {
+      for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
+	m = i*stride[0]+j*stride[1]+k*stride[2];
+	if (!(OverlapExclude  && Fluid->desc->Hidden[m])) {
+	  radius = Fluid->desc->Center[_RAD_][m];
+	  if ((Side==0) || ((Side==+1) && (radius>1.)) || ((Side==-1) && (radius<=1.)) || (Side==2)) {
+	    mass = Fluid->Density->Field[m] / Fluid->desc->InvVolume[m];
+	    m_plus  = m + stride[_AZIM_];
+	    m_minus = m - stride[_AZIM_];
+	    derivative_potential = (-potential[m]*potential[m])		\
+	      * ( (1./potential[m_plus] - 1./potential[m_minus])	\
+		  / (azimuth[m_plus]-azimuth[m_minus]) );
+	    switch (CoordType) {
+	    case CYLINDRICAL : // 2D
+	      planet_distance = sqrt(1.+radius*radius-2*radius*cos(azimuth[m]));
+	      break;
+	    case SPHERICAL : // 3D
+	      colatitude = Fluid->desc->Center[_COLAT_][m];
+	      planet_distance = sqrt(1.+radius*radius-2*radius*sin(colatitude)*cos(azimuth[m]));
+	      break;
+	    }
+	    if (Side != 2) {
+	      cutoff = Limit * hills_radius;
+	      if (cutoff > 1e-10 ) {
+		//  reduction = 1.-exp(-pow(planet_distance/cutoff,2.));
+		if (planet_distance/cutoff < 0.5)
+		  reduction = 0.0;
+		else {
+		  if (planet_distance > cutoff) 
+		    reduction = 1.0;
+		  else 
+		    reduction = pow(sin((planet_distance/cutoff-.5)*M_PI),2.);
+		}
+	      } else {
+		reduction = 1.;
+	      }
+                torque += (mass * (-derivative_potential))*reduction;
+	    } else {
+	      if ( ( Limit > (colatitude - pow(2,LevMax-level-1)*MinCellSize) ) 
+		   && (Limit < (colatitude + pow(2,LevMax-level-1)*MinCellSize) ) ) 
+		torque += (mass * (-derivative_potential)) / pow(2,LevMax-level);
+	    }
+	  }
+	}
+      }
+    }
+  }
+  return torque;
+}
+
+real TorqueStockholm (Fluid, OverlapExclude, Side, Limit)
+     FluidPatch *Fluid;
+     boolean OverlapExclude;
+     int Side;
+     real Limit;
+{
+  long i, j, k, gncell[3], stride[3], m;
+  long m_plus, m_minus;
+  real torque = 0.0, torq_incr=0.0;
+  real radius, *azimuth, colatitude, y = 0.0;
+  real mass, *potential, derivative_potential;
+  real planet_distance = 0.0, hills_radius, cutoff, reduction;
+  getgridsize (Fluid->desc, gncell, stride);
+  potential = Fluid->Potential->Field;
+  azimuth = Fluid->desc->Center[_AZIM_];
+  hills_radius = pow(PLANETMASS/3.,1./3.);
+  for (k = Nghost[2]; k < gncell[2]-Nghost[2]; k++) {
+    for (j = Nghost[1]; j < gncell[1]-Nghost[1]; j++) {
+      for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
+	m = i*stride[0]+j*stride[1]+k*stride[2];
+	if (!(OverlapExclude  && Fluid->desc->Hidden[m])) {
+	  radius = Fluid->desc->Center[_RAD_][m];
+	  if ((Side==0) || ((Side==+1) && (radius>1.)) || ((Side==-1) && (radius<=1.))) {
+	    mass = Fluid->Density->Field[m] / Fluid->desc->InvVolume[m];
+	    m_plus  = m + stride[_AZIM_];
+	    m_minus = m - stride[_AZIM_];
+	    derivative_potential = (-potential[m]*potential[m])		\
+	      * ( (1./potential[m_plus] - 1./potential[m_minus])	\
+		  / (azimuth[m_plus]-azimuth[m_minus]) );
+	    switch (CoordType) {
+	    case CYLINDRICAL : // 2D
+	      planet_distance = sqrt(1.+radius*radius-2*radius*cos(azimuth[m]));
+	      y = radius*sin(azimuth[m]);
+	      break;
+	    case SPHERICAL : // 3D
+	      colatitude = Fluid->desc->Center[_COLAT_][m];
+	      planet_distance = sqrt(1.+radius*radius-2*radius*sin(colatitude)*cos(azimuth[m]));
+	      y = radius*sin(azimuth[m])*sin(colatitude); //Check
+	      break;
+	    }
+	    cutoff = Limit * hills_radius;
+	    reduction=1.0;
+	    if (fabs(Limit-0.5) < 1e-4) {
+	      reduction = 0.0;
+	      if ((planet_distance > cutoff) && (planet_distance < hills_radius)) {
+		reduction = 1.0;
+	        torq_incr = mass*y/pow((planet_distance*planet_distance+SMOOTHING*SMOOTHING),1.5);
+	      }
+	    }
+	    if (fabs(Limit-1.0) < 1e-4) {
+	      reduction = 0.0;
+	      if (planet_distance >= hills_radius) {
+		reduction = 1.0;
+		torq_incr = mass*y/pow((planet_distance*planet_distance+SMOOTHING*SMOOTHING),1.5);
+	      }
+	    }
+	    if (fabs(Limit-0.0) < 1e-4) {
+	      reduction = 1.0;	/* Redundant */
+	      torq_incr = mass;
+	    }
+	    torque += reduction*torq_incr;
+	  }
+	}
+      }
+    }
+  }
+  return torque;
+}
+
+real TotalMass ()
+{
+  real mass = 0.0, tmass=0.0;
+  tGrid_CPU *item;
+  item = Grid_CPU_list;
+  while (item != NULL) {
+    if (item->cpu == CPU_Rank)
+      mass += Mass (item->Fluid, YES);
+    item = item->next;
+  }
+  MPI_Allreduce (&mass, &tmass, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  return tmass;
+}
+
+real TotalKineticEnergy ()
+{
+  real ekin = 0.0, tekin=0.0;
+  tGrid_CPU *item;
+  item = Grid_CPU_list;
+  while (item != NULL) {
+    if (item->cpu == CPU_Rank)
+      ekin += KineticEnergy (item->Fluid, YES);
+    item = item->next;
+  }
+  MPI_Allreduce (&ekin, &tekin, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  return tekin;
+}
+
+real TotalMomentum (dim)
+     long dim;
+{
+  real momentum = 0.0, tmom=0.0;
+  tGrid_CPU *item;
+  item = Grid_CPU_list;
+  while (item != NULL) {
+    if (item->cpu == CPU_Rank)
+      momentum += Momentum (item->Fluid, YES, dim);
+    item = item->next;
+  }
+  MPI_Allreduce (&momentum, &tmom, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  return tmom;
+}
+
+/*
+   torque exerted by the external potential (planet) on the disk - ALL CPUs
+*/
+void TotalTorque (totaltorques, Nsides, sides, Nlimits, limits, MinCellSize)
+     real *totaltorques;
+     int Nsides;// if Nsides == 1, then Nlimits is used as Nz, and limits contains the colatitudes
+     int sides[];
+     int Nlimits;
+     real limits[];
+     real MinCellSize;
+{
+  real *torques;
+  real radius, azimuth, colatitude;
+  real *center[3];
+  tGrid_CPU *item;
+  int i, j;
+
+  torques = (real *)prs_malloc(Nsides*Nlimits*sizeof(real));
+  // local CPU torque
+  item = Grid_CPU_list;
+
+  for (i = 0; i < Nlimits*Nsides; i++)
+    torques[i] = 0.0;
+  while (item != NULL) {
+    if (item->cpu == CPU_Rank) {
+      if (Nsides == 1){ // Colatitude density torque
+	for (j=0; j<Nlimits; j++){
+	  torques[j] += Torque(item->Fluid, YES, 2, limits[j], MinCellSize);
+	}
+      } else { // Normal integrated torque
+	for (j=0; j<Nlimits; j++) {
+	  for (i=0; i<Nsides; i++) {
+	    if(TorqStock)
+	      torques[i*Nlimits+j] += TorqueStockholm(item->Fluid, YES, sides[i], limits[j]);
+	    else
+	      torques[i*Nlimits+j] += Torque(item->Fluid, YES, sides[i], limits[j], 1.);
+	  }
+	}
+      }
+    }
+    item = item->next;
+  }
+  // global torque
+  MPI_Allreduce (torques, totaltorques, Nlimits*Nsides, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  free (torques);
+}

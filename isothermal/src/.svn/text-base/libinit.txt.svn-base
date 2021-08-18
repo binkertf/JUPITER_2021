@@ -1,0 +1,266 @@
+###
+###
+### The setups below correspond to the standard
+### tests shown on the code web page
+###
+###
+####### 1D tests
+sod1d:
+	density = 1.0;
+	if (x > 3.5) density = 0.1;
+	energy = CS*CS;
+sod1db:
+	density = 0.8;
+	if (x > 5.5) density = 0.3;
+	energy = CS*CS;
+aw1d:
+	density = 1.0+0.01*cos(2.0*M_PI*x/10.0);
+	vx      = 0.01*cos(2.0*M_PI*x/10.0);
+	energy  = CS*CS;
+sphaw1d:
+	energy = CS*CS;
+	density	= 1.0+0.001*exp(-(radius-5.5)*(radius-5.5)*10.0);
+daw1d:
+	energy = CS*CS;
+	density = 1.0+0.001*cos(2.0*M_PI*x/10.0);
+awsph1dlat:
+	density = 1.0+0.001*exp(-(colatitude-M_PI*.5)*\
+                                 (colatitude-M_PI*.5)*200.0);
+	energy  = CS*CS;
+vkring1d:
+      density = exp(-(radius-1.0)*(radius-1.0)/0.012)/\
+                2.0/M_PI/sqrt(M_PI*0.012)/radius*sqrt(sqrt(radius));
+      energy = CS*CS;
+      vrad = -1.5*VISCOSITY/radius+6.0*VISCOSITY*(radius-1.0)/0.012;
+      v_azimuth = 1./radius/sqrt(radius)-OMEGAFRAME;
+soundwave1:
+	interm1 = cos(2.0*M_PI*x);
+	density = 2.+1e-4*interm1;
+	energy = 1.0;
+	vx = 5e-5*interm1;
+soundwave2:
+	interm1 = cos(2.0*M_PI*x);
+	density = 1.-1e-4*interm1;
+	energy = 1.0;
+	vx = -1e-4*interm1;
+sodpm06:
+	density = 1.0;
+	vx = 0.25;
+	energy = CS*CS;
+	if (x > 0.0) {
+	   density = 0.5;
+	   vx = 0.5;
+        }	   
+dustpm06:
+	density   = keplerian_init(_density_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, 0.000001, 0.0);
+	energy    = keplerian_init(_energy_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, 0.000001, 0.0);
+	vrad      = keplerian_init(_vrad_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, 0.000001, 0.0);
+	v_azimuth = keplerian_init(_vazimuth_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, 0.000001, 0.0);
+	v_colatitude= keplerian_init(_vcolatitude_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, 0.000001, 0.0);
+#
+####### 2D tests
+#
+tiltawsph2d:
+      x = cos(azimuth)*sin(colatitude)*sin(0.4)+cos(colatitude)*cos(0.4);
+      /* Since we are in spherical coordinates, */
+      /* x can be used as a work variable */
+      density = 1.0+0.001*exp(-x*x*50.0);
+      energy = CS*CS;
+vkoffring2d:
+      energy = CS*CS;
+      z = radius*cos(colatitude);
+      axial_radius = radius*sin(colatitude);
+      v_azimuth = pow(axial_radius, -3.0);
+      v_azimuth -= energy/axial_radius*2.0*(axial_radius-1.0)/0.018;
+      v_azimuth = sqrt(v_azimuth) - OMEGAFRAME;
+      density = .5/M_PI/sqrt(M_PI*0.018)*sqrt(sqrt(axial_radius))/axial_radius;
+      density*= exp(-pow(axial_radius-1.0,2.0)/0.018)\
+      		*exp(-(z-1.0)*(z-1.0)/2./.15);
+      vx = -1.5*VISCOSITY/axial_radius+6.0*VISCOSITY*(axial_radius-1.0)/0.018;
+      vrad = vx*sin(colatitude);
+      v_colatitude = vx/radius*cos(colatitude);
+sod2d: 
+	density = 1.0;
+	if (x/10.0+y/6.0 > 1.0) density = 0.1;
+	density *= (1.+.0*drand48());
+	energy = CS*CS;
+kepler3d:
+	density   = keplerian_init(_density_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+	energy    = keplerian_init(_energy_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+	vrad      = keplerian_init(_vrad_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+	v_azimuth = keplerian_init(_vazimuth_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+	v_colatitude= keplerian_init(_vcolatitude_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+keplerdust:
+	density   = keplerian_init(_density_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO*0.3, FLARINGINDEX) *(1.+NOISE*drand48());
+	energy    = 0.0001 * keplerian_init(_energy_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO*0.3, FLARINGINDEX);
+	vrad      = keplerian_init(_vrad_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO*0.3, FLARINGINDEX);
+	v_azimuth = keplerian_init(_vazimuth_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO*0.0001, FLARINGINDEX);
+	v_colatitude= keplerian_init(_vcolatitude_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO*0.3, FLARINGINDEX);
+essai:
+	density   = SIGMA0;
+	vrad      = 0.0;
+	energy    = ASPECTRATIO*ASPECTRATIO;
+	v_azimuth = 1.0/radius/sqrt(radius)-OMEGAFRAME;	
+tides:
+	density = exp(-pow(radius,1.5));
+	energy = 1./radius/radius;
+###
+###
+### The two following setups represent the same Keplerian disk
+### in (very) different units. This is aimed at checking that 
+### the code does not contain any homogeneity bug (the outputs
+### of both runs have to coincide, modulo a uniform scaling factor)
+###
+###
+homogeneity1:
+	density   = keplerian_init(_density_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+	energy    = ASPECTRATIO*ASPECTRATIO/radius;
+	v_azimuth = 1.0/radius/sqrt(radius)-OMEGAFRAME;
+homogeneity2:
+	density   = keplerian_init(_density_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+	energy    = ASPECTRATIO*ASPECTRATIO/radius*1.5e11*\
+		  	pow((1.5e11/5.02989563261132871975e6),2.0);
+	v_azimuth = 1.0/radius/sqrt(radius)*pow(1.5e11,1.5)/\
+			5.02989563261132871975e6-OMEGAFRAME;	
+###
+###
+### The setups below correspond to 1D or 2D isothermal
+### atmospheres in a uniform gravity field, or to perturbations
+### of the hydrostatic state (codes ends with character 'p')
+###
+flatatm:
+	density   = 1.0;
+	energy    = 1.0;	
+flatatmpl:
+	density   = 1.0+1e-4*exp(-(z-1.0)*(z-1.0)*40.0);
+	energy    = 1.0;	
+isoatm:
+	density   = exp(-z);
+	if (z > 2.0) density = exp (z-4);
+	energy    = 1.0;	
+isoatmpert:
+	density   = exp(-z)+1e-13*exp(-(z-1.)*(z-1.)*40.);
+	if (z > 2)
+	density = exp(z-4)+1e-13*exp(-(z-1.)*(z-1.)*40.);
+	energy    = 1.0;	
+isoatmpl:
+	density   = 1e-4*exp(-(z-1.0)*(z-1.0)*40.0);
+	energy    = 0.0;	
+isoatmpll:
+	density   = 1e-2*exp(-(z-1.0)*(z-1.0)*40.0);
+	energy    = 0.0;	
+isoatmps:
+	density   = 1e-13*exp(-(z-1.0)*(z-1.0)*40.0);
+	energy    = 0.0;	
+isoatm2d:
+	density   = exp(-(2.*x+y));
+	energy    = 1.0;	
+isoatm2dp:
+	density   = 1e-10*exp(-((x-1.0)*(x-1.0)+(y-1.0)*(y-1.0))*40.0);
+	energy    = 0.0;	
+###
+###
+### The following setup fills a spherical mesh with a uniform
+### density and temperature field. Nothing should happen.
+###
+###
+trivialsphere:
+	density = 1.0;
+	energy = 1.0;
+	v_azimuth = -OMEGAFRAME;
+###
+###
+### The following setup corresponds to a High Velocity Cloud
+### impacting a galactic disk with constant rotation curve.
+### Units are respectively Solar Masses, parsecs and Megayears.
+### As the run is isothermal the densities can independently 
+### be expressed in any unit (here particles per cm^-3).
+###
+###
+HVCCyl:
+	density = 2.24*exp (-z*z/2.0/70./70.);
+	v_azimuth = 200.0/radius-OMEGAFRAME;
+	energy = 100.0;
+	x = pow((radius-7000.0),2.0)+pow(z-250.0,2.0)+pow((radius*azimuth-250.0),2.0);
+	x = sqrt (x);
+	if (x < 100.0) {
+	   density += 0.224*exp(-x*x/50./50.);
+	   vz   = -71.0;
+	   v_azimuth = v_azimuth-71.0/radius;
+	}
+testrot:
+	density = 1.0/radius;
+	energy = ASPECTRATIO*ASPECTRATIO/radius;
+	v_azimuth = 1.0/radius/sqrt(radius)*sqrt(1.-2.*ASPECTRATIO*ASPECTRATIO)-OMEGAFRAME;
+testrefleq:
+	density = exp(-(z-M_PI/2.0)*(z-M_PI/2.0)/2.0/ASPECTRATIO/ASPECTRATIO);
+	energy = ASPECTRATIO*ASPECTRATIO/radius;
+	energy = ASPECTRATIO*ASPECTRATIO;
+	v_azimuth = 1.0/radius/sqrt(radius)*sqrt(1.-2.*ASPECTRATIO*ASPECTRATIO)-OMEGAFRAME;
+	v_colatitude = 0.0*1e-10*(z-M_PI/2.0);
+	
+plan1d:
+	density = pow(z,-SMOOTHING);
+	energy = 1.0;
+star1d:
+	density = exp(-SMOOTHING*z*z/2.0);
+	energy = 1.0;
+local:
+	density = 1.0;
+	energy = ASPECTRATIO*ASPECTRATIO;
+	v_azimuth = 1.0/radius/sqrt(radius)-OMEGAFRAME;
+localgrad:
+	density = 1.0;
+	energy = ASPECTRATIO*ASPECTRATIO/radius;
+	v_azimuth = (1.0/radius/sqrt(radius))*sqrt(1.0-ASPECTRATIO*ASPECTRATIO)-OMEGAFRAME;
+novortgrad:
+	density = 1.0/radius/sqrt(radius);
+	energy = ASPECTRATIO*ASPECTRATIO*radius*sqrt(radius);
+	v_azimuth = 1.0/radius/sqrt(radius)-OMEGAFRAME;
+sod2d_vert:
+	energy = 1.0;
+	density = 0.001;
+	if (x < 0.5) density = 100.0;
+##### Henry Throop's project below. Initialization in cartesian coordinates.
+#First we define an envelope function for the disk
+#Seek colatitude in disk frame
+throop:
+      radius = sqrt(x*x+y*y+z*z);
+      colatitude = acos((x*INCLINATION+z)/(sqrt(1.+INCLINATION*INCLINATION)*radius));
+      interm2 = cos(colatitude)*cos(colatitude)/2./ASPECTRATIO/ASPECTRATIO;
+      if (interm2 > 17.0) interm2 = 17.0;
+      interm1 = exp(-interm2);
+      v_azimuth=1./sqrt(radius*radius*radius+1e-2)/sqrt(1.+INCLINATION*INCLINATION);
+      vx = -v_azimuth*y;
+      vy = v_azimuth*(x-INCLINATION*z);
+      vz = v_azimuth*INCLINATION*y;
+      density = pow(radius,-SIGMASLOPE-1.)*interm1;
+      energy = ASPECTRATIO*ASPECTRATIO/sqrt(radius*radius+1e-2);
+      interm3 = interm1/(interm1+1e-3)*1.001;
+      density = density*interm3 + (1.-interm3)*1e-2;
+      energy  = energy *interm3 + (1.-interm3)*1.0;
+      vx         = vx        *interm3 + (1.-interm3)*0.0;
+      vy         = vy        *interm3 + (1.-interm3)*0.0;
+      vz         = vz        *interm3 + (1.-interm3)*(-3.);
+cuve:
+	density = 1.0;	
+	energy = 1.0;
+	x = radius*cos(azimuth);
+	y = radius*sin(azimuth);
+	interm1 = .5*(sqrt(3.)*(x-12.)+y);
+	interm2 = .5*(-x+12. + sqrt(3.)*y);
+	if ((fabs(interm1) < 3.) && (fabs(interm2) < 1.5)) {
+	        interm3 = .01*cos(interm1*2.*M_PI);
+		density += interm3;
+		vrad += -interm3*cos(azimuth-M_PI/3.);
+		v_azimuth -= -interm3*sin(azimuth-M_PI/3.)/radius;
+	}
+	interm1 = .5*(sqrt(3.)*(x-12.)-y);
+	interm2 = .5*(x-12. + sqrt(3.)*y);
+	if ((fabs(interm1) < 3.) && (fabs(interm2) < 1.5)) {
+	        interm3 = .01*cos(interm1*2.*M_PI);
+		density += interm3;
+		vrad += -interm3*cos(azimuth+M_PI/3.);
+		v_azimuth -= -interm3*sin(azimuth+M_PI/3.)/radius;
+	}
+

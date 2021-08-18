@@ -1,0 +1,345 @@
+#include "jupiter.h"
+
+void Compute_Fluxes_Iso (beam, dt)
+     Beam *beam;
+     real dt;
+{
+  long i,dim,k;
+  real rhoL, rhoR, aL, aR, uL, uR, vpL[2], vpR[2];
+  real us, ps, S_shock, a_godunov;
+  real rho_i, u_i, vp_i[2]; 	/* _i like 'interface' */
+  real mass_flux, pu_flux;
+  real surfdt;
+  real a2, uf, v0=0.0, radius;
+  /* Azimuthal flux corrections for Keplerian disks below */
+  real C_mass_1=1.0, C_mass_2=1.0;
+  real C_mom_1=1.0, C_mom_2=1.0;
+  boolean HSE;
+  dim = beam->dim[0];
+  HSE = CorrHydroStat[dim];
+  if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) {
+    radius = beam->radius;
+    v0 = radius * OMEGAFRAME;
+    if (KEPLERIAN && MERIDIANCORRECTION) {
+      C_mass_1 = beam->masscorr1;
+      C_mass_2 = beam->masscorr2;
+      C_mom_1 = beam->momcorr1;
+      C_mom_2 = beam->momcorr2;
+    }
+  }
+  for (i = Nghost[dim]; i <= beam->length-Nghost[dim]; i++) {
+    uL   = beam->uL[i];
+    uR   = beam->uR[i];
+    for (k = 0; k < NDIM-1; k++) {
+      vpL[k] = beam->v_perp_L[k][i];
+      vpR[k] = beam->v_perp_R[k][i];
+    }
+    rhoL = beam->rhoL[i];
+    rhoR = beam->rhoR[i];
+    if (HSE) {
+      a2 = beam->cs2i[i];
+      aR = aL   = sqrt(a2);
+    } else {
+      aR = aL   = .5*(beam->cs[i-1]+beam->cs[i]);
+      a2 = aL * aL;
+    }
+    /* Call the Riemann solver */
+    __Riemann_Solver (rhoL, rhoR, uL, uR, aL, aR, &us, &ps);
+    if (0.0 < us) {
+      /* we are in the star or left region or fan */
+      for (k = 0; k < NDIM-1; k++)
+	vp_i[k] = vpL[k];
+      a_godunov = aL;
+      if (us < uL) {		/* There is a left shock */
+	S_shock = uL-sqrt(ps/rhoL);
+	if (0.0 < S_shock) {	/* We are at the left of the left shock */
+	  u_i = uL;
+	  rho_i = rhoL;
+	} else {		/* we are in the star region */
+	  u_i = us;
+	  rho_i = ps/a2;
+	}
+      } else {			/* There is a left rarefaction */
+	if (0.0 < uL-aL) {	/* We are in the left region */
+	  u_i = uL;
+	  rho_i = rhoL;
+	} else {
+	  if (0.0 > us-aL) {	/* We are in the star region */
+	    u_i = us;
+	    rho_i = ps/a2;
+	  } else {		/* We are in the fan */
+	    u_i = aL;
+	    rho_i = rhoL*exp((uL-u_i)/aL);
+	  }
+	}
+      }
+    } else {			/* We are in the star or right region or fan */
+      for (k = 0; k < NDIM-1; k++)
+	vp_i[k] = vpR[k];
+      a_godunov = aR;
+      if (us > uR) {		/* There is a right shock */
+	S_shock = uR+sqrt(ps/rhoR); 
+	if (0.0 > S_shock) {	/* we are at the right of the right shock */
+	  u_i = uR;
+	  rho_i = rhoR;
+	} else {		/* we are in the star region */
+	  u_i = us;
+	  rho_i = ps/a2;
+	}
+      } else {			/* There is a right rarefaction */
+	if (0.0 > uR+aR) {	/* we are in the right part */
+	  u_i = uR;
+	  rho_i = rhoR;
+	} else {
+	  if (0.0 < us+aR) {	/* we are in the star region */
+	    u_i = us;
+	    rho_i = ps/a2;
+	  } else {		/* we are in the fan */
+	    u_i = -aR;
+	    rho_i = rhoR*exp(-(uR-u_i)/aR);
+	  }
+	}
+      }
+    }
+    if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) {
+      uf = u_i+v0;
+      mass_flux =rho_i*(uf*C_mass_1-v0*C_mass_2);
+      pu_flux = (a2+uf*uf)*C_mom_1-v0*uf*C_mom_2;
+      pu_flux *= radius * rho_i;
+    } else {
+      mass_flux =rho_i*u_i;
+      pu_flux   = rho_i*(a2+u_i*u_i);
+    }
+    surfdt = beam->intersurface[i] * dt;
+    beam->mass_flux[i] = mass_flux * surfdt;
+    beam->momentum_flux[0][i] = pu_flux * surfdt;
+    for (k = 0; k < NDIM-1; k++)
+      beam->momentum_flux[k+1][i] = rho_i*vp_i[k]*u_i * surfdt;
+    beam->pressure_godunov[i] = rho_i*a2;
+  }
+}
+
+void Compute_Fluxes_Adi (beam, dt)
+     Beam *beam;
+     real dt;
+{
+  long i,dim,ip[2],k;
+  real rhoL, rhoR, aL, aR, uL, uR, pL, pR, vpL[2], vpR[2];
+  real us, ps, S_shock, rhoS, aS; 
+  real rho_i, u_i, p_i, a_i, vp_i[2]; 	// _i like 'interface' 
+  real ekp; // perpendicular kinetic energy (over rho)
+  real mass_flux, pu_flux, ene_flux;
+  real surfdt, SLStar, SRStar;
+  real uf, v0=0.0, radius, wratio;
+  // Azimuthal flux corrections for Keplerian disks below 
+  real C_mass_1=1.0, C_mass_2=1.0;
+  real C_mom_1=1.0, C_mom_2=1.0;
+  real C_ene_1=1.0, C_ene_2=1.0;
+  boolean VacuumCreated;
+  dim = beam->dim[0];
+  ip[0] = beam->dim[1];
+  ip[1] = beam->dim[2];
+  if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) {
+    radius = beam->radius;
+    v0 = radius * OMEGAFRAME; // Multiplication by sin(colatitude) already included in beam.c, for the spherical case.
+    if (KEPLERIAN && MERIDIANCORRECTION) {
+      C_mass_1 = beam->masscorr1;
+      C_mass_2 = beam->masscorr2;
+      C_mom_1 = beam->momcorr1;
+      C_mom_2 = beam->momcorr2;
+      C_ene_1 = beam->enercorr1;
+      C_ene_2 = beam->enercorr2;
+    }
+  }
+  for (i = Nghost[dim]; i <= beam->length-Nghost[dim]; i++) {
+    uL   = beam->uL[i];
+    uR   = beam->uR[i];
+    for (k = 0; k < NDIM-1; k++) {
+      vpL[k] = beam->v_perp_L[k][i];
+      vpR[k] = beam->v_perp_R[k][i];
+    }
+    rhoL = beam->rhoL[i];
+    rhoR = beam->rhoR[i];
+    pL = beam->eL[i]*(GAMMA-1);
+    pR = beam->eR[i]*(GAMMA-1);
+    aR = sqrt(GAMMA*pR/rhoR);
+    aL = sqrt(GAMMA*pL/rhoL);
+    // Call the Riemann solver
+    VacuumCreated =   GetStar_AdiabaticSolver (rhoL, rhoR, uL, uR, aL, aR, &us, &ps);
+    if (VacuumCreated) {
+      SRStar = uR - aR * TOGMO;
+      SLStar = uL + aL * TOGMO;
+      // Since vacuum is created, we know that SRStar > SLStar. Vacuum
+      // resides in between these two characteristics. On each side,
+      // we have rarefaction waves.  See Toro, p.142, fig. 4.17 and
+      // the corresponding paragraph.  We sample the solution fan in
+      // this case.
+      if (SLStar > 0.0) { //We are in the left region or left fan:
+			  //vacuum is in right space
+	for (k = 0; k < NDIM-1; k++)
+	  vp_i[k] = vpL[k];
+	if (uL - aL > 0.0) { // Left state
+	  u_i = uL;
+	  rho_i = rhoL;
+	  a_i = aL;
+	} else {  // Left fan
+	  wratio = GMOGPO*uL/aL;
+	  u_i = TOGPO * (aL + uL*(GAMMA-1.)*0.5);
+	  rho_i = rhoL * pow(TOGPO + wratio, TOGMO);
+	  p_i = pL * pow(TOGPO + wratio, GAMMA*TOGMO);
+	  a_i = sqrt(GAMMA*p_i/rho_i);
+	}
+      }
+      if (SRStar < 0.0) { //We are in the right region or right fan:
+	                  //vacuum is in left space.  This condition
+	                  //is mutually exclusive of the previous one.
+	for (k = 0; k < NDIM-1; k++)
+	  vp_i[k] = vpR[k];
+	if (uR + aR < 0.0) { // Right state
+	  u_i = uR;
+	  rho_i = rhoR;
+	  a_i = aR;
+	} else { // Right fan
+	  wratio = GMOGPO*uR/aR;
+	  u_i = TOGPO * (-aR + uR*(GAMMA-1.)*0.5);
+	  rho_i = rhoR * pow(TOGPO - wratio, TOGMO);
+	  p_i = pR * pow(TOGPO - wratio, GAMMA*TOGMO);
+	  a_i = sqrt(GAMMA*p_i/rho_i);
+	}
+      }
+      if ((SLStar <= 0.0) && (SRStar >= 0.0)) {// Vacuum is on the interface.
+	for (k = 0; k < NDIM-1; k++)
+	  vp_i[k] = .5*(vpL[k]+vpR[k]); // This value does not matter: associated fluxes vanish
+	u_i = 0.0; // This is the linear interpolation of SLStar and
+		   // SRStar at the interface :)
+	rho_i = 0.0;
+	p_i = a_i = 0.0;
+      }
+    } else {
+      // Schematic code : I=Interface ; S=Shock ; D=contact Discontinuity ; F=Fan
+      if (0.0 < us) { //0.0, as we need the solution on the interface
+	// we are in the star or left region or fan 
+	for (k = 0; k < NDIM-1; k++)
+	  vp_i[k] = vpL[k];
+	if (ps > pL) {            // There is a left shock 
+	  S_shock = uL + (pL - ps)/((uL - us)*rhoL);
+	  wratio = ps/pL;
+	  rhoS = rhoL * (wratio + GMOGPO)  // rhoS(on shock side)
+	    /(wratio * GMOGPO + 1.);
+	  aS = sqrt(GAMMA*ps/rhoS);
+	  if (0.0 < S_shock) {    // We are at the left of the left shock: ISD 
+	    u_i = uL;
+	    rho_i = rhoL;
+	    a_i = aL;
+	  } else {                // we are in the left star region: SID 
+	    u_i = us;
+	    rho_i = rhoS;
+	    a_i = aS;
+	  }
+	} else {                    // There is a left rarefaction 
+	  rhoS = rhoL * pow(ps/pL,OOG); // rhoS(on rarefaction side)
+	  aS = sqrt(GAMMA*ps/rhoS);
+	  if (0.0 < uL-aL) {      // We are in the left region: IFD 
+	    u_i = uL;
+	    rho_i = rhoL;
+	    a_i = aL;
+	  } else {
+	    if (0.0 > us-aS) {  // We are in the left star region FID 
+	      u_i = us;
+	      rho_i = rhoS;
+	      a_i = aS;
+	    } else {            // We are in the fan: FIFD 
+	      wratio = GMOGPO*uL/aL;
+	      u_i = TOGPO * (aL + uL*(GAMMA-1.)*0.5);
+	      rho_i = rhoL * pow(TOGPO + wratio, TOGMO);
+	      p_i = pL * pow(TOGPO + wratio, GAMMA*TOGMO);
+	      a_i = sqrt(GAMMA*p_i/rho_i);
+	    }
+	  }
+	}
+      } else {                        // We are in the star or right region or fan 
+	for (k = 0; k < NDIM-1; k++)
+	  vp_i[k] = vpR[k];
+	if (ps > pR) {            // There is a right shock 
+	  S_shock = uR + (pR - ps)/(uR - us)/rhoR;
+	  wratio = ps/pR;
+	  rhoS = rhoR * (wratio + GMOGPO) //rhoS (on shock side)
+	    /(wratio * GMOGPO + 1.);
+	  aS = sqrt(GAMMA*ps/rhoS);
+	  if (0.0 > S_shock) {    // we are at the right of the right shock: DSI 
+	    u_i = uR;
+	    rho_i = rhoR;
+	    a_i = aR;
+	  } else {                // we are in the right star region: DIS 
+	    u_i = us;
+	    rho_i = rhoS;
+	    a_i = aS;
+	  }
+	} else {                    // There is a right rarefaction 
+	  rhoS = rhoR * pow(ps/pR,OOG); //rhoS(on rarefaction side)
+	  aS = sqrt(GAMMA*ps/rhoS);
+	  if (0.0 > uR+aR) {      // we are in the right part: DFI 
+	    u_i = uR;
+	    rho_i = rhoR;
+	    a_i = aR;
+	  } else {
+	    if (0.0 < us+aS) {  // we are in the right star region: DIF 
+	      u_i = us;
+	      rho_i = rhoS;
+	      a_i = aS;
+	    } else {            // we are in the fan: DFIF 
+	      wratio = GMOGPO*uR/aR;
+	      u_i = TOGPO * (-aR + uR*(GAMMA-1.)*0.5);
+	      rho_i = rhoR * pow(TOGPO - wratio, TOGMO);
+	      p_i = pR * pow(TOGPO - wratio, GAMMA*TOGMO);
+	      a_i = sqrt(GAMMA*p_i/rho_i);
+	    }
+	  }
+	}
+      }
+    }
+// Modified by Judit: we set the colat & radial velocties to zero in the first active cells:
+    if((dim == _COLAT_ && i==2 && beam->rawcoord[i] < RANGE3LOW+(beam->rawcoord[1]-beam->rawcoord[0])) || (dim == _RAD_ && i==2 && beam->rawcoord[i] < RANGE2LOW+.5*(beam->rawcoord[1]-beam->rawcoord[0]))){
+      u_i = 0.0; // CHECK IF OK (beambound.c)
+    }
+// modification made till here
+    ekp = 0.5*u_i*u_i;
+    for (k = 0; k < NDIM-1; k++)
+      ekp += vp_i[k]*vp_i[k]*0.5;
+    if (dim == _RAD_) {
+      beam->centrifugal_acc[i] = vp_i[0]*vp_i[0];
+      if (_COLAT_ < NDIM)
+	beam->centrifugal_acc[i] += vp_i[1]*vp_i[1];
+      beam->centrifugal_acc[i] /= beam->edge[i];
+      beam->coriolis[i] = rho_i*vp_i[0]*u_i;
+      if (__SPHERICAL)
+	beam->coriolis[i] *= sin(beam->colatitude);
+    }
+    if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) {
+      uf = u_i+v0;
+      mass_flux = rho_i * (uf*C_mass_1 - v0*C_mass_2);
+      pu_flux   = (a_i*a_i*OOG+uf*uf)*C_mom_1 - v0*uf*C_mom_2;
+      pu_flux  *= radius * rho_i;     // angular momentum in inertial frame...
+      ene_flux = uf*rho_i * (a_i*a_i*OOGMO + ekp)* C_ene_1-	\
+	v0*rho_i * (a_i*a_i*OOGMO + ekp)*C_ene_2;
+    } else {
+      mass_flux = rho_i * u_i;
+      pu_flux   = rho_i * (a_i*a_i*OOG + u_i*u_i);
+      ene_flux  = u_i*rho_i * (a_i*a_i*OOGMO + ekp);
+    }
+
+    surfdt = beam->intersurface[i] * dt;
+    beam->raw_mass_flux[i] = mass_flux;
+    beam->u_interface[0][i] = u_i;
+    if (NDIM > 1)
+      beam->u_interface[1][i] = vp_i[0];
+    if (NDIM > 2)
+      beam->u_interface[2][i] = vp_i[1];
+    beam->mass_flux[i] = mass_flux * surfdt;
+    beam->momentum_flux[0][i] = pu_flux * surfdt;
+    for (k = 0; k < NDIM-1; k++)    // will be corrected in FillFluxes
+      beam->momentum_flux[k+1][i] = rho_i*vp_i[k]*u_i * surfdt;
+    beam->tot_energy_flux[i] = ene_flux * surfdt;
+    beam->pressure_godunov[i] = a_i*a_i*rho_i*OOG;
+  }
+}

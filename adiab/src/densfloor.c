@@ -1,0 +1,33 @@
+#include "jupiter.h"
+
+#define FLOOR 1e-11
+
+void DensFloor () {
+  real *e, *rho;
+  long m, size;
+  size  = CurrentFluidPatch->desc->gncell[0];
+  size *= CurrentFluidPatch->desc->gncell[1];
+  size *= CurrentFluidPatch->desc->gncell[2];
+  e = CurrentFluidPatch->Energy_tot;
+  rho = CurrentFluidPatch->Density;
+  for (m=0; m < size; m++) {
+    if (rho[m] < FLOOR) {
+      e[m] *= FLOOR/rho[m];
+      rho[m] = FLOOR;
+    }
+  }
+}
+
+void DustDensFloor () {
+  real *rho;
+  long m, size;
+  size  = CurrentFluidPatch->desc->gncell[0];
+  size *= CurrentFluidPatch->desc->gncell[1];
+  size *= CurrentFluidPatch->desc->gncell[2];
+  rho = CurrentFluidPatch->Density;
+  for (m=0; m < size; m++) {
+    if (rho[m] < DUSTDENSFLOOR) {
+      rho[m] = DUSTDENSFLOOR;
+    }
+  }
+}

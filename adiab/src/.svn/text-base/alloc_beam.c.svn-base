@@ -1,0 +1,105 @@
+#include "jupiter.h"
+
+static long MaxBeamLength=0;
+static boolean NeverAllocated = TRUE;
+static long AllocPhase;
+static long Length;
+static long NVar, VarIndex;
+static real *BeamStart;
+static long PreviousLength=0;
+
+void ReserveForBeam_PLM (ptr)
+     real **ptr;
+{
+  if (!AllocPhase)
+    NVar++;
+  else {
+    *ptr = BeamStart+Length*VarIndex;
+    VarIndex++;
+  }
+}
+
+void MakeBeam_PLM (beam)
+Beam *beam;
+{
+  long i;
+  ReserveForBeam_PLM (&(beam->rho));
+  ReserveForBeam_PLM (&(beam->rho_pred));
+  ReserveForBeam_PLM (&(beam->e_pred));
+  ReserveForBeam_PLM (&(beam->u));
+  ReserveForBeam_PLM (&(beam->u_pred));
+  ReserveForBeam_PLM (&(beam->cs));
+  ReserveForBeam_PLM (&(beam->rad_arr));
+  ReserveForBeam_PLM (&(beam->sin_theta_arr));
+  for (i = 0; i < 3; i++) {	/* Could be NDIM? */
+    ReserveForBeam_PLM (&(beam->slope_rho[i]));
+    ReserveForBeam_PLM (&(beam->slope_u[i]));
+    ReserveForBeam_PLM (&(beam->slope_u[i]));
+    ReserveForBeam_PLM (&(beam->slope_v_perp[0][i]));
+    ReserveForBeam_PLM (&(beam->slope_v_perp[1][i]));
+    ReserveForBeam_PLM (&(beam->momentum_flux[i]));
+    ReserveForBeam_PLM (&(beam->u_interface[i]));
+    if (!Isothermal)
+      ReserveForBeam_PLM (&(beam->slope_energy[i]));
+  }
+  if (!Isothermal) {
+    ReserveForBeam_PLM (&beam->energy_flux);
+    ReserveForBeam_PLM (&beam->tot_energy_flux);
+  }
+  ReserveForBeam_PLM (&(beam->center));
+  ReserveForBeam_PLM (&(beam->rawcoord));
+  ReserveForBeam_PLM (&(beam->edge));
+  ReserveForBeam_PLM (&(beam->srcrho));
+  ReserveForBeam_PLM (&(beam->intersurface));
+  ReserveForBeam_PLM (&(beam->mass_flux));
+  ReserveForBeam_PLM (&(beam->rhoL));
+  ReserveForBeam_PLM (&(beam->rhoR));
+  ReserveForBeam_PLM (&(beam->uL));
+  ReserveForBeam_PLM (&(beam->uR));
+  ReserveForBeam_PLM (&(beam->eL));
+  ReserveForBeam_PLM (&(beam->eR));
+  ReserveForBeam_PLM (&(beam->centrifugal_acc));
+  ReserveForBeam_PLM (&(beam->coriolis));
+  ReserveForBeam_PLM (&(beam->raw_mass_flux));
+  for (i = 0; i < 2; i++) {
+    ReserveForBeam_PLM (&(beam->v_perp[i]));
+    ReserveForBeam_PLM (&(beam->v_perp_pred[i]));
+    ReserveForBeam_PLM (&(beam->v_perp_L[i]));
+    ReserveForBeam_PLM (&(beam->v_perp_R[i]));
+    ReserveForBeam_PLM (&(beam->metperp[i]));
+    ReserveForBeam_PLM (&(beam->source_perp[i]));
+  }
+  ReserveForBeam_PLM (&(beam->pressure_godunov));
+  ReserveForBeam_PLM (&(beam->source));
+  ReserveForBeam_PLM (&(beam->HS_cent_rho));
+  ReserveForBeam_PLM (&(beam->HS_int_rho));
+  ReserveForBeam_PLM (&(beam->HS_cent_ene));
+  ReserveForBeam_PLM (&(beam->HS_int_ene));
+  ReserveForBeam_PLM (&(beam->cs2i));
+}
+
+void AllocBeam_PLM (beam, length)
+     Beam *beam;
+     long length;
+{
+  if (length == PreviousLength) return;
+  if (NeverAllocated) {	/* We need to know how many */
+    /* variables  the  beam will  contain.  This  number of  variables
+     cannot therefore depend upon the coordinate */
+    AllocPhase = 0;
+    MakeBeam_PLM (beam);
+    AllocPhase = 1;
+  }
+  if (length > MaxBeamLength) {
+    if (!NeverAllocated)
+      free (BeamStart);
+    BeamStart = prs_malloc (length*NVar*sizeof(real));
+    MaxBeamLength = length;
+    NeverAllocated = FALSE;
+    pInfo ("Beam contains %ld variables and each field has length at most %ld\n", NVar, length);
+  }
+  VarIndex = 0;
+  Length = length;
+  PreviousLength = Length;
+  MakeBeam_PLM (beam);
+}

@@ -1,0 +1,46 @@
+#include "jupiter.h"
+
+static Beam beam;
+
+
+void HydroKernel (dt)
+     real dt;
+{
+  long i, j, k, size[3], dim, ip1, ip2;
+  for (i = 0; i < 3; i++)
+    size[i] = CurrentFluidPatch->desc->ncell[i];
+  FillSources (PREDICT, EVERYWHERE);
+  FillSlopes ();
+  if (mMUSCL) Predictor (dt);
+  for (dim = 0; dim < NDIM; dim++) { /* For each dimension */
+    ip1 = (dim == 0);
+    ip2 = 2-(dim == 2);
+    AllocBeam_PLM (&beam, CurrentFluidPatch->desc->gncell[dim]);
+    for (k = 0; k < size[ip2]; k++) {
+      for (j = 0; j < size[ip1]; j++) {
+	FillBeam (dim, j+Nghost[ip1], k+Nghost[ip2], &beam); 
+				/* Scan a beam of the active mesh */
+	__Prepare_Riemann_States (&beam, dt); 
+				/* which is used to prepare the Riemann States */
+	__Compute_Fluxes (&beam, dt); 
+				/* The Riemann solver is then called and the fluxes evaluated */
+	FillFluxes (dim, j+Nghost[ip1], k+Nghost[ip2], &beam); 
+				/* and fluxes are stored for that dim */
+      }
+    }
+  }
+  if (VISCOSITY > 1e-16) 
+    ApplyViscousStress (dt);
+  CorrectFluxesFromFinerLevel ();	
+				/* the fluxes are then corrected from finer level */
+  ConservativeUpdate ();	   
+				/* and the conservative update is performed, together */
+				/* with a face flux monitoring */
+  PressureCorrection (dt);	   
+				/* Needs to be done *before* the source filling in SPHERICAL */
+  //  FillSources (UPDATE, EVERYWHERE);
+  Source (dt);			        
+				/* Apply source terms (potential gradient, centrifugal force) */
+  if (KEPLERIAN && !NoStockholm) 
+    ApplyStockholmBoundaryConditions (dt);
+}

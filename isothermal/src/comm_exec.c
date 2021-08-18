@@ -1,0 +1,167 @@
+#include "jupiter.h"
+
+extern MPI_Request *Req;
+
+/* Before calling the following function, one needs to fill the
+   buffers of the corresponding communicators */
+
+void ExecComm (levsrc, levdest, type, nvar, nb, fieldtype)
+     long levsrc, levdest, type, nvar, nb;
+     int *fieldtype;		/* type can be GHOST or MEAN */
+{
+  Communicator *com=NULL, *start=NULL;
+  long i,nbreq=0,l,imin[3],imax[3],stride[3];
+  long comp[20], j,k,m,n,d,sqz[3],ii[3];
+  real *dest[80];
+  FluidPatch *fluid;
+  MPI_Status stat;
+  int field;
+  tGrid_CPU *desc;
+  if (type == GHOST)
+    start = com = ComListGhost;
+  if (type == MEAN)
+    start = com = ComListMean;
+  while (com != NULL) {		/* We initiate non-blocking communications */
+    if ((com->dest_level == levdest) &&\
+	(com->src_level == levsrc) &&\
+	(com->type == type)) {
+      if (com->CPU_src != com->CPU_dest) {
+       	if (com->CPU_src == CPU_Rank) {
+	  MPI_Isend (com->buffer, com->size*nvar*NbFluids, MPI_DOUBLE,\
+		     com->CPU_dest, com->tag, MPI_COMM_WORLD, Req+nbreq);
+	  nbreq++;
+	}
+	if (com->CPU_dest == CPU_Rank) {
+	  MPI_Irecv (com->buffer, com->size*nvar*NbFluids, MPI_DOUBLE,\
+		     com->CPU_src, com->tag, MPI_COMM_WORLD, Req+nbreq);
+	  nbreq++;
+	}
+      }
+    }
+    com=com->next;
+  }
+  for (i = 0; i < nbreq; i++)
+    MPI_Wait (Req+i, &stat);
+  com = start;
+  while (com != NULL) {		/* We use the buffers to update the
+				   ghost or "mean" values */
+    if ((com->dest_level == levdest) &&		\
+	(com->src_level == levsrc) &&		\
+	(com->type == type)) {
+      if (com->CPU_dest == CPU_Rank) {
+	l=0;
+	fluid = com->destg->Fluid;
+	while (fluid != NULL) {
+	  for (i = 0; i < nb; i++) {
+	    field = fieldtype[i];
+	    d = dimfield(field);
+	    for (j = 0; j < d; j++) {
+//if(CPU_Rank == 28 && levdest==7)	printf("l %ld i %ld field %ld CPU_Rank %ld\n",l,i,field,CPU_Rank);
+	      comp[l] = _other_;
+	      if (field == _Density_) comp[l] = _density_;
+	      if (field == _Energy_) comp[l] = _energy_;
+	      if ((field == _Velocity_) && (j == _AZIM_)) comp[l] = _vazimuth_;
+	      dest[l++] = fluid->Ptr[field+j];
+	    }
+	  }
+	  fluid = fluid->next;
+	}
+	desc = com->destg;
+	for (l = 0; l < 3; l++) {
+	  imin[l] = com->imin_dest[l];
+	  imax[l] = com->imax_dest[l];
+	  stride[l] = com->destg->stride[l];
+	  if (HydroStaticReady)
+	    sqz[l] = desc->Fluid->Rho_eq_c->stride[l];
+	}
+	n=0;
+	for (l=0; l < nvar*NbFluids; l++) {
+	  for (k = imin[2]; k < imax[2]; k++) {
+	    for (j = imin[1]; j < imax[1]; j++) {
+	      for (i = imin[0]; i < imax[0]; i++) {
+		ii[0] = i;
+		ii[1] = j;
+		ii[2] = k;
+		m = i*stride[0]+j*stride[1]+k*stride[2];
+//if(levdest==7 && CPU_Rank==28 && m==12708)printf("m=12708 corresponds to %ld field=%ld %ld\n",n,field,_Density_);
+		dest[l][m] = com->buffer[n++];
+////if(levdest==7 && m==12708 && CPU_Rank== 28)printf("dest %lg l %ld n %ld\n",dest[l][m],l,n-1);
+		if (levsrc != levdest)
+		  dest[l][m] = comm_adapt (dest[l][m], comp[l], m,\
+					   ii, sqz, desc, -1, l/nvar);
+////if(levdest==7 && m==12708 && CPU_Rank== 28)printf("dest2 %lg l %ld n %ld\n",dest[l][m],l,n-1);
+	      }
+	    }
+	  }
+	}
+	if (com->size*nvar*NbFluids != n)
+	  prs_error ("Internal error: communicator size mismatch error");
+      }
+    }
+    com = com->next;
+  }
+}
+
+void ExecCommFlux (levsrc)
+     long levsrc;
+{
+  Communicator *com;
+  long nbreq=0,nvar, i;
+  long levdest;
+  MPI_Status stat;
+  levdest = levsrc-1;
+  nvar = 2+NDIM;		/* Mass + Momentum flux & interface pressure*/ 
+  if (!Isothermal) nvar++;	/* Energy flux */
+  com = ComListFlux;
+  while (com != NULL) {		/* We initiate non-blocking communications */
+    if ((com->dest_level == levdest) &&\
+	(com->src_level == levsrc) &&\
+	(com->type == FLUX)) {
+      if (com->CPU_src != com->CPU_dest) {
+       	if (com->CPU_src == CPU_Rank) {
+	  MPI_Isend (com->buffer, com->size*nvar*NbFluids, MPI_DOUBLE,\
+		     com->CPU_dest, com->tag, MPI_COMM_WORLD, Req+nbreq);
+	  nbreq++;
+	}
+	if (com->CPU_dest == CPU_Rank) {
+	  MPI_Irecv (com->buffer, com->size*nvar*NbFluids, MPI_DOUBLE,\
+		     com->CPU_src, com->tag, MPI_COMM_WORLD, Req+nbreq);
+	  nbreq++;
+	}
+      }
+    }
+    com=com->next;
+  }
+  for (i = 0; i < nbreq; i++)
+    MPI_Wait (Req+i, &stat);
+}
+
+void CommAll () {
+  boolean temp_isoth;
+  long level;
+				/* Fill all ghost zones at all levels.
+				 This function does not have to be
+				 used if all variable fields must be
+				 transferred by communicators whenever
+				 an inter-process communication is
+				 needed.  However, in the isothermal
+				 version, the energy field is not
+				 sent. Since it is initialized only on
+				 the active mesh, it needs to be sent,
+				 once and only once, and after active
+				 grid affectation (either by Init.c or
+				 during a restart) */
+  temp_isoth = Isothermal;
+  Isothermal = NO;
+  for (level = LevMax; level >= 0; level--) {
+    /* a TrueBC (somelev) must ALWAYS follow an ExecCommSame (somelev) */
+    ExecCommSame (level-1);
+    TrueBC (level-1);
+    ExecCommUp (level-1);
+    /* a TrueBC (somelev) must ALWAYS follow an ExecCommSame (somelev) */
+    ExecCommSame (level);
+
+    TrueBC (level);
+  }
+  Isothermal = temp_isoth;
+}

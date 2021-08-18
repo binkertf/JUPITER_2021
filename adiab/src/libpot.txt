@@ -1,0 +1,55 @@
+vkoffring2d:
+      y = radius * sin(colatitude); /* y is a work variable */
+      z = radius*cos(colatitude);
+      pot = -1.0/y+.5*1e-3/0.15*(z-1.0)*(z-1.0);
+isoatm:
+	pot = z+1e5;
+isoatm2d:
+	pot = 2.*x+1.*y+1e5;
+planet3d:
+	pot = keplerian_pot(radius, azimuth, colatitude);
+planet2d:
+	pot = keplerian_pot(radius, azimuth, colatitude);
+kepler:
+	pot = -1.0/radius;
+null:
+	pot = 1.0;
+homogeneity1:
+	pot = -1.0/radius;
+homogeneity2:
+	pot = -2.0e30*6.67e-11/radius;
+GalacticCyl:
+	pot = 4.0e4*log(radius)+50./70./70.*z*z;
+plan1d:
+	pot = SMOOTHING*log(z)+1e5;
+star1d:
+	pot = SMOOTHING*.5*z*z+1e5;
+planet2d_noind:
+	pot = -1./radius;
+	pot -= PLANETMASS\
+         /(sqrt(1.+radius*radius-2*radius*cos(azimuth)+SMOOTHING*SMOOTHING));
+planetersatzt_norad:
+	pot = -1./radius;
+	pot -= PLANETMASS\
+         /(sqrt(azimuth*azimuth+SMOOTHING*SMOOTHING));
+planet2d_trunc:
+	pot = -1./radius;
+	x = sqrt(1.+radius*radius-2.*radius*cos(azimuth));
+	if (x > 0.02) x = 0.02;
+	pot -= PLANETMASS/sqrt(x*x+SMOOTHING*SMOOTHING);
+planet_incli:
+	work1 = cos(t);
+	yp = sin(t);
+	xp = radius*cos(INCLINATION);
+	zp = radius*sin(INCLINATION);
+	x = radius*cos(azimuth)*sin(colatitude);
+	y = radius*sin(azimuth)*sin(colatitude);
+	z = radius*cos(colatitude);
+	pot = -1./radius;
+	pot -= PLANETMASS/sqrt((x-xp)*(x-xp)+(y-yp)*(y-yp)+(z-zp)*(z-zp)+SMOOTHING*SMOOTHING);
+tide:
+	work1 = (0.01-OMEGAFRAME)*t;
+        work2 = cos(azimuth-work1)*radius*sin(colatitude);
+	pot = work2*work2*1e-5;
+throop:
+	pot = -1.0/sqrt(x*x+y*y+z*z+1e-2);

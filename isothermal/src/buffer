@@ -1,0 +1,201 @@
+comm_alloc.c:    cpusrc  = com->CPU_src; /* Beware ! size of com is always size of dest... */
+comm_alloc.c:    cpudest = com->CPU_dest;
+comm_alloc.c:	size *= (com->imax_dest[i]-com->imin_dest[i]);
+comm_alloc.c:      com->size = size;
+comm_alloc.c:      if (com->type == FLUX)
+comm_alloc.c:      com->buffer = prs_malloc (nvar*size*sizeof(real)*NbFluids);
+comm_alloc.c:    com = com->next;
+comm_check.c:      if (com->destg == cpug) {
+comm_check.c:	for (ii = com->imin_dest[0]; ii < com->imax_dest[0]; ii++) {
+comm_check.c:	  for (jj = com->imin_dest[1]; jj < com->imax_dest[1]; jj++) {
+comm_check.c:	    for (kk = com->imin_dest[2]; kk < com->imax_dest[2]; kk++) {
+comm_check.c:      com=com->next;
+comm_exec.c:    if ((com->dest_level == levdest) &&\
+comm_exec.c:	(com->src_level == levsrc) &&\
+comm_exec.c:	(com->type == type)) {
+comm_exec.c:      if (com->CPU_src != com->CPU_dest) {
+comm_exec.c:       	if (com->CPU_src == CPU_Rank) {
+comm_exec.c:	  MPI_Isend (com->buffer, com->size*nvar*NbFluids, MPI_DOUBLE,\
+comm_exec.c:		     com->CPU_dest, com->tag, MPI_COMM_WORLD, Req+nbreq);
+comm_exec.c:	if (com->CPU_dest == CPU_Rank) {
+comm_exec.c:	  MPI_Irecv (com->buffer, com->size*nvar*NbFluids, MPI_DOUBLE,\
+comm_exec.c:		     com->CPU_src, com->tag, MPI_COMM_WORLD, Req+nbreq);
+comm_exec.c:    com=com->next;
+comm_exec.c:    if ((com->dest_level == levdest) &&		\
+comm_exec.c:	(com->src_level == levsrc) &&		\
+comm_exec.c:	(com->type == type)) {
+comm_exec.c:      if (com->CPU_dest == CPU_Rank) {
+comm_exec.c:	fluid = com->destg->Fluid;
+comm_exec.c:	desc = com->destg;
+comm_exec.c:	  imin[l] = com->imin_dest[l];
+comm_exec.c:	  imax[l] = com->imax_dest[l];
+comm_exec.c:	  stride[l] = com->destg->stride[l];
+comm_exec.c:		dest[l][m] = com->buffer[n++];
+comm_exec.c:	if (com->size*nvar*NbFluids != n)
+comm_exec.c:    com = com->next;
+comm_exec.c:    if ((com->dest_level == levdest) &&\
+comm_exec.c:	(com->src_level == levsrc) &&\
+comm_exec.c:	(com->type == FLUX)) {
+comm_exec.c:      if (com->CPU_src != com->CPU_dest) {
+comm_exec.c:       	if (com->CPU_src == CPU_Rank) {
+comm_exec.c:	  MPI_Isend (com->buffer, com->size*nvar*NbFluids, MPI_DOUBLE,\
+comm_exec.c:		     com->CPU_dest, com->tag, MPI_COMM_WORLD, Req+nbreq);
+comm_exec.c:	if (com->CPU_dest == CPU_Rank) {
+comm_exec.c:	  MPI_Irecv (com->buffer, com->size*nvar*NbFluids, MPI_DOUBLE,\
+comm_exec.c:		     com->CPU_src, com->tag, MPI_COMM_WORLD, Req+nbreq);
+comm_exec.c:    com=com->next;
+comm_fill.c:    if ((com->dest_level == lev) && (com->src_level == lev)) {
+comm_fill.c:      if (com->CPU_src == CPU_Rank) {
+comm_fill.c:	fluid = com->srcg->Fluid;
+comm_fill.c:	  imin[l] = com->imin_src[l];
+comm_fill.c:	  imax[l] = com->imax_src[l];
+comm_fill.c:	  stride[l] = com->srcg->stride[l];
+comm_fill.c:		com->buffer[n++] = source[l][m];
+comm_fill.c:	if (com->size*nvar*NbFluids != n)
+comm_fill.c:    com = com->next;
+comm_fill.c:    if ((com->dest_level == lev+1) && (com->src_level == lev) && (com->type == GHOST)) {
+comm_fill.c:      if (com->CPU_src == CPU_Rank) {
+comm_fill.c:	fluid = com->srcg->Fluid;
+comm_fill.c:	radius     = com->srcg->Fluid->desc->Center[_RAD_];
+comm_fill.c:	colatitude = com->srcg->Fluid->desc->Center[_COLAT_];
+comm_fill.c:	  imind[l] = com->imin_dest[l];
+comm_fill.c:	  imaxd[l] = com->imax_dest[l];
+comm_fill.c:	  imins[l] = com->imin_src[l];
+comm_fill.c:	  strides[l] = com->srcg->stride[l];
+comm_fill.c:	    sqz[l] = com->srcg->Fluid->Rho_eq_c->stride[l];
+comm_fill.c:		s = comm_adapt (s, comp[l], ms, idx, sqz, com->srcg, +1, l/nvar);
+comm_fill.c:		com->buffer[n++] = s;
+comm_fill.c:	if (com->size*nvar*NbFluids != n)
+comm_fill.c:    com = com->next;
+comm_fill.c:    if ((com->dest_level == lev+1) &&\
+comm_fill.c:	(com->src_level == lev) &&\
+comm_fill.c:	(com->type == GHOST)) {
+comm_fill.c:      if (com->CPU_src == CPU_Rank) {
+comm_fill.c:	fluid = com->srcg->Fluid;
+comm_fill.c:	size = com->size;
+comm_fill.c:	  imind[l] = com->imin_dest[l];
+comm_fill.c:	  imaxd[l] = com->imax_dest[l];
+comm_fill.c:	  imins[l] = com->imin_src[l];
+comm_fill.c:	  imaxs[l] = com->imax_src[l];
+comm_fill.c:	  strides[l] = com->srcg->stride[l];
+comm_fill.c:	    sqz[l] = com->srcg->Fluid->Rho_eq_c->stride[l];
+comm_fill.c:	desc = com->srcg;
+comm_fill.c:		      com->buffer[mc+size*l] = s;
+comm_fill.c:    com = com->next;
+comm_fill.c:    if ((com->dest_level == lev-1) && (com->src_level == lev) && (com->type == MEAN)) {
+comm_fill.c:      if (com->CPU_src == CPU_Rank) {
+comm_fill.c:	fluid = com->srcg->Fluid;
+comm_fill.c:	desc = com->srcg;
+comm_fill.c:	  imind[l] = com->imin_dest[l];
+comm_fill.c:	  imaxd[l] = com->imax_dest[l];
+comm_fill.c:	  imins[l] = com->imin_src[l];
+comm_fill.c:	  imaxs[l] = com->imax_src[l];
+comm_fill.c:	for (n=0; n<com->size*nvar*NbFluids; n++)
+comm_fill.c:	  com->buffer[n] = 0.0;
+comm_fill.c:		com->buffer[l*com->size+n] += src/(real)folded;
+comm_fill.c:    com = com->next; 
+comm_fill.c:    if ((com->dest_level == lev-1) && (com->src_level == lev) && (com->type == FLUX)) {
+comm_fill.c:      if (com->CPU_src == CPU_Rank) {
+comm_fill.c:	dim  = com->facedim;
+comm_fill.c:	side = com->faceside;
+comm_fill.c:	  imin[i] = com->imin_src[i];
+comm_fill.c:	  imax[i] = com->imax_src[i];
+comm_fill.c:	  size[i] = com->srcg->ncell[i];
+comm_fill.c:	  csizes[i] = com->imax_src[i]-com->imin_src[i];
+comm_fill.c:	  csized[i] = com->imax_dest[i]-com->imin_dest[i];
+comm_fill.c:	fluid = com->srcg->Fluid;
+comm_fill.c:	  com->buffer[i] = 0.0;
+comm_fill.c:	      com->buffer[n+l*buf_size] += source[l][m];
+comm_fill.c:    com = com->next;
+comm_flag.c:	if (com->srcg == cpug) {
+comm_flag.c:		if (com->dest_level == com->src_level) {
+comm_flag.c:		  if ((i[k] < com->imin_src[k]) || (i[k] >= com->imax_src[k]))
+comm_flag.c:		  if ((i[k] < com->imin_src[k]-1) || (i[k] >= com->imax_src[k]+1))
+comm_flag.c:		  SrcCommPerp[m] |= 1<<(com->facedim);
+comm_flag.c:	if (com->destg == cpug) {
+comm_flag.c:		if (com->dest_level == com->src_level) {
+comm_flag.c:		  if ((i[k] < com->imin_dest[k]) || (i[k] >= com->imax_dest[k]))
+comm_flag.c:		  if ((i[k] < com->imin_dest[k]-1) || (i[k] >= com->imax_dest[k]+1))
+comm_flag.c:		  DestCommPerp[m] |= 1<<(com->facedim);
+comm_flag.c:	com = com->next;
+comm_init.c:		      com->Imin[k]       = ccom[k]-dblocks.shift[i][k];	/* In the absolute coordinates we keep a track of the */
+comm_init.c:		      com->Imax[k]       = ccom[k+3]-dblocks.shift[i][k]; /* ORIGINAL position (may lie outside the main domain) */
+comm_init.c:		      com->imin_src[k]   = (ccom[k]   -  srcg->gncorner_min[k])/\
+comm_init.c:		      com->imax_src[k]   = (ccom[k+3] -  srcg->gncorner_min[k])/\
+comm_init.c:		      com->imin_dest[k]  = (ccom[k]-dblocks.shift[i][k]   -  destg->gncorner_min[k])/\
+comm_init.c:		      com->imax_dest[k]  = (ccom[k+3]-dblocks.shift[i][k] -  destg->gncorner_min[k])/\
+comm_init.c:		    com->CPU_dest    = destg->cpu;
+comm_init.c:		    com->CPU_src     = srcg->cpu;
+comm_init.c:		    com->facedim     = dim;
+comm_init.c:		    com->faceside    = j;
+comm_init.c:		    com->grid_dest   = destg->parent;
+comm_init.c:		    com->grid_src    = srcg->parent;
+comm_init.c:		    com->srcg        = srcg;
+comm_init.c:		    com->destg       = destg;
+comm_init.c:		    com->dest_level  = destg->level;
+comm_init.c:		    com->src_level   = srcg->level;
+comm_init.c:		    com->nb_src      = srcg->number;
+comm_init.c:		    com->nb_dest     = destg->number;
+comm_init.c:		    com->tag         = TagNumber++;
+comm_init.c:		    com->type        = GHOST;
+comm_init.c:		    com->prev        = NULL;
+comm_init.c:		    com->next        = ComListGhost;
+comm_init.c:		    hash->next = CommHashSrc[com->nb_src];
+comm_init.c:		    CommHashSrc[com->nb_src] = hash;
+comm_init.c:			  com->imin_src[k] =(fImin[k]-destg->gncorner_min[k])/(destg->Parent->dn[k]); 
+comm_init.c:			  com->imax_src[k] =(fImax[k]-destg->gncorner_min[k])/(destg->Parent->dn[k]); 
+comm_init.c:			  com->imin_dest[k]=(fImin[k]+dblocks.shift[i][k]-srcg->gncorner_min[k])/(srcg->Parent->dn[k]); 
+comm_init.c:			  com->imax_dest[k]=(fImax[k]+dblocks.shift[i][k]-srcg->gncorner_min[k])/(srcg->Parent->dn[k]);
+comm_init.c:			    com->imax_dest[k] = com->imin_dest[k]+1;
+comm_init.c:			    com->imax_src[k] = com->imin_src[k]+1;
+comm_init.c:			  com->Imin[k] = fImin[k];
+comm_init.c:			  com->Imax[k] = fImax[k];
+comm_init.c:			com->CPU_dest    = srcg->cpu; /* Source and destination are swapped wrt ghost communicator */
+comm_init.c:			com->CPU_src     = destg->cpu;
+comm_init.c:			com->facedim     = dim;
+comm_init.c:			com->faceside    = j;
+comm_init.c:			com->grid_dest   = srcg->parent; /* same thing */
+comm_init.c:			com->grid_src    = destg->parent;
+comm_init.c:			com->dest_level  = srcg->level; /* same thing */
+comm_init.c:			com->src_level   = destg->level;
+comm_init.c:			com->srcg        = destg;
+comm_init.c:			com->destg       = srcg;
+comm_init.c:			com->nb_src      = destg->number;	/* same thing */
+comm_init.c:			com->nb_dest     = srcg->number;
+comm_init.c:			com->tag         = TagNumber++;
+comm_init.c:			com->type        = FLUX;
+comm_init.c:			com->prev        = NULL;
+comm_init.c:			com->next        = ComListFlux;
+comm_init.c:		    com->Imin[k]      = ccom[k];
+comm_init.c:		    com->Imax[k]      = ccom[k+3];
+comm_init.c:		    com->imin_src[k]  = (ccom[k]   -srcg->gncorner_min[k])/(srcg->Parent->dn[k]); 
+comm_init.c:		    com->imax_src[k]  = (ccom[k+3] -srcg->gncorner_min[k])/(srcg->Parent->dn[k]); 
+comm_init.c:		    com->imin_dest[k] = (ccom[k]   -destg->gncorner_min[k])/(destg->Parent->dn[k]); 
+comm_init.c:		    com->imax_dest[k] = (ccom[k+3] -destg->gncorner_min[k])/(destg->Parent->dn[k]); 
+comm_init.c:		  com->CPU_dest    = destg->cpu;
+comm_init.c:		  com->CPU_src     = srcg->cpu;
+comm_init.c:		  com->facedim     = dim;
+comm_init.c:		  com->faceside    = j;
+comm_init.c:		  com->grid_dest   = destg->parent;
+comm_init.c:		  com->grid_src    = srcg->parent;
+comm_init.c:		  com->srcg        = srcg;
+comm_init.c:		  com->destg       = destg;
+comm_init.c:		  com->dest_level  = destg->level;
+comm_init.c:		  com->src_level   = srcg->level;
+comm_init.c:		  com->nb_src      = srcg->number;
+comm_init.c:		  com->nb_dest     = destg->number;
+comm_init.c:		  com->tag         = TagNumber++;
+comm_init.c:		  com->type        = MEAN;
+comm_init.c:		  com->prev        = NULL;
+comm_init.c:		  com->next        = ComListMean;
+comm_strip.c:  prev = com->prev;
+comm_strip.c:  next = com->next;
+comm_strip.c:  if (hprev == NULL) CommHashSrc[hash->com->nb_src] = hnext;
+comm_strip.c:    next = com->next;
+correct.c:    if (com->destg == fw->desc) {
+correct.c:      dim = com->facedim;
+correct.c:      side = com->faceside;
+correct.c:	imin[i] = com->imin_dest[i];
+correct.c:	imax[i] = com->imax_dest[i];
+correct.c:      buffer = (com->buffer)+(fw->Fluid->FluidRank)*nvar*(com->size);
+correct.c:    com = com->next;

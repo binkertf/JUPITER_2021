@@ -1,0 +1,59 @@
+# This is a 2D isothermal setup (gas only)
+################################################################################
+# GRID
+################################################################################
+CoordType        		Cylindrical
+CoordPermut      		213
+
+Size1            		314
+Size2            		100
+Size3            		1
+
+Range2Low        		0.4
+Range2High       		2.4
+Range1Low        		-3.141592653
+Range1High        		3.141592653
+Range3Low        		0.0
+Range3High       		0.0
+
+NDIM              		2
+Dim1Periodic       		True
+Keplerian           		True
+################################################################################
+# PLANET / GASDISK
+################################################################################
+PLANETMASS        		1.0e-3
+MASSTAPER         		10
+ASPECTRATIO       		0.05
+VISCOSITY         		1.0e-6
+SIGMA0            		2.0e-4
+SIGMASLOPE        		0.5
+Gamma             		1.0
+
+PotentialCode       		planet3d
+ExternalPotential   		True
+InitCode            		kepler3d
+RIEMANNSOLVER	     		2S
+
+FLUIDS              		gas
+################################################################################
+# NUMERICS
+################################################################################
+GHOSTFILLINGORDER   		0
+MeridianCorrection  		Yes
+FLARINGINDEX 			0.0
+CFLSECURITY			0.5
+OUTPUTATREFINEMENT  		500
+FINESTLEVEL         		1
+NODAMPING           		NO
+METHOD				PLM
+
+OUTPUTDIR			~
+OmegaFrame          		1.00049987506
+DT                  		0.628318530718
+NINTERM             		10
+NTOT                		1000
+
+################################################################################
+#GRIDINFO
+-3.141592653   0.4  3.141592653    2.4   0 0 3 0 3

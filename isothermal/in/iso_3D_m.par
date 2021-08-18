@@ -1,0 +1,68 @@
+# This is a 3D isothermal setup including one dust fluid
+################################################################################
+# GRID
+################################################################################
+CoordType        		Spherical
+CoordPermut      		213
+
+Size1            		314
+Size2            		100
+Size3            		20
+
+Range2Low        		0.4
+Range2High       		2.4
+Range1Low        		-3.141592653
+Range1High        		3.141592653
+Range3Low        		1.4415764
+Range3High       		1.57079632679489
+
+NDIM              		3
+Dim1Periodic        		True
+Keplerian           		True
+################################################################################
+# PLANET / GASDISK
+################################################################################
+PLANETMASS        		1.0e-3
+MASSTAPER         		10
+OmegaFrame          		1.00049987506
+ASPECTRATIO       		0.05
+VISCOSITY         		1e-6
+SIGMA0            		1.479e-3
+SIGMASLOPE        		1.0
+Gamma             		1.0
+
+PotentialCode       		planet3d
+ExternalPotential   		True
+InitCode           	 	kepler3d/keplerdust
+RIEMANNSOLVER	     		2S
+
+FLUIDS              		gas/dust
+################################################################################
+# DUST
+################################################################################
+DUSTSOLVER	     		HO
+DUSTDIFF			TRUE
+CONSTSTOKES			TRUE
+STOKESNUMBER        		0.01
+DUSTTOGAS           		0.01
+DUSTSIZE			1e-5
+DUSTDENSFLOOR			1e-14
+################################################################################
+# NUMERICS
+################################################################################
+GHOSTFILLINGORDER   		0
+MeridianCorrection  		Yes
+FLARINGINDEX 			0.0
+CFLSECURITY			0.5
+NODAMPING           		NO
+OUTPUTATREFINEMENT  		500
+FINESTLEVEL         		7
+METHOD				PLM
+
+OUTPUTDIR           		~
+DT                  		0.628318530718
+NINTERM             		10
+NTOT                		1000
+################################################################################
+#GRIDINFO
+-3.141592653   0.4  1.4415764   3.141592653    2.5  1.57079632679489    0 0 3 1 0 3 1
