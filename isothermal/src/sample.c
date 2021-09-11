@@ -520,7 +520,7 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
     cs = 0.5*(beam2->cs[i-1]+beam2->cs[i]); //gas sound speed
     v_d = sqrt(Pi*Pi)/(0.5*(rhoL+rhoR)); //diffusion velocity
     if(v_d>cs){
-      Pi = cs*0.5*(rhoL+rhoR);
+      Pi = Pi/sqrt(Pi*Pi) * cs*0.5*(rhoL+rhoR);
     }
 
 
