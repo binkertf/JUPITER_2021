@@ -790,7 +790,7 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
     cs = 0.5 * (csL + csR);
     v_d = sqrt(Pi * Pi) / (0.5 * (rhoL + rhoR)); //diffusion velocity
     if(v_d > cs){
-      Pi = cs * 0.5 * (rhoL + rhoR);
+      Pi = sgn(Pi) * cs * 0.5 * (rhoL + rhoR);
     }
 
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) { //add geometrical correction
