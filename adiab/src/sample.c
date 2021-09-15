@@ -774,23 +774,23 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
     dx = beam->center[i]-beam->center[i-1];
     D_d = VISCOSITY;
 
-    if ((__CYLINDRICAL || __SPHERICAL) && (dim == _RAD_)) { //account for epicycle oscillations in radial direction
-        omegakep = OMEGAFRAME/(sqrt(radius)*sqrt(radius)*sqrt(radius)); //local keplerian frequeny (at midplane)
-        St = sqrt(M_PI/8.0)*DUSTSIZE/(0.5*(rhogL+rhogR)*radius*ASPECTRATIO); //average Stokes number (THIS IS WRONG IN RADIATIVE SETUPS)
-        D_d = D_d/(1.0+St*St); // see Youdin&Lithwick (2007)
-    }
-
-    Pi = -D_d/2.0*(rhoL+rhogL+rhoR+rhogR)*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux
-
-
-    // Diffusion flux limiter
     csL = sqrt(beam2->cs[i-1]/rhogL*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
     csR = sqrt(beam2->cs[i]/rhogR*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
 
-    cs = 0.5 * (csL + csR);
-    v_d = sqrt(Pi * Pi) / (0.5 * (rhoL + rhoR)); //diffusion velocity
+    if ((__CYLINDRICAL || __SPHERICAL) && (dim == _RAD_)) { //account for epicycle oscillations in radial direction
+      omegakep = OMEGAFRAME/(sqrt(radius)*sqrt(radius)*sqrt(radius)); //local keplerian frequeny (at midplane)
+      St = sqrt(M_PI*GAMMA/8.0)*omegakep*DUSTSOLIDRHO*DUSTSIZE/(sqrt(rhogL*rhogR)*sqrt(csL*csR)); //local Stokes number
+      D_d = D_d/(1.0+St*St); // see Youdin&Lithwick (2007)
+    }
+
+    Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux
+
+
+    // Diffusion flux limiter
+    cs = sqrt(csL * csR);
+    v_d = sqrt(Pi * Pi) / sqrt(rhoL * rhoR); //diffusion velocity
     if(v_d > cs){
-      Pi = sgn(Pi) * cs * 0.5 * (rhoL + rhoR);
+      Pi = sgn(Pi) * cs * sqrt(rhoL * rhoR);
     }
 
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) { //add geometrical correction

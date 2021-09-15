@@ -505,8 +505,8 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
 
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _RAD_)) { //account for epicycle oscillations in radial direction
       if (constSt!=TRUE){
-        omegakep = OMEGAFRAME/(sqrt(radius)*sqrt(radius)*sqrt(radius)); //local keplerian frequeny (at midplane)
-        St = sqrt(M_PI/8.0)*DUSTSIZE/(0.5*(rhogL+rhogR)*radius*ASPECTRATIO); //average Stokes number
+        omegakep = OMEGAFRAME/(sqrt(radius*radius*radius)); //local keplerian frequeny (at midplane)
+        St = sqrt(M_PI/8.0)*DUSTSIZE*omegakep/(sqrt(rhogL*rhogR)*radius*ASPECTRATIO); //average Stokes number
 
       }else{
         St = STOKESNUMBER;
@@ -514,13 +514,13 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
       D_d = D_d/(1.0+St*St); // see Youdin&Lithwick (2007)
     }
 
-    Pi = -D_d/2.0*(rhoL+rhogL+rhoR+rhogR)*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux
+    Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux (geometric mean)
 
     // Diffusion flux limiter
-    cs = 0.5*(beam2->cs[i-1]+beam2->cs[i]); //gas sound speed
-    v_d = sqrt(Pi*Pi)/(0.5*(rhoL+rhoR)); //diffusion velocity
+    cs = sqrt(beam2->cs[i-1]*beam2->cs[i]); //gas sound speed
+    v_d = sqrt(Pi*Pi)/sqrt(rhoL*rhoR); //diffusion velocity
     if(v_d>cs){
-      Pi = Pi/sqrt(Pi*Pi) * cs*0.5*(rhoL+rhoR);
+      Pi = Pi/sqrt(Pi*Pi) * cs*sqrt(rhoL*rhoR);
     }
 
 
