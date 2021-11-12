@@ -287,6 +287,18 @@ void SetGlobalVariables () {
   }
   if(!set) prs_error ("Invalid Riemann Solver code.");
 
+if (strncasecmp(DUSTSOLVER, "FO", 2) == 0) {
+    pInfo ("First order dust solver\n");
+    __Compute_Fluxes_pressureless = &Compute_Fluxes_pressureless1;
+  } else {
+    if (strncasecmp(DUSTSOLVER, "HO", 2) == 0) {
+      pInfo ("Higher order dust solver\n");
+      __Compute_Fluxes_pressureless = &Compute_Fluxes_pressureless2;
+    } else {
+	      prs_error ("Invalid dust solver code.");
+    }
+  }
+
   if (strncasecmp(METHOD, "PLM", 3) == 0) {
     if(Isothermal){
       pInfo ("Piecewise linear method\n");
