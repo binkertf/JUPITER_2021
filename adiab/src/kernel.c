@@ -138,8 +138,9 @@ void DustKernel (dt)
   //}
   /* Apply source terms (potential gradient, centrifugal force) */
 
+if (DUSTDIFF == YES){
   JUP_SAFE(DustDiffusion (dt));
-
+}
   if (KEPLERIAN && !NoStockholm) {
     ApplyStockholmBoundaryConditionsDust (dt);
   }
