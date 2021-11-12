@@ -105,7 +105,7 @@ void DustKernel (dt)
 	/* Scan a beam of the active mesh */
 	JUP_SAFE(gfo_adiab(&beam, dt));
 	/* which is used to prepare the Riemann States */
-	JUP_SAFE(Compute_Fluxes_pressureless1(&beam, dt));
+	JUP_SAFE(__Compute_Fluxes_pressureless(&beam, dt));
 	/* The Riemann solver is then called and the fluxes evaluated */
 	JUP_SAFE(FillFluxes (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
 	/* and fluxes are stored for that dim */

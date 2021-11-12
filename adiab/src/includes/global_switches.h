@@ -34,6 +34,7 @@ extern long _X_, _Y_, _Z_, LevMax;
 extern void    (*__Riemann_Solver)();
 extern void    (*__Prepare_Riemann_States)();
 extern void    (*__Compute_Fluxes)();
+extern void    (*__Compute_Fluxes_pressureless)();
 extern void    (*__ExecCommUpVar)();
 extern real     GlobalDate;
 extern int CPU_Rank, CPU_Number;

@@ -37,6 +37,7 @@ extern	boolean	DIM2PERIODIC;
 extern	boolean	DIM3PERIODIC;
 extern	char	GRIDFILE[512];
 extern	char	RIEMANNSOLVER[512];
+extern	char	DUSTSOLVER[512];
 extern	char	ADIABATIC[512];
 extern	char	METHOD[512];
 extern	char	INITCODE[512];

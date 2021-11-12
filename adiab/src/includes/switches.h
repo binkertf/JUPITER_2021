@@ -26,6 +26,7 @@ long _X_, _Y_, _Z_, LevMax=0;
 void    (*__Riemann_Solver)();
 void    (*__Prepare_Riemann_States)();
 void    (*__Compute_Fluxes)();
+void    (*__Compute_Fluxes_pressureless)();
 void    (*__ExecCommUpVar)();
 real     GlobalDate = 0.0;
 int CPU_Rank, CPU_Number;
