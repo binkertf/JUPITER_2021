@@ -267,9 +267,9 @@ void ComputeTemperatureField() {
   colat = fw->desc->Center[_COLAT_];
 
 // modification made from here
-	    dr=center[_RAD_][stride[1]]-center[_RAD_][0];
-	    daz=center[_AZIM_][1]-center[_AZIM_][0];
-	    dco=center[_COLAT_][stride[2]]-center[_COLAT_][0];
+	    // dr=center[_RAD_][stride[1]]-center[_RAD_][0];
+	    // daz=center[_AZIM_][1]-center[_AZIM_][0];
+	    // dco=center[_COLAT_][stride[2]]-center[_COLAT_][0];
 // till here
 
   if (HalfDisk) highcol =  1e30; //Don't set the ghost value to high
@@ -292,10 +292,10 @@ void ComputeTemperatureField() {
 	  temp[l] = energ[l]/(CV*dens[l]);
 	}
 // Modification made from here -- setting up low temperatures on the planet
-    	    if(center[_AZIM_][l] < 0.0+daz*2.2 && center[_AZIM_][l] > 0.0-(daz*2.2) && center[_RAD_][l] < 1.0+dr*2.2 &&  center[_RAD_][l] > 1.0-(dr*2.2) && center[_COLAT_][l] > (M_PI/2.)-(dco*2.2) &&  center[_COLAT_][l] < (M_PI/2.)) {
-	      if (temp[l]*TEMP0 > 4000.0 ){
- 	      temp[l]=4000.0/TEMP0;
-	      energ[l] = CV*dens[l]*temp[l];
+    	    // if(center[_AZIM_][l] < 0.0+daz*2.2 && center[_AZIM_][l] > 0.0-(daz*2.2) && center[_RAD_][l] < 1.0+dr*2.2 &&  center[_RAD_][l] > 1.0-(dr*2.2) && center[_COLAT_][l] > (M_PI/2.)-(dco*2.2) &&  center[_COLAT_][l] < (M_PI/2.)) {
+	      // if (temp[l]*TEMP0 > 4000.0 ){
+ 	      // temp[l]=4000.0/TEMP0;
+	      // energ[l] = CV*dens[l]*temp[l];
 	      }
 	    }
 // till here
