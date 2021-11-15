@@ -292,12 +292,12 @@ void ComputeTemperatureField() {
 	  temp[l] = energ[l]/(CV*dens[l]);
 	}
 // Modification made from here -- setting up low temperatures on the planet
-    	    // if(center[_AZIM_][l] < 0.0+daz*2.2 && center[_AZIM_][l] > 0.0-(daz*2.2) && center[_RAD_][l] < 1.0+dr*2.2 &&  center[_RAD_][l] > 1.0-(dr*2.2) && center[_COLAT_][l] > (M_PI/2.)-(dco*2.2) &&  center[_COLAT_][l] < (M_PI/2.)) {
-	      // if (temp[l]*TEMP0 > 4000.0 ){
- 	      // temp[l]=4000.0/TEMP0;
-	      // energ[l] = CV*dens[l]*temp[l];
-	      }
-	    }
+    	//     if(center[_AZIM_][l] < 0.0+daz*2.2 && center[_AZIM_][l] > 0.0-(daz*2.2) && center[_RAD_][l] < 1.0+dr*2.2 &&  center[_RAD_][l] > 1.0-(dr*2.2) && center[_COLAT_][l] > (M_PI/2.)-(dco*2.2) &&  center[_COLAT_][l] < (M_PI/2.)) {
+	    //   if (temp[l]*TEMP0 > 4000.0 ){
+ 	   //    temp[l]=4000.0/TEMP0;
+	    //   energ[l] = CV*dens[l]*temp[l];
+	    //   }
+	    // }
 // till here
       }
     }
