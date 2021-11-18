@@ -10,22 +10,52 @@ void MultiFluid ()
 {
   char *Fluids, *InitCodes, *InitCodesEq;
   long i, NbInit, NbInitEq;
-  char *c;
+  char *c; 
   boolean again=NO;
+  int ngas, ndust = 0;
+  char test;
+    
   Fluids = prs_malloc (sizeof(char)*MAXLINELENGTH);
-  strcpy (Fluids, FLUIDS);
-  NbFluids=0;
+  
+  NbFluids = strlen(FLUIDS); //number of fluids
+  strcpy (Fluids, FLUIDS); //FLUIDS is the parameter from the parameter file 
+  for (i = 0; i < NbFluids; i++){
+    if (Fluids[i] == 48){ // ASCII code of "0" is 48
+      ++ngas;
+      strcpy (FluidName[i], "gas"); 
+    }else{
+      if (Fluids[i] == 49){ // ASCII code of "1" is 49
+      ++ndust;
+        strcpy (FluidName[i], "dust",ndust);
+      }else{
+        printf("Unknown fluid type: %c\n",FLUIDS[i]);
+      }
+    } 
+  }
+
+  printf("The total number of fluids is %d, %d gas fluids and %d dust fluids  \n", NbFluids, ngas, ndust);
+  for (i = 0; i < NbFluids; i++) {
+    printf ("fluid %c: %s\n",Fluids[i],FluidName[i]);
+  }
+  
   do {
-    c = strchr(Fluids, '/');
-    if (c != NULL) {
-      again = YES;
-      *c = 0;
+    c = strchr(Fluids, '/'); //strchr finds the first occurrence of a character in a string
+    printf("c variable: %s \n",c);
+    
+    if (c != NULL) { // more than one fluid
+      ++again;
+      *c = 0; // pointer to the first letter 
     } else
       again = NO;
-    strcpy (FluidName[NbFluids++], Fluids);
+    //strcpy (FluidName[NbFluids++], Fluids); //name of fluid 1
+
     if (c != NULL)
       Fluids = c+1;
   } while (again);
+
+
+  
+
 
   InitCodes = prs_malloc (sizeof(char)*MAXLINELENGTH);
   strcpy (InitCodes, INITCODE);
