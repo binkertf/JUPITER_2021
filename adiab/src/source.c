@@ -79,6 +79,9 @@ void DustDiffusion(dt)
       for (j = 0; j < size[ip1]; j++) {
         JUP_SAFE(FillBeam (dim, j+Nghost[ip1], k+Nghost[ip2], &beam3));
         JUP_SAFE(FillBeam2 (dim, j+Nghost[ip1], k+Nghost[ip2], &beam4));
+
+        JUP_SAFE(gfo(&beam3, dt));
+        JUP_SAFE(gfo(&beam4, dt));
         JUP_SAFE(Compute_Fluxes_Diffusion(&beam3, &beam4, dt));
 
         JUP_SAFE(FillDiffFluxes (dim, j+Nghost[ip1], k+Nghost[ip2], &beam3));
