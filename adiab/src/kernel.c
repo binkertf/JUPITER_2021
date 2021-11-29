@@ -1,4 +1,4 @@
-#include "jupiter.h"
+  #include "jupiter.h"
 
 static Beam beam;
 
@@ -113,6 +113,10 @@ void DustKernel (dt)
     }
   }
 
+  if (DUSTDIFF == YES){
+    JUP_SAFE(DustDiffusion (dt));
+  }
+
   JUP_SAFE(ConservativeDustUpdate (dt));
   JUP_SAFE(DustDensFloor());
 
@@ -138,9 +142,6 @@ void DustKernel (dt)
   //}
   /* Apply source terms (potential gradient, centrifugal force) */
 
-if (DUSTDIFF == YES){
-  JUP_SAFE(DustDiffusion (dt));
-}
   if (KEPLERIAN && !NoStockholm) {
     ApplyStockholmBoundaryConditionsDust (dt);
   }

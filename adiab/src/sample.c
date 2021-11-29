@@ -787,7 +787,7 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
 
 
     // Diffusion flux limiter
-    cs = sqrt(csL * csR);
+    cs = 0.1 * sqrt(csL * csR);
     v_d = sqrt(Pi * Pi) / sqrt(rhoL * rhoR); //diffusion velocity
     if(v_d > cs){
       Pi = sgn(Pi) * cs * sqrt(rhoL * rhoR);
