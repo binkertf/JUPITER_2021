@@ -112,13 +112,15 @@ void DustKernel (dt)
       }
     }
   }
-
   if (DUSTDIFF == YES){
     JUP_SAFE(DustDiffusion (dt));
   }
 
   JUP_SAFE(ConservativeDustUpdate (dt));
   JUP_SAFE(DustDensFloor());
+
+
+
 
   /* and the conservative update is performed, together */
   /* with a face flux monitoring */
@@ -145,4 +147,5 @@ void DustKernel (dt)
   if (KEPLERIAN && !NoStockholm) {
     ApplyStockholmBoundaryConditionsDust (dt);
   }
+
 }

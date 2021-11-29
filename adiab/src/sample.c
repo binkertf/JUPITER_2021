@@ -757,13 +757,12 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
 {
   long i,dim,k;
   real rhoL, rhoR, rhogL, rhogR, dtgL, dtgR;
-  real D_d,Pi,surfdt, j, dx, radius, omegakep, St, cs, csL, csR, v_d;
+  real D_d,Pi,surfdt, j, dx, radius, omegakep, St, cs, csL, csR, v_d, t_diff, t_stop, dustsz, dustsolidrho;
+
+  dustsz = DUSTSIZE / R0; // diameter of dust grains in code units
+  dustsolidrho = DUSTSOLIDRHO / RHO0; // solid density of dust grains in code units, typically 3 g/cm^3 in physical units
 
   dim = beam->dim[0];
-  if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) {
-    radius = beam->radius;
-  }
-
   for (i = Nghost[dim]; i <= beam->length-Nghost[dim]; i++) {
     rhoL = beam->rho[i-1]; //dust density
     rhoR = beam->rho[i]; //dust density
@@ -777,14 +776,22 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
     csL = sqrt(beam2->cs[i-1]/rhogL*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
     csR = sqrt(beam2->cs[i]/rhogR*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
 
+    t_stop = sqrt(M_PI*GAMMA/8.0)*dustsolidrho*dustsz/(sqrt(rhogL*rhogR)*sqrt(csL*csR));; //local stopping time
+
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _RAD_)) { //account for epicycle oscillations in radial direction
+      radius = beam->center[i];
       omegakep = OMEGAFRAME/(sqrt(radius)*sqrt(radius)*sqrt(radius)); //local keplerian frequeny (at midplane)
-      St = sqrt(M_PI*GAMMA/8.0)*omegakep*DUSTSOLIDRHO*DUSTSIZE/(sqrt(rhogL*rhogR)*sqrt(csL*csR)); //local Stokes number
+      St = t_stop * omegakep; //local Stokes number
       D_d = D_d/(1.0+St*St); // see Youdin&Lithwick (2007)
     }
 
-    Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux
+    //diffusion time-scale limit
+    t_diff = dx * dx / D_d;  //diffusioon timescale
+    if (t_diff < t_stop){
+      D_d = dx * dx / t_stop;
+    }
 
+    Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux
 
     // Diffusion flux limiter
     cs = 0.1 * sqrt(csL * csR);
@@ -793,8 +800,9 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
       Pi = sgn(Pi) * cs * sqrt(rhoL * rhoR);
     }
 
+
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) { //add geometrical correction
-      Pi = Pi/radius;
+      Pi = Pi / beam->radius;
     }
 
     surfdt = beam->intersurface[i] * dt;

@@ -10,8 +10,8 @@ void ExecCommSame (lev)
     ExecCommSameVar (lev, 4, fieldtype);
 }
 
-void ExecCommSameVar (long lev, long nb, int *fieldtype) 
-{	
+void ExecCommSameVar (long lev, long nb, int *fieldtype)
+{
   /* Execute intra-level communications, for level lev. These are
      GHOST type communications */
   Communicator *com;
@@ -24,7 +24,7 @@ void ExecCommSameVar (long lev, long nb, int *fieldtype)
   while (com != NULL) {
     if ((com->dest_level == lev) && (com->src_level == lev)) {
       if (com->CPU_src == CPU_Rank) {
-	l=0; 
+	l=0;
 	fluid = com->srcg->Fluid;
 	while (fluid != NULL) {
 	  for (i = 0; i < nb; i++) {
@@ -103,7 +103,7 @@ void ExecCommUpVar (long lev, long nb, int *fieldtype)
   while (com != NULL) {
     if ((com->dest_level == lev+1) && (com->src_level == lev) && (com->type == GHOST)) {
       if (com->CPU_src == CPU_Rank) {
-	l=0; 
+	l=0;
 	fluid = com->srcg->Fluid;
 	while (fluid != NULL) {
 	  for (i = 0; i < nb; i++) {
@@ -183,7 +183,7 @@ void ExecCommUpVarLIL (long lev, long nb, int *fieldtype) /* With slope limiter 
 	(com->src_level == lev) &&\
 	(com->type == GHOST)) {
       if (com->CPU_src == CPU_Rank) {
-	l=0; 
+	l=0;
 	fluid = com->srcg->Fluid;
 	while (fluid != NULL) {
 	  for (i = 0; i < nb; i++) {
@@ -196,7 +196,7 @@ void ExecCommUpVarLIL (long lev, long nb, int *fieldtype) /* With slope limiter 
 	      if (field == _Density_) comp[l] = _density_;
 	      if (field == _Energy_) comp[l] = _energy_;
 	      if (field == _Tot_Energy_) comp[l] = _tot_energy_;
-	      if ((field == _Velocity_) && (j == _AZIM_)) 
+	      if ((field == _Velocity_) && (j == _AZIM_))
 		comp[l] = _vazimuth_;
 	      source[l++] = fluid->Ptr[field+j];
 	    }
@@ -252,15 +252,15 @@ void ExecCommUpVarLIL (long lev, long nb, int *fieldtype) /* With slope limiter 
 		  for (iid[1] = 0; iid[1] <= Refine[1]; iid[1]++) { /* covered by the coarse zone */
 		    for (iid[0] = 0; iid[0] <= Refine[0]; iid[0]++) {
 		      /* We evaluate the target (dest) coordinate within communicator */
-		      for (h = 0; h < 3; h++) 
+		      for (h = 0; h < 3; h++)
 			ic[h] = (is[h]-imins[h])*(Refine[h] ? 2 : 1)+iid[h];
 		      /* ic stands for index in communicator */
 		      mc = 0;
-		      for (h = 0; h < 3; h++) 
+		      for (h = 0; h < 3; h++)
 			mc += ic[h]*stridec[h];
 		      s = src;
 		      for (h = 0; h < 3; h++)  {
-			if (Refine[h]) 
+			if (Refine[h])
 			  s += loc_slope[h]*(iid[h]*2-1);
 		      }
 		      com->buffer[mc+size*l] = s;
@@ -305,7 +305,7 @@ void ExecCommDownMean (lev)
   while (com != NULL) {
     if ((com->dest_level == lev-1) && (com->src_level == lev) && (com->type == MEAN)) {
       if (com->CPU_src == CPU_Rank) {
-	l=0; 
+	l=0;
 	fluid = com->srcg->Fluid;
 	while (fluid != NULL) {
 	  for (i = 0; i < nb; i++) {
@@ -362,7 +362,7 @@ void ExecCommDownMean (lev)
 	}
       }
     }
-    com = com->next; 
+    com = com->next;
   }
   fieldtype[0] = _Density_;
   fieldtype[1] = _Velocity_;
@@ -372,7 +372,7 @@ void ExecCommDownMean (lev)
   ExecComm (lev,lev-1,MEAN,nvar,nb,fieldtype);
 }
 
-void ExecCommDownFlux (lev) 
+void ExecCommDownFlux (lev)
      long lev;
 {
   /* Execute communications from level lev to coarser level lev-1, of
@@ -384,7 +384,7 @@ void ExecCommDownFlux (lev)
   real *source[80];
   FluidPatch *fluid;
   com = ComListFlux;
-  nvar = 2+NDIM;		/* Density (or mass flux) + velocities (or momentum flux) */
+  nvar = 2+NDIM+1;		/* Density (or mass flux) + velocities (or momentum flux) + diffusion flux*/
 				/* and interface pressure at the outer faces */
   if (!Isothermal) nvar+=2;	/* Energy of energy flux + same for total energy */
   while (com != NULL) {
@@ -406,6 +406,7 @@ void ExecCommDownFlux (lev)
 	fluid = com->srcg->Fluid;
 	while (fluid != NULL) {
 	  source[l++] = fluid->MassFlux->Flux[dim][side];
+    source[l++] = fluid->DiffFlux->Flux[dim][side];
 	  for (i = 1; i <= NDIM; i++)
 	    source[l++] = fluid->MomentumFlux[i-1]->Flux[dim][side];
 	  source[l++] = fluid->Pressure->Pressure[dim][side];

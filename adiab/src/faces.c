@@ -11,6 +11,7 @@ void ResetFaceFluxes (fp)
     dim[2] = 2 - (dim[0] == 2);
     for (i = 0; i < size[dim[1]]*size[dim[2]]; i++) {
       fp->MassFlux->Flux[dim[0]][INF][i] = fp->MassFlux->Flux[dim[0]][SUP][i] = 0.0;
+      fp->DiffFlux->Flux[dim[0]][INF][i] = fp->DiffFlux->Flux[dim[0]][SUP][i] = 0.0;
       fp->EnergyFlux->Flux[dim[0]][INF][i] = fp->EnergyFlux->Flux[dim[0]][SUP][i] = 0.0;
       fp->TotalEnergyFlux->Flux[dim[0]][INF][i] = fp->TotalEnergyFlux->Flux[dim[0]][SUP][i] = 0.0;
       fp->Pressure->Pressure[dim[0]][INF][i]=fp->Pressure->Pressure[dim[0]][SUP][i]=0.0;
@@ -19,7 +20,7 @@ void ResetFaceFluxes (fp)
     }
   }
 }
- 
+
 void ResetFaceFluxesLevel (level)
      long level;
 {
@@ -37,4 +38,3 @@ void ResetFaceFluxesLevel (level)
     item = item->next;
   }
 }
-
