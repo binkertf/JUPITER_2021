@@ -424,8 +424,8 @@ void  DiffusionUpdate (real dt)
   getgridsize (fw->desc, gncell, stride);
   len = 1;
   for (i = 0; i < NDIM; i++) {
-    //size[i] = gncell[i]-2*Nghost[i];
-    size[i] = gncell[i];
+    size[i] = gncell[i]-2*Nghost[i];
+    //size[i] = gncell[i];
     len *= gncell[i];
   }
   _radius = fw->desc->Center[_RAD_];
@@ -450,6 +450,9 @@ void  DiffusionUpdate (real dt)
 	             delta_mass-= fw->Flux_diff[idm][m_other_side];
 	           }
 	           Density[m] += delta_mass*InvVolume[m];
+             if (Density[m]<DUSTDENSFLOOR){
+               Density[m] = DUSTDENSFLOOR;
+             }
 
       }
     }

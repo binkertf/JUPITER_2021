@@ -483,15 +483,10 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
      real dt;
 {
   long i,dim,k;
-  real rho_i, pu_flux, mass_flux, uf, v0=0.0, radius, am;
+  real rho_i, pu_flux, mass_flux, uf, radius, am;
   real rhoL, rhoR, rhogL, rhogR, dtgL, dtgR,uL, uR, u_i, vp_i[2], vpL[2], vpR[2];
   real D_d,Pi,surfdt, j, dx, omegakep, St, cs, v_d;
   dim = beam->dim[0];
-  if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) {
-    radius = beam->radius;
-    v0 = radius * OMEGAFRAME; /* linear keplerian velcoity v0 */
-  }
-
   for (i = Nghost[dim]; i <= beam->length-Nghost[dim]; i++) {
     rhoL = beam->rhoL[i]; //dust density
     rhoR = beam->rhoR[i]; //dust density
@@ -505,9 +500,9 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
 
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _RAD_)) { //account for epicycle oscillations in radial direction
       if (constSt!=TRUE){
+        radius = beam->center[i];
         omegakep = OMEGAFRAME/(sqrt(radius*radius*radius)); //local keplerian frequeny (at midplane)
         St = sqrt(M_PI/8.0)*DUSTSIZE*omegakep/(sqrt(rhogL*rhogR)*radius*ASPECTRATIO); //average Stokes number
-
       }else{
         St = STOKESNUMBER;
       }
@@ -526,7 +521,7 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
 
 
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) { //add geometrical correction
-    Pi = Pi/radius;
+    Pi = Pi / beam->radius;
     }
 
     surfdt = beam->intersurface[i] * dt;

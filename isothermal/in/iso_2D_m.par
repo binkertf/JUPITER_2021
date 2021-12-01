@@ -56,7 +56,7 @@ FINESTLEVEL         		1
 NODAMPING           		NO
 METHOD				PLM
 GHOSTFILLINGORDER   		0
-MeridianCorrection  		Yes
+MeridianCorrection  		NO
 FLARINGINDEX 			0.0
 
 OUTPUTDIR			~

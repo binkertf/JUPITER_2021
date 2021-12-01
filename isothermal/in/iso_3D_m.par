@@ -51,7 +51,7 @@ DUSTDENSFLOOR			1e-14
 # NUMERICS
 ################################################################################
 GHOSTFILLINGORDER   		0
-MeridianCorrection  		Yes
+MeridianCorrection  		NO
 FLARINGINDEX 			0.0
 CFLSECURITY			0.5
 NODAMPING           		NO

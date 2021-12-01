@@ -56,6 +56,11 @@ void HydroKernel (dt)
       rho[m] = DUSTDENSFLOOR;
     }
   }
+  
+  // Diffusion module
+  if ((CurrentFluidPatch->Fluid->next != NULL)&&(DUSTDIFF == YES)){//we apply the diffusion module to the dust fluid
+    DustDiffusion(dt);
+  }
 
 
 /*  if (VISCOSITY > 1e-16)
@@ -71,11 +76,6 @@ void HydroKernel (dt)
 
   /* Apply source terms (potential gradient, centrifugal force) */
   Source (dt);
-
-  // Diffusion module
-  if ((CurrentFluidPatch->Fluid->next != NULL)&&(DUSTDIFF == YES)){//we apply the diffusion module to the dust fluid
-    DustDiffusion(dt);
-  }
 
 
   if ((KEPLERIAN && !NoStockholm ) && (CurrentFluidPatch->Fluid->next == NULL)){
