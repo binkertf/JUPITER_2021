@@ -163,7 +163,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
    }
 
    if (NDIM == 2){
-     omegakep = OMEGAFRAME*(sqrt(radius)*sqrt(radius)*sqrt(radius));
+     omegakep = OMEGAFRAME/(sqrt(radius)*sqrt(radius)*sqrt(radius));
 
      if(constSt==TRUE){
 
