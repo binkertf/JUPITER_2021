@@ -181,7 +181,7 @@ real dt;
 
 
 
-            Tau = 2.0*M_PI/(OMEGAFRAME/sqrt(radius*radius*radius)); //local orbital period
+            Tau = 2.0*M_PI/(v_azimuth+OMEGAFRAME); //local orbital period
             Tau *= 0.5;
 	          rho0 = density;
             vrad0 = vrad;

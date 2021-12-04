@@ -469,7 +469,7 @@ real sgn(real x){
   if (x < 0.0) return -1.0;
 }
 
-real wavelimit(real s[3], real Z[3])
+real wavelimit(real s[3], real Z[3]) //minmod
 {
    real Zl,Zr,Zc,r,a,phi;
     Zc = 0.0;
@@ -482,7 +482,6 @@ real wavelimit(real s[3], real Z[3])
     }else{
       r = Zr/Zc;
     }
-
 
     phi = 0.0;
 
@@ -780,7 +779,7 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
 
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _RAD_)) { //account for epicycle oscillations in radial direction
       radius = beam->center[i];
-      omegakep = OMEGAFRAME/(sqrt(radius)*sqrt(radius)*sqrt(radius)); //local keplerian frequeny (at midplane)
+      omegakep = 1.0/(sqrt(radius)*sqrt(radius)*sqrt(radius)); //local keplerian frequeny (at midplane)
       St = t_stop * omegakep; //local Stokes number
       D_d = D_d/(1.0+St*St); // see Youdin&Lithwick (2007)
     }
