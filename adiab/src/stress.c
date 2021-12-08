@@ -29,16 +29,6 @@ void ViscousStress (dim)	/* This    function    evaluates   the
   dm[1] = (dim == 0);
   dm[2] = 2 - (dim == 2);
 
-		real visc;
-	visc = VISCOSITY;//gas
-	if (fw->Fluid->next != NULL){
-		visc = 0.0; //dust
-	}
-
-
-
-
-
   Divergence = fw->Divergence;
   InvVolume = fw->desc->InvVolume;
   V = fw->Velocity[dim];
@@ -70,7 +60,7 @@ void ViscousStress (dim)	/* This    function    evaluates   the
 	if (dim == 1) iddim = j;
 	if (dim == 2) iddim = k;
 	m_minus = m-stride[dim];
-	mu = 2.0*visc*(rho[m]*rho[m_minus])/(rho[m]+rho[m_minus]);
+	mu = 2.0*Viscosity*(rho[m]*rho[m_minus])/(rho[m]+rho[m_minus]);
 	if (__CYLINDRICAL) {
 	  if (dim == _RAD_) radius = Edges[_RAD_][iddim];
 	  else radius = Radius[m];
