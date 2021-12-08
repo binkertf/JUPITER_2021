@@ -38,8 +38,13 @@ void ItereLevel (dt, level)
         if (Fluid->next==NULL){ //gas
           HydroKernel (dt);
         }else{
-          SendToSecondary(Fluid->next);//create a second fluid patch for the gas to access in the diffusion calculation
-          DustKernel (dt);
+            if (DUSTDIFF == YES){
+              SendToSecondary(Fluid->next);//create a second fluid patch for the gas to access in the diffusion calculation
+              DustDiffKernel (dt);
+            }else{
+              //SendToSecondary(Fluid->next);//create a second fluid patch for the gas to access in the diffusion calculation
+              DustKernel (dt);
+            }
         }
         CurrentToPatch (Fluid);
 	      Fluid = Fluid->next;

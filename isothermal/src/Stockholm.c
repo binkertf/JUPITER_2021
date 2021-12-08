@@ -179,7 +179,7 @@ real dt;
 
              #include "libinit.cx" // here we load the initial conditions
 
-             Tau = 2.0*M_PI/(OMEGAFRAME/sqrt(radius*radius*radius)); //local orbital period
+             Tau = 2.0*M_PI/(v_azimuth+OMEGAFRAME); //local orbital period
              Tau *= 1.0;
 	           rho0 = density; //initial condition
 	           vrad0 = vrad;

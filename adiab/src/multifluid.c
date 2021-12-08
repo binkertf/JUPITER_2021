@@ -191,6 +191,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
 	  v[1][l][m] = (v2*(1.+d2*e)+v1*d1*e)*idenom; //gas velocity
 
 
+
     if (d1<=DUSTDENSFLOOR){  // hard coupling limiter
       v[0][l][m]=v2;
       v[1][l][m]=v2;

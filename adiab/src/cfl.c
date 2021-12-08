@@ -83,15 +83,7 @@ real CourantLimit (fp)
 		}
 
 
-		real visc = 0.0;
-		visc = VISCOSITY; //gas
-		if (fp->next != NULL){
-		visc = 0.0; //dust
-		}
-
-
-	  if (visc > 0.0)
-	    dt_visc = dx*dx/4.0/VISCOSITY;
+	  dt_visc = dx*dx/4.0/VISCOSITY;
 	  if (dt_visc < dt_visc_min) {
 	    dt_visc_min = dt_visc;
 	    for (b = 0; b < NDIM; b++) {

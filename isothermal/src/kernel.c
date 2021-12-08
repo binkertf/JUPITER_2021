@@ -43,18 +43,10 @@ void HydroKernel (dt)
 
 
 
-    /* add density floor here */
 
-  real *e, *rho;
-  long m, sized;
-  sized  = CurrentFluidPatch->desc->gncell[0];
-  sized *= CurrentFluidPatch->desc->gncell[1];
-  sized *= CurrentFluidPatch->desc->gncell[2];
-  rho = CurrentFluidPatch->Density;
-  for (m=0; m < sized; m++) {
-    if (rho[m] < DUSTDENSFLOOR) {
-      rho[m] = DUSTDENSFLOOR;
-    }
+  // Diffusion module
+  if ((CurrentFluidPatch->Fluid->next != NULL)&&(DUSTDIFF == YES)){//we apply the diffusion module to the dust fluid
+    DustDiffusion(dt);
   }
 
 
@@ -72,10 +64,19 @@ void HydroKernel (dt)
   /* Apply source terms (potential gradient, centrifugal force) */
   Source (dt);
 
-  // Diffusion module
-  if ((CurrentFluidPatch->Fluid->next != NULL)&&(DUSTDIFF == YES)){//we apply the diffusion module to the dust fluid
-    DustDiffusion(dt);
+  /* add density floor here */
+
+real *e, *rho;
+long m, sized;
+sized  = CurrentFluidPatch->desc->gncell[0];
+sized *= CurrentFluidPatch->desc->gncell[1];
+sized *= CurrentFluidPatch->desc->gncell[2];
+rho = CurrentFluidPatch->Density;
+for (m=0; m < sized; m++) {
+  if (rho[m] < DUSTDENSFLOOR) {
+    rho[m] = DUSTDENSFLOOR;
   }
+}
 
 
   if ((KEPLERIAN && !NoStockholm ) && (CurrentFluidPatch->Fluid->next == NULL)){

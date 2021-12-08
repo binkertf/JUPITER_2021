@@ -425,6 +425,7 @@ void  DiffusionUpdate (real dt)
   len = 1;
   for (i = 0; i < NDIM; i++) {
     size[i] = gncell[i]-2*Nghost[i];
+    //size[i] = gncell[i];
     len *= gncell[i];
   }
   _radius = fw->desc->Center[_RAD_];
@@ -449,40 +450,43 @@ void  DiffusionUpdate (real dt)
 	             delta_mass-= fw->Flux_diff[idm][m_other_side];
 	           }
 	           Density[m] += delta_mass*InvVolume[m];
+             if (Density[m]<DUSTDENSFLOOR){
+               Density[m] = DUSTDENSFLOOR;
+             }
 
       }
     }
   }
 
-//  for (idm = 0; idm < NDIM; idm++) {
-//    ip1 = (idm == 0);
-//    ip2 = 2-(idm == 2);
-//    for (k = Nghost[2]; k < gncell[2]-Nghost[2]; k++) {
-//      idx[2] = k;
-//      for (j = Nghost[1]; j < gncell[1]-Nghost[1]; j++) {
-//	idx[1] = j;
-//	for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
-//	  idx[0] = i;
-//	  m = i*stride[0]+j*stride[1]+k*stride[2];
+  for (idm = 0; idm < NDIM; idm++) {
+    ip1 = (idm == 0);
+    ip2 = 2-(idm == 2);
+    for (k = Nghost[2]; k < gncell[2]-Nghost[2]; k++) {
+      idx[2] = k;
+      for (j = Nghost[1]; j < gncell[1]-Nghost[1]; j++) {
+	       idx[1] = j;
+         for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
+            idx[0] = i;
+            m = i*stride[0]+j*stride[1]+k*stride[2];
 
-//	  if (idx[idm] == Nghost[idm]) {	/* Are we on the lower face ? */
-	    /* If yes then keep track of flux and interface pressure
-	       in order to ensure conservation across nested grids */
-//	    id  = (idx[ip1]-Nghost[ip1])+(idx[ip2]-Nghost[ip2])*size[ip1];
-//	    fw->Fluid->DiffFlux->Flux[idm][INF][id] += fw->Flux_diff[idm][m];
-//	  }
-//	  if (idx[idm] == size[idm]+Nghost[idm]-1) { /* Are we on the upper face ? */
-	    /* If yes then keep track of flux and interface pressure
-	       in order to ensure conservation across nested grids */
-//	    ip1 = (idm == 0);
-//	    ip2 = 2-(idm == 2);
-//	    mp = m+stride[idm];
-//	    id  = (idx[ip1]-Nghost[ip1])+(idx[ip2]-Nghost[ip2])*size[ip1];
-//	    fw->Fluid->DiffFlux->Flux[idm][SUP][id] += fw->Flux_diff[idm][mp];
+	          if (idx[idm] == Nghost[idm]) {	/* Are we on the lower face ? */
+	                /* If yes then keep track of flux and interface pressure
+	                 in order to ensure conservation across nested grids */
+	                  id  = (idx[ip1]-Nghost[ip1])+(idx[ip2]-Nghost[ip2])*size[ip1];
+                    fw->Fluid->DiffFlux->Flux[idm][INF][id] += fw->Flux_diff[idm][m];
+            }
+            if (idx[idm] == size[idm]+Nghost[idm]-1) { /* Are we on the upper face ? */
+	          /* If yes then keep track of flux and interface pressure
+	          in order to ensure conservation across nested grids */
+              ip1 = (idm == 0);
+	            ip2 = 2-(idm == 2);
+	            mp = m+stride[idm];
+	            id  = (idx[ip1]-Nghost[ip1])+(idx[ip2]-Nghost[ip2])*size[ip1];
+              fw->Fluid->DiffFlux->Flux[idm][SUP][id] += fw->Flux_diff[idm][mp];
 
-//	     }
-//	    }
-//      }
-//      }
-//      }
+	     }
+	    }
+      }
+      }
+      }
 }

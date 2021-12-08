@@ -129,7 +129,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
   cs2 = cs[1][m]; /* square of the local sound speed of the gas*/
   radius = _radius[m]; /* radius coordinate */
   colat = _colat[m];
-  omegakep = OMEGAFRAME*sin(colat)/(sqrt(radius)*sqrt(radius)*sqrt(radius)); /* local keplerian frequency */
+  omegakep = 1.0*sin(colat)/(sqrt(radius)*sqrt(radius)*sqrt(radius)); //OMEGAFRAME*sin(colat)/(sqrt(radius)*sqrt(radius)*sqrt(radius)); /* local keplerian frequency */
 
   /*printf("%lg \n",radius);
   printf("%lg \n",radius2);
@@ -163,7 +163,8 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
    }
 
    if (NDIM == 2){
-     omegakep = OMEGAFRAME/(sqrt(radius)*sqrt(radius)*sqrt(radius));
+     
+     omegakep = 1.0/(sqrt(radius)*sqrt(radius)*sqrt(radius)); //OMEGAFRAME/(sqrt(radius)*sqrt(radius)*sqrt(radius));
 
      if(constSt==TRUE){
 
@@ -196,12 +197,12 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
 	for (l = 0; l < NDIM; l++) {
 	  v1 = v[0][l][m];
 	  v2 = v[1][l][m];
-    e = C*dt;  /*subsonic drag*/
-    /* e = C*sqrt(1.0+0.221*((v1-v2)*(v1-v2))/(cs2))*dt;  supersonic drag */
+    //e = C*dt;  /*subsonic drag*/
+    e = C*sqrt(1.0+0.221*((v1-v2)*(v1-v2))/(cs2))*dt;  //supersonic drag
     idenom = 1./(1.+(d1+d2)*e);
 	  v[0][l][m] = (v1*(1.+d1*e)+v2*d2*e)*idenom;
-	  //v[1][l][m] = (v2*(1.+d2*e)+v1*d1*e)*idenom;
-    v[1][l][m] = v[1][l][m]; // no feedback onto the gas
+	  v[1][l][m] = (v2*(1.+d2*e)+v1*d1*e)*idenom;
+    //v[1][l][m] = v[1][l][m]; // no feedback onto the gas
 
 
 
@@ -212,27 +213,31 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
       v[1][l][m]=v2;
     }
 
-    real vellim = 3.0;
-
-    if (v[0][l][m]>vellim){
-      v[0][l][m]=vellim;
-    }
-    if (v[0][l][m]<-vellim){
-      v[0][l][m]=-vellim;
-    }
-
-
-    if (v[1][l][m]>vellim){
-      v[1][l][m]=vellim;
-    }
-    if (v[1][l][m]<-vellim){
-      v[1][l][m]=-vellim;
-    }
-
-
-
-
 	      }
+
+        /*for (l = 1; l < NDIM; l++) {
+        real vellim = 3.0;
+
+        if (v[0][l][m]>vellim){
+          v[0][l][m]=vellim;
+        }
+        if (v[0][l][m]<-vellim){
+          v[0][l][m]=-vellim;
+        }
+
+
+        if (v[1][l][m]>vellim){
+          v[1][l][m]=vellim;
+        }
+        if (v[1][l][m]<-vellim){
+          v[1][l][m]=-vellim;
+        }
+
+      }*/
+
+
+
+
       }
     }
   }

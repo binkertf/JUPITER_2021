@@ -181,7 +181,7 @@ real dt;
 
 
 
-            Tau = 2.0*M_PI/(OMEGAFRAME/sqrt(radius*radius*radius)); //local orbital period
+            Tau = 2.0*M_PI/(v_azimuth+OMEGAFRAME); //local orbital period
             Tau *= 0.5;
 	          rho0 = density;
             vrad0 = vrad;
@@ -189,7 +189,7 @@ real dt;
 
             lambda = Tau/ramp;
 
-	          //dens[m] = (dens[m]*lambda+rho0*dt)/(dt+lambda);
+	          dens[m] = (dens[m]*lambda+rho0*dt)/(dt+lambda);
 	          vel[_RAD_][m] = (vel[_RAD_][m]*lambda+vrad0*dt)/(dt+lambda);
 	          //vel[_AZIM_][m] = (vel[_AZIM_][m]*lambda+vtheta0*dt)/(dt+lambda);
 	          if (_COLAT_ < NDIM)

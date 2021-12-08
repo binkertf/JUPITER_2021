@@ -149,7 +149,7 @@ FluidPatch *CreateFluidPatch (desc, name, initcode, initcodeeq)
   ScalarField *Density, *Energy, *TotalEnergy, *Potential, *OpticalDepth, *EnergyRad;
   ScalarField *StellarHeating, *EradDeriv, *Temperature, *Opacity, *TauCell;
   VectorField *Velocity;
-  InterfaceFlux *MassFlux, *MomentumFlux[3], *EnergyFlux, *TotalEnergyFlux;
+  InterfaceFlux *MassFlux, *MomentumFlux[3], *EnergyFlux, *TotalEnergyFlux, *DiffFlux;
   PressureFaces *Pressure;
   FluidPatch *patch;
   patch = prs_malloc (sizeof(FluidPatch));
@@ -198,6 +198,7 @@ FluidPatch *CreateFluidPatch (desc, name, initcode, initcodeeq)
   MassFlux = CreateInterfaceFlux (desc);
   EnergyFlux = CreateInterfaceFlux (desc);
   TotalEnergyFlux = CreateInterfaceFlux (desc);
+  DiffFlux = CreateInterfaceFlux (desc);
   if (KEPLERIAN) {		/* We create 3 contiguous arrays that
 				   control the azimuthal flux
 				   corrections for submeshes */
@@ -227,6 +228,7 @@ FluidPatch *CreateFluidPatch (desc, name, initcode, initcodeeq)
     patch->TauCell = TauCell;
   }
   patch->MassFlux = MassFlux;
+  patch->DiffFlux = DiffFlux;
   patch->EnergyFlux = EnergyFlux;
   patch->TotalEnergyFlux = TotalEnergyFlux;
   patch->PreviousEradExists = NO;
@@ -257,6 +259,7 @@ void FreeFluidPatch (patch)
     FreeScalarField (patch->TauCell);
   }
   FreeInterfaceFlux (patch->MassFlux);
+  FreeInterfaceFlux (patch->DiffFlux);
   FreeInterfaceFlux (patch->EnergyFlux);
   FreeInterfaceFlux (patch->TotalEnergyFlux);
   FreePressureFaces (patch->Pressure);
