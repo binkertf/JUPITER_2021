@@ -756,15 +756,15 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
 {
   long i,dim,k;
   real rhoL, rhoR, rhogL, rhogR, dtgL, dtgR;
-  real D_d,Pi,surfdt, j, dx, radius, omegakep, St, cs, csL, csR, v_d, t_diff, t_stop, dustsz, dustsolidrho;
+  real D_d,Pi,surfdt, j, dx, radius, omegakep, St, cs, csL, csR, v_d, v_d_max, t_diff, t_stop, dustsz, dustsolidrho;
 
   dustsz = DUSTSIZE / R0; // diameter of dust grains in code units
   dustsolidrho = DUSTSOLIDRHO / RHO0; // solid density of dust grains in code units, typically 3 g/cm^3 in physical units
 
   dim = beam->dim[0];
   for (i = Nghost[dim]; i <= beam->length-Nghost[dim]; i++) {
-    rhoL = beam->rho[i-1]; //dust density
-    rhoR = beam->rho[i]; //dust density
+    rhoL = beam->rhoL[i]; //dust density
+    rhoR = beam->rhoR[i]; //dust density
 
     rhogL = beam2->rho[i-1]; //gas density
     rhogR = beam2->rho[i]; //gas density
@@ -784,21 +784,28 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
       D_d = D_d/(1.0+St*St); // see Youdin&Lithwick (2007)
     }
 
-    //diffusion time-scale limit
-    t_diff = dx * dx / D_d;  //diffusioon timescale
-    if (t_diff < t_stop){
-      D_d = dx * dx / t_stop;
-    }
+    //diffusion time-scale limit 1 - this is likely too conservative
+    //t_diff = dx * dx / D_d;  //diffusioon timescale
+    //if (t_diff < t_stop){
+    //  D_d = dx * dx / t_stop;
+    //}
 
     Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux
 
-    // Diffusion flux limiter
+    // Diffusion flux limiter - the diffusion velocity must be smaller than the sound speed in gas
     cs = 0.1 * sqrt(csL * csR);
     v_d = sqrt(Pi * Pi) / sqrt(rhoL * rhoR); //diffusion velocity
     if(v_d > cs){
       Pi = sgn(Pi) * cs * sqrt(rhoL * rhoR);
     }
 
+    //diffusion time-scale limit 2 - the diffusion timescale must be larger than the stopping time
+    v_d = sqrt(Pi * Pi) / sqrt(rhoL * rhoR); //diffusion velocity
+    v_d_max = dx / t_stop; // diffusion velocity limit
+
+    if(v_d > v_d_max){
+      Pi = sgn(Pi) * v_d_max * sqrt(rhoL * rhoR);
+    }
 
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) { //add geometrical correction
       Pi = Pi / beam->radius;
