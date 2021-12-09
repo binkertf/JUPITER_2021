@@ -775,7 +775,7 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
     csL = sqrt(beam2->cs[i-1]/rhogL*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
     csR = sqrt(beam2->cs[i]/rhogR*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
 
-    t_stop = sqrt(M_PI*GAMMA/8.0)*dustsolidrho*dustsz/(sqrt(rhogL*rhogR)*sqrt(csL*csR));; //local stopping time
+    t_stop = sqrt(M_PI*GAMMA/8.0)*dustsolidrho*dustsz/(sqrt(rhogL*rhogR)*sqrt(csL*csR)); //local stopping time
 
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _RAD_)) { //account for epicycle oscillations in radial direction
       radius = beam->center[i];
