@@ -189,7 +189,7 @@ real dt;
 
             lambda = Tau/ramp;
 
-	          dens[m] = (dens[m]*lambda+rho0*dt)/(dt+lambda);
+	          //dens[m] = (dens[m]*lambda+rho0*dt)/(dt+lambda);
 	          vel[_RAD_][m] = (vel[_RAD_][m]*lambda+vrad0*dt)/(dt+lambda);
 	          //vel[_AZIM_][m] = (vel[_AZIM_][m]*lambda+vtheta0*dt)/(dt+lambda);
 	          if (_COLAT_ < NDIM)
