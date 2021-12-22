@@ -32,6 +32,7 @@ extern void    (*__Prepare_Riemann_States)();
 extern void    (*__Compute_Fluxes)();
 extern void    (*__Compute_Fluxes_pressureless)();
 extern void    (*__ExecCommUpVar)();
+extern real    (*__TVDslope)();
 extern real     GlobalDate;
 extern real GlobalDateInit;
 extern int CPU_Rank, CPU_Number;

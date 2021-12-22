@@ -29,8 +29,9 @@ void ItereLevel (dt, level)
       SetFluidProperties (Fluid);
       while (Fluid != NULL) {
         SendToCurrent (Fluid);
-        if ((Fluid->next!=NULL)){ // if current fluid is dust
-        //if ((Fluid->next!=NULL)&&(DUSTDIFF == TRUE)){ // if current fluid is dust and dust turbulent diffusion is included
+
+        //if ((Fluid->next!=NULL)){ // if current fluid is dust
+        if ((Fluid->next!=NULL)&&(DUSTDIFF == TRUE)&&(DIFFMODE == 1)){ // if current fluid is dust and dust turbulent diffusion is included
           SendToSecondary(Fluid->next);//create a second fluid patch for the gas
           }
 	HydroKernel (dt);

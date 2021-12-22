@@ -8,7 +8,6 @@ void HydroKernel (dt)
   long i, j, k, size[3],size2[3], dim, ip1, ip2;
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
-
   FillSources (PREDICT, EVERYWHERE);
   FillSlopes ();
   if (mMUSCL) Predictor (dt);
@@ -30,9 +29,18 @@ void HydroKernel (dt)
          }else{ //dust fluid
            FillBeam (dim, j+Nghost[ip1], k+Nghost[ip2], &beam);
            /* dust fluid is computed here*/
-            gfo(&beam, dt);
+
            /* the dust fluxes are computed here*/
-            __Compute_Fluxes_pressureless (&beam, dt);
+
+           if (DIFFMODE == 1){
+             gfo(&beam, dt);
+             __Compute_Fluxes_pressureless (&beam, dt);
+           }else{
+             __Prepare_Riemann_States(&beam, dt);
+             Compute_Fluxes_DiffPres (&beam, dt);
+           }
+
+
          }
 	FillFluxes (dim, j+Nghost[ip1], k+Nghost[ip2], &beam);
 				/* and fluxes are stored for that dim */
@@ -46,7 +54,9 @@ void HydroKernel (dt)
 
   // Diffusion module
   if ((CurrentFluidPatch->Fluid->next != NULL)&&(DUSTDIFF == YES)){//we apply the diffusion module to the dust fluid
-    DustDiffusion(dt);
+    if (DIFFMODE == 1){
+      DustDiffusion(dt);
+    }
   }
 
 
@@ -60,23 +70,30 @@ void HydroKernel (dt)
   PressureCorrection (dt);
 				/* Needs to be done *before* the source filling in SPHERICAL */
         //  FillSources (UPDATE, EVERYWHERE);
-
+        if (DIFFMODE == 2){
+          if (CurrentFluidPatch->Fluid->next != NULL){ //dust fluid
+            FillDiffSources_Dust (PREDICT, EVERYWHERE);
+          }else{
+            FillDiffSources_Gas (PREDICT, EVERYWHERE);
+          }
+        }
   /* Apply source terms (potential gradient, centrifugal force) */
   Source (dt);
 
   /* add density floor here */
 
-real *e, *rho;
-long m, sized;
-sized  = CurrentFluidPatch->desc->gncell[0];
-sized *= CurrentFluidPatch->desc->gncell[1];
-sized *= CurrentFluidPatch->desc->gncell[2];
-rho = CurrentFluidPatch->Density;
+  real *e, *rho;
+  long m, sized;
+  sized  = CurrentFluidPatch->desc->gncell[0];
+  sized *= CurrentFluidPatch->desc->gncell[1];
+  sized *= CurrentFluidPatch->desc->gncell[2];
+  rho = CurrentFluidPatch->Density;
 for (m=0; m < sized; m++) {
   if (rho[m] < DUSTDENSFLOOR) {
     rho[m] = DUSTDENSFLOOR;
   }
 }
+
 
 
   if ((KEPLERIAN && !NoStockholm ) && (CurrentFluidPatch->Fluid->next == NULL)){

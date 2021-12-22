@@ -260,6 +260,24 @@ if (strncasecmp(DUSTSOLVER, "FO", 2) == 0) {
 	      prs_error ("Invalid dust solver code.");
     }
   }
+
+
+if (strncasecmp(SLIMITER, "MINMOD", 6) == 0) {
+    __TVDslope = &minmod;
+    pInfo ("MINMOD slope limiter\n");
+}else{
+  if (strncasecmp(SLIMITER, "SUPERB", 6) == 0) {
+    __TVDslope = &superbee;
+    pInfo ("SUPERBEE slope limiter\n");
+  }else{
+    prs_error ("Invalid slope limiter.");
+  }
+}
+
+
+
+
+
   Isothermal = YES;
   pInfo ("System is (locally) isothermal\n");
   if (strncasecmp(METHOD, "PLM", 3) == 0) {

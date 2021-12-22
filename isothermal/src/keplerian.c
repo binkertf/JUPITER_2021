@@ -126,7 +126,13 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
     init *= isc;
     break;
   case _energy_:			/* Same in 2 and 3D */
-    init = 0.0;
+    if (DIFFMODE == 1){
+        init = 0.0;
+      }
+    if (DIFFMODE == 2){
+      init = alpha / (alpha+St_mid) * h*h*pow(radius, -2.*b);
+    }
+
     break;
   case _vrad_:			/* Viscous drift */
     init = 3.0*VISCOSITY/radius*(xi-1.5);

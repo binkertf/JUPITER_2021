@@ -170,6 +170,13 @@ case keplerdust:
 	fprintf (init, "   v_azimuth = keplerian_dust_init(_vazimuth_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
 	fprintf (init, "   v_colatitude= 0.0; //keplerian_dust_init(_vcolatitude_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
 	break;
+case keplerdust_2:
+	fprintf (init, "   density   = keplerian_dust_init(_density_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   energy    = keplerian_dust_init(_energy_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   vrad      = 0.0; //keplerian_init(_vrad_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   v_azimuth = keplerian_dust_init(_vazimuth_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   v_colatitude= 0.0; //keplerian_init(_vcolatitude_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	break;
 case essai:
 	fprintf (init, "   density   = SIGMA0;\n");
 	fprintf (init, "   vrad      = 0.0;\n");

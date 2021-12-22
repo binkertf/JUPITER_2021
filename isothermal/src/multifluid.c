@@ -94,7 +94,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
   FluidPatch *fluid, *reffluid;
 
   real *_radius, *_colat;
-  real radius,colat, omegakep, C;
+  real radius,colat, omegakep, C, delta, diff_f, tau_s;
 
   if (NbFluids < 2) return;
   if (item->cpu != CPU_Rank) return;
@@ -182,9 +182,11 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
 
    if(constSt==TRUE){
      C = omegakep/(d2*STOKESNUMBER);//const stokes number
-   }
-   else{ //constant particle size
+
+
+   }else{ //constant particle size
      C=1.6*sqrt(cs2)/DUSTSIZE; //const dust particle size
+
    }
 
   if (d1>=DUSTDENSFLOOR){
@@ -214,8 +216,8 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
 
 	      }
 
-        /*for (l = 1; l < NDIM; l++) {
-        real vellim = 3.0;
+        for (l = 0; l < NDIM; l++) {
+        real vellim = 2.0;
 
         if (v[0][l][m]>vellim){
           v[0][l][m]=vellim;
@@ -232,7 +234,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
           v[1][l][m]=-vellim;
         }
 
-      }*/
+      }
 
 
 
@@ -240,4 +242,41 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
       }
     }
   }
+
+  if (DIFFMODE == 2){
+  //diffpressure
+  for (i = 0; i < gncell[0]; i++) {
+    for (j = 0; j < gncell[1]; j++) {
+      for (k = 0; k < gncell[2]; k++) {
+	       m = i*stride[0]+j*stride[1]+k*stride[2];
+	        d1 = d[0][m];  /* dust density*/
+	        d2 = d[1][m]; /* gas density*/
+          cs2 = cs[1][m]; /* square of the local sound speed of the gas*/
+          radius = _radius[m]; /* radius coordinate */
+
+          if (NDIM ==3){
+            if(constSt==TRUE){
+              delta = VISCOSITY/(sqrt(cs2)*ASPECTRATIO*radius);
+              diff_f = delta/(delta+STOKESNUMBER);
+
+              cs[0][m] = diff_f * cs2; //dust diff pressure
+
+
+
+            }else{ //constant particle size
+
+              tau_s = sqrt(M_PI / 8.0) * DUSTSIZE / (sqrt(cs2) * d2);
+              cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/cs2);
+            }
+         }
+
+      }
+    }
+  }
+}
+
+
+
+
+
 }
