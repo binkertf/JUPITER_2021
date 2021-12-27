@@ -261,7 +261,6 @@ if (strncasecmp(DUSTSOLVER, "FO", 2) == 0) {
     }
   }
 
-
 if (strncasecmp(SLIMITER, "MINMOD", 6) == 0) {
     __TVDslope = &minmod;
     pInfo ("MINMOD slope limiter\n");
@@ -273,12 +272,7 @@ if (strncasecmp(SLIMITER, "MINMOD", 6) == 0) {
     prs_error ("Invalid slope limiter.");
   }
 }
-
-
-
-
-
-  Isothermal = YES;
+Isothermal = YES;
   pInfo ("System is (locally) isothermal\n");
   if (strncasecmp(METHOD, "PLM", 3) == 0) {
     pInfo ("Piecewise linear method\n");

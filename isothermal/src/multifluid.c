@@ -202,8 +202,8 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
     e = C*sqrt(1.0+0.221*((v1-v2)*(v1-v2))/(cs2))*dt;  //supersonic drag
     idenom = 1./(1.+(d1+d2)*e);
 	  v[0][l][m] = (v1*(1.+d1*e)+v2*d2*e)*idenom;
-	  v[1][l][m] = (v2*(1.+d2*e)+v1*d1*e)*idenom;
-    //v[1][l][m] = v[1][l][m]; // no feedback onto the gas
+	  //v[1][l][m] = (v2*(1.+d2*e)+v1*d1*e)*idenom;
+    v[1][l][m] = v[1][l][m]; // no feedback onto the gas
 
 
 
@@ -254,21 +254,37 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
           cs2 = cs[1][m]; /* square of the local sound speed of the gas*/
           radius = _radius[m]; /* radius coordinate */
 
-          if (NDIM ==3){
+          if (NDIM ==1){
+            if(constSt==TRUE){
+              delta = VISCOSITY/(sqrt(cs2)*ASPECTRATIO);
+              diff_f = delta/(delta+STOKESNUMBER);
+
+              cs[0][m] = diff_f * cs2; //dust diff pressure
+
+            }else{ //constant particle size
+
+              tau_s = sqrt(M_PI / 8.0) * DUSTSIZE / (sqrt(cs2) * d2);
+              cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/cs2);
+
+            }
+          }
+
+
+            if (NDIM ==3){
             if(constSt==TRUE){
               delta = VISCOSITY/(sqrt(cs2)*ASPECTRATIO*radius);
               diff_f = delta/(delta+STOKESNUMBER);
 
               cs[0][m] = diff_f * cs2; //dust diff pressure
 
-
-
             }else{ //constant particle size
 
               tau_s = sqrt(M_PI / 8.0) * DUSTSIZE / (sqrt(cs2) * d2);
               cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/cs2);
+
             }
-         }
+          }
+
 
       }
     }

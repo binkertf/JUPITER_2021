@@ -512,16 +512,9 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _COLAT_)) {
         D_d = D_d/(1.0+STOKESNUMBER*STOKESNUMBER);
     }
-    //if ((__CYLINDRICAL || __SPHERICAL) && (dim == _COLAT_)) { //account for epicycle oscillations in radial direction
-      //St = STOKESNUMBER;
-      //D_d = D_d/(1.0+St*St); // see Youdin&Lithwick (2007)
-    //}
 
     //Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux (geometric mean)
     Pi = -D_d*sqrt((rhogL)*(rhogR))*(rhoR/(rhogR)-rhoL/(rhogL))/dx; //diffusion flux (geometric mean)
-    //Pi = -D_d*(rhoR-rhoL)/dx; //diffusion flux (geometric mean)
-
-
 
     // Diffusion flux limiter
     cs = sqrt(beam2->cs[i-1]*beam2->cs[i]); //gas sound speed
