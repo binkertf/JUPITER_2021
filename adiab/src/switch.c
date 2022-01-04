@@ -474,5 +474,10 @@ if (strncasecmp(DUSTSOLVER, "FO", 2) == 0) {
   if ((strncmp (HALFDISK, "YES", 3) == 0)  || (strncmp (HALFDISK, "Yes", 3) == 0) || (strncmp (HALFDISK, "True", 3) == 0) || (strncmp(HALFDISK, "TRUE", 3) == 0)) HalfDisk = YES;
   if ((!Restart) && SuperImpose)
     prs_error ("You need to do a restart to activate superimposition.");
+
+  *CONSTSTOKES = (char)toupper ((int)*CONSTSTOKES); //convert to uppercase letters
+  if( (*CONSTSTOKES == 'Y')  || (*CONSTSTOKES == 'T') || (*CONSTSTOKES == '1'))
+    constSt = YES;
+
   return;}
 

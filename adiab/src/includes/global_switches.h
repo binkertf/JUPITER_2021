@@ -16,7 +16,7 @@ extern boolean AllowFlushLog, QuietOutput, RedefineOptions;
 extern boolean RayTracing, RayMirror, CoarseRayTracing;
 extern boolean HydroStaticEnforce, HydroStaticReady;
 extern boolean Radiative, HalfDisk, Stellar;
-extern boolean Stretch, SmoothTaper;
+extern boolean Stretch, SmoothTaper, constSt;
 extern long DebugOutputNb;
 extern boolean mPLM, mGFO, mMUSCL;
 extern boolean constDTG;

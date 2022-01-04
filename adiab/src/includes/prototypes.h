@@ -89,6 +89,7 @@ void FillDust  ();
 void gfo ();
 void gfo_adiab ();
 void plm ();
+void plm2 ();
 void plm_adiab ();
 void HydroKernel ();
 void DustKernel ();

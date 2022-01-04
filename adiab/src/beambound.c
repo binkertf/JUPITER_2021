@@ -11,10 +11,6 @@ void AdjustBeamBoundaries (beam)
   if (beam->true_bc[INF] > 0) {
     rhoi           = beam->rhoR[NGH];
     ei             = beam->cs[NGH];
-    //if (Isothermal) ei *= ei;    /* The 'boundary' function below works on cs2, not cs */
-    //if (!Isothermal) {
-      //ei           = beam->eR[NGH];
-    //}
     if (Isothermal || (strncasecmp(CurrentFluidPatch->Fluid->Name, "dust", 4) == 0)){
       ei *= ei;    /* The 'boundary' function below works on cs2, not cs */
     }else{
@@ -26,9 +22,11 @@ void AdjustBeamBoundaries (beam)
     if (NDIM>2) wi = beam->v_perp_R[1][NGH];
     rhog = &beam->rhoL[NGH];    // Dereferencing since boundary expect a pointer for the ghosts
     eg   = &beam->cs[NGH-1];
-   // if (Isothermal) *eg *= *eg;  /* Necessary because *eg might be untouched by 'boundary' */
+    
+    //if (Isothermal) *eg *= *eg;  /* Necessary because *eg might be untouched by 'boundary' */
     /* in which case the 'sqrt' below would result in an */
     /* erroneous value */
+
     //if (!Isothermal) {
       //eg           = &beam->eL[NGH];
     //}
@@ -49,8 +47,6 @@ void AdjustBeamBoundaries (beam)
     myBC = 1;
     boundary (rhoi,ei,ui,vi,wi,rhog,eg,\
 	      ug,vg,wg,x,xg,yg,zg,myBC,-1,TRUE);
-    //if (Isothermal) *eg = sqrt(*eg);
-
      if (Isothermal || (strncasecmp(CurrentFluidPatch->Fluid->Name, "dust", 4) == 0))
       *eg = sqrt(*eg);
   }
@@ -58,11 +54,6 @@ void AdjustBeamBoundaries (beam)
   if (beam->true_bc[SUP] > 0) {
     rhoi           = beam->rhoL[n-NGH];
     ei             = beam->cs[n-NGH-1];
-    //if (Isothermal) ei *= ei;
-    //if (!Isothermal) {
-      //ei           = beam->eL[n-NGH];
-    //}
-
      if (Isothermal || (strncasecmp(CurrentFluidPatch->Fluid->Name, "dust", 4) == 0)){
       ei *= ei;
     }else{
@@ -75,11 +66,6 @@ void AdjustBeamBoundaries (beam)
     if (NDIM>2) wi = beam->v_perp_L[1][n-NGH];
     rhog = &beam->rhoR[n-NGH];
     eg   = &beam->cs[n-NGH];
-    //if (Isothermal) *eg *= *eg;
-    //if (!Isothermal) {
-      //eg           = &beam->eR[n-NGH];
-    //}
-
     if (Isothermal || (strncasecmp(CurrentFluidPatch->Fluid->Name, "dust", 4) == 0)){
       *eg *= *eg;
     }else{
@@ -98,7 +84,6 @@ void AdjustBeamBoundaries (beam)
     myBC = beam->true_bc[SUP];
     boundary (rhoi,ei,ui,vi,wi,rhog,eg,\
 	      ug,vg,wg,x,xg,yg,zg,myBC,-1,TRUE);
-    //if (Isothermal) *eg = sqrt(*eg);
     if (Isothermal || (strncasecmp(CurrentFluidPatch->Fluid->Name, "dust", 4) == 0)) *eg = sqrt(*eg);
   }
 }

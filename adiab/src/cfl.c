@@ -66,7 +66,7 @@ real CourantLimit (fp)
 	    dx *= radius;
 	    u  *= radius;
 	  }
-	  if (Isothermal || (strncasecmp(CurrentFluidPatch->Fluid->Name, "dust", 4) == 0))
+	  if (Isothermal || (strncasecmp(fp->Name, "dust", 4) == 0))
 	    cs = sqrt(cs2[m]);
 	  else
 	    cs = sqrt(cs2[m]/rho[m]*GAMMA*(GAMMA-1.0));
@@ -76,13 +76,12 @@ real CourantLimit (fp)
 	  rho_mon = rho[m];
 	  ene_mon = cs2[m];
 	  i_mon[dim] = i[dim];
-		if (strncasecmp(CurrentFluidPatch->Fluid->Name, "dust", 4) == 0) {
+		if (strncasecmp(fp->Name, "dust", 4) == 0) {
 		sum += (fabs(u))/dx;
 		}else{
 		sum += (fabs(u)+cs)/dx;
 		}
-
-
+	
 	  dt_visc = dx*dx/4.0/VISCOSITY;
 	  if (dt_visc < dt_visc_min) {
 	    dt_visc_min = dt_visc;

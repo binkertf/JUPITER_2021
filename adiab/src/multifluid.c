@@ -102,7 +102,6 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
     pWarning ("Coupling of more than two fluids not implemented.\n");
     return;
   }
-  //e = COUPLING*dt;
 
   dustsz = DUSTSIZE / R0; // diameter of dust grains in code units
   dustsolidrho = DUSTSOLIDRHO / RHO0; // solid density of dust grains in code units, typically 3 g/cm^3 in physical units
@@ -126,88 +125,84 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
   for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
     for (j = Nghost[1]; j < gncell[1]-Nghost[1]; j++) {
       for (k = Nghost[2]; k < gncell[2]-Nghost[2]; k++) {
-	m = i*stride[0]+j*stride[1]+k*stride[2];
-	d1 = d[0][m]; /* dust density*/
-	d2 = d[1][m]; /* gas density*/
+	      m = i*stride[0]+j*stride[1]+k*stride[2];
+	      d1 = d[0][m]; /* dust density*/
+	      d2 = d[1][m]; /* gas density*/
+
+        cs2 = cs[1][m];
+        radius = _radius[m];
+        azimuth = _azimuth[m];
+        colat = _colat[m];
+
+        if (Isothermal){
+          switch (NDIM){
+            case 1: // NDIM == 1
+              C = 1.0/STOKESNUMBER;
+              break;
+
+            case 2: // NDIM == 2
+              omegakep = 1.0/sqrt(radius*radius*radius);
+              if(constSt==YES)
+                C = omegakep/(d2*(STOKESNUMBER));//const stokes number
+              else //constant particle size
+                C=0.64*omegakep/dustsz;
+
+                C=C*(1.0+pow((DUSTDENSFLOOR*10./d1),5)); //smooth coupling limiter
+              break;
+
+            case 3: // NDIM == 3
+              omegakep = 1.0*sin(colat)/sqrt(radius*radius*radius);
+              if(constSt==YES){
+                C = omegakep/(d2*STOKESNUMBER);//const stokes number
+              }else{
+                C=1.6*sqrt(cs2)/dustsz; //const dust particle size
+                C=C*(1.0+pow((DUSTDENSFLOOR*100./d1),5)); //smooth coupling limiter
+              }
+              
+              break;
+
+            default:
+              prs_error ("ERROR: Invalid number of dimensions.");
+          }
+        }else{ //radiative 
+          if(constSt==YES){
+            prs_error ("ERROR: Constant Stokes number not implemented in radiative setup. Use constant particle size instead. \n");
+          }else{
+
+            //constant dust particle size
+            acs = sqrt(cs2/d2*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
+            C=1.334*acs/(dustsz*dustsolidrho);
+            //where DUSTSIZE is the product of partcle diameter and dust solid density in code units*/
+
+            C=C*(1.0+pow((DUSTDENSFLOOR*100/d1),5)); //smooth coupling limiter
+          }
+        }
+
+        // implicit velocity update 
+	      for (l = 0; l < NDIM; l++) {
+	        v1 = v[0][l][m];
+	        v2 = v[1][l][m];
+          e = C*dt;
+          idenom = 1./(1.+(d1+d2)*e);
+	        v[0][l][m] = (v1*(1.+d1*e)+v2*d2*e)*idenom; //dust velocity
+	        v[1][l][m] = (v2*(1.+d2*e)+v1*d1*e)*idenom; //gas velocity
 
 
-  cs2 = cs[1][m];
-  radius = _radius[m];
-  azimuth = _azimuth[m];
-  colat = _colat[m];
+          // hard coupling limiter
+          if (d1<=DUSTDENSFLOOR){  
+            v[0][l][m]=v2;
+            v[1][l][m]=v2;
+          }
 
 
-
-
-
-    /*-----------------------------------------------------------------*/
-  /*constant coupling constant*/
-   //C = COUPLING;
-   /*-----------------------------------------------------------------*/
-
-   /*-----------------------------------------------------------------*/
-  /*constant dust particle zize*/
-  acs = sqrt(cs2/d2*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
-  C=1.334*acs/(dustsz*dustsolidrho);
-  /*where DUSTSIZE is the product of partcle diameter and dust solid density in code units*/
-   /*-----------------------------------------------------------------*/
-
-   /*
-   //compute the gas mean free path
-   mfp = (3.9e-24/2.0e-15)*(XM0/(R0*R0))*1.0/d2;
-
-   if ((9./4.*mfp)>dustsz){
-     //compute the stokes number
-     stokes = 1.334*(dustsz*dustsolidrho)/(d2*acs);
-     printf ("Dustsize: %.12g\n",dustsz*R0);
-     printf ("gasdensity: %.12g\n",d2*RHO0);
-     printf ("mfp: %.12g\n",mfp*R0);
-     printf ("Stokes: %.12g\n",stokes);
-     printf("##########");
-
-   }*/
-
-
-
-
-    /*-----------------------------------------------------------------*/
-    /*constant Stokes number*/
-    //omegakep = OMEGAFRAME/(sqrt(radius)*sqrt(radius)*sqrt(radius)); /* local keplerian frequency */
-   //C = 2.507*omegakep/(d2*STOKESNUMBER);
-   /*-----------------------------------------------------------------*/
-
-
-    //C=C*(1.0+1.0e-20/d1);
-    //C=C*(1.0+(1.0e-23/d1)*(1.0e-23/d1)*(1.0e-23/d1)*(1.0e-23/d1)*(1.0e-23/d1)); //smooth coupling limiter
-    C=C*(1.0+pow((DUSTDENSFLOOR*100/d1),5)); //smooth coupling limiter
-
-
-	for (l = 0; l < NDIM; l++) {
-	  v1 = v[0][l][m];
-	  v2 = v[1][l][m];
-    e = C*dt;
-    idenom = 1./(1.+(d1+d2)*e);
-	  v[0][l][m] = (v1*(1.+d1*e)+v2*d2*e)*idenom; //dust velocity
-	  v[1][l][m] = (v2*(1.+d2*e)+v1*d1*e)*idenom; //gas velocity
-
-
-
-    if (d1<=DUSTDENSFLOOR){  // hard coupling limiter
-      v[0][l][m]=v2;
-      v[1][l][m]=v2;
-    }
-
-
-    if((colat/M_PI*180.0) <= (90.-STELLDEG) || (colat/M_PI*180.0) >= (90.+STELLDEG)) {
-	    //only stellar irradiation for disc above the shadow
-      d[0][m]=DUSTDENSFLOOR;
-      v[0][l][m]=v2;
-      v[1][l][m]=v2;
-  	}
-
-
-
-
+          // Here, I set the dust density to the dustfloor in the irradiated region
+          if (!Isothermal){
+            if((colat/M_PI*180.0) <= (90.-STELLDEG) || (colat/M_PI*180.0) >= (90.+STELLDEG)) {
+            d[0][m]=DUSTDENSFLOOR;
+            v[0][l][m]=v2;
+            v[1][l][m]=v2;
+  	        }
+          }
 	      }
       }
     }

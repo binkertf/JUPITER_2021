@@ -9,18 +9,23 @@ void HydroKernel (dt)
   lev = CurrentFluidPatch->desc->level;
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
-
-  //if (Stellar && (CurrentFluidPatch->Fluid->next==NULL))
-  if (Stellar)
+  if (Stellar) //i.e. non isothermal
     ComputeQplus(); // viscous heating computation
-
-  JUP_SAFE(FillSlopes ());
-  JUP_SAFE(FillSources_Predict());
+  if (mGFO){ 
+    JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
+  }
+  if (mPLM){ 
+    JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
+    JUP_SAFE(FillSlopes ());
+  }
   if (mMUSCL) {
-    if (!Isothermal)
+    JUP_SAFE(FillSources_Predict());
+    if (!Isothermal){
       Predictor_adiab (dt);
-    //    else
-      //      Predictor (dt); Not implemented correctly in isothermal...
+    }else{
+      Predictor (dt); //Not implemented correctly in isothermal...
+      //prs_error ("ERROR: Isothermal + MUSCL not implemented correctly. Better use PLM or GFO method.");
+    }
   }
   if (!Isothermal)
     FillEnergyTot();
@@ -32,9 +37,9 @@ void HydroKernel (dt)
       for (j = 0; j < size[ip1]; j++) {
 	JUP_SAFE(FillBeam (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
 	/* Scan a beam of the active mesh */
-	JUP_SAFE(__Prepare_Riemann_States (&beam, dt));
+  JUP_SAFE(__Prepare_Riemann_States (&beam, dt));
 	/* which is used to prepare the Riemann States */
-	JUP_SAFE(__Compute_Fluxes (&beam, dt));
+	JUP_SAFE(__Compute_Fluxes (&beam, dt)); 
 	/* The Riemann solver is then called and the fluxes evaluated */
 	JUP_SAFE(FillFluxes (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
 	/* and fluxes are stored for that dim */
@@ -90,26 +95,28 @@ void DustKernel (dt)
   lev = CurrentFluidPatch->desc->level;
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
-  //FillSources (PREDICT, EVERYWHERE);
-  JUP_SAFE(FillSlopes ());
-  mMUSCL = NO;
-  JUP_SAFE(FillSources_Predict());
-  mMUSCL = YES;
-
+  //JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
+  //JUP_SAFE(FillSources_Predict());
+  //JUP_SAFE(FillSlopes ());
+  //Predictor (dt); 
   for (dim = 0; dim < NDIM; dim++) { /* For each dimension */
     ip1 = (dim == 0);
     ip2 = 2-(dim == 2);
     JUP_SAFE(AllocBeam_PLM (&beam, CurrentFluidPatch->desc->gncell[dim]));
     for (k = 0; k < size[ip2]; k++) {
       for (j = 0; j < size[ip1]; j++) {
-	JUP_SAFE(FillBeam (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
-	/* Scan a beam of the active mesh */
-	JUP_SAFE(gfo_adiab(&beam, dt));
-	/* which is used to prepare the Riemann States */
-	JUP_SAFE(__Compute_Fluxes_pressureless(&beam, dt));
-	/* The Riemann solver is then called and the fluxes evaluated */
-	JUP_SAFE(FillFluxes (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
-	/* and fluxes are stored for that dim */
+	      JUP_SAFE(FillBeam (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
+	      /* Scan a beam of the active mesh */
+        if (!Isothermal){
+          JUP_SAFE(gfo_adiab(&beam, dt));
+        }else{
+          JUP_SAFE(gfo(&beam, dt));
+        }
+	      /* which is used to prepare the Riemann States */
+	      JUP_SAFE(__Compute_Fluxes_pressureless(&beam, dt));
+        /* The Riemann solver is then called and the fluxes evaluated */
+	      JUP_SAFE(FillFluxes (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
+	      /* and fluxes are stored for that dim */
       }
     }
   }
@@ -161,11 +168,11 @@ void DustDiffKernel (dt)
   lev = CurrentFluidPatch->desc->level;
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
-  //FillSources (PREDICT, EVERYWHERE);
-  JUP_SAFE(FillSlopes ());
-  mMUSCL = NO;
-  JUP_SAFE(FillSources_Predict());
-  mMUSCL = YES;
+  JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
+  //JUP_SAFE(FillSlopes ());
+  //mMUSCL = NO;
+  //JUP_SAFE(FillSources_Predict());
+  //mMUSCL = YES;
 
   for (dim = 0; dim < NDIM; dim++) { /* For each dimension */
     ip1 = (dim == 0);
@@ -177,7 +184,11 @@ void DustDiffKernel (dt)
 	JUP_SAFE(FillBeam (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
   JUP_SAFE(FillBeam2 (dim, j+Nghost[ip1], k+Nghost[ip2], &beam2));
 	/* Scan a beam of the active mesh */
-	JUP_SAFE(gfo_adiab(&beam, dt));
+	if (!Isothermal){
+     JUP_SAFE(gfo_adiab(&beam, dt));
+  }else{
+    JUP_SAFE(gfo(&beam, dt));
+  }
 	/* which is used to prepare the Riemann States */
 	JUP_SAFE(__Compute_Fluxes_pressureless(&beam, dt));
   JUP_SAFE(Compute_Fluxes_Diffusion(&beam, &beam2, dt));

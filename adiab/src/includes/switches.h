@@ -7,7 +7,7 @@ boolean AllowFlushLog = NO, QuietOutput = NO, RedefineOptions = NO;
 boolean RayTracing = NO, RayMirror = NO, CoarseRayTracing = NO;
 boolean HydroStaticEnforce = NO, HydroStaticReady = NO;
 boolean Radiative = NO, HalfDisk = NO, Stellar = NO;
-boolean Stretch = NO, SmoothTaper = NO;
+boolean Stretch = NO, SmoothTaper = NO, constSt = NO;
 long DebugOutputNb = 0;
 /* See comm_adapt.c for the use of HydroStaticReady */
 boolean mPLM = NO, mGFO = NO, mMUSCL = NO;

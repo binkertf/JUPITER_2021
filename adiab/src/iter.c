@@ -12,7 +12,6 @@ void ItereLevel (dt, level)
   tGrid_CPU *item;
   FluidPatch *Fluid;
   item = Grid_CPU_list;
-
   /* a TrueBC (somelev) must ALWAYS follow an ExecCommSame (somelev) */
 
   ExecCommSame (level-1); 	/* This has been tested with various */
@@ -28,7 +27,6 @@ void ItereLevel (dt, level)
     GetOpticalDepthFromLevel (level-1);
     GetEnergyRadFromLevel (level-1);
   }
-
   while (item != NULL) {
     if ((level == item->level) && (item->cpu == CPU_Rank)) {
       Fluid = item->Fluid;

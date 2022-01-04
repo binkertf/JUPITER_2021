@@ -93,7 +93,11 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
   dustsolidrho = DUSTSOLIDRHO / RHO0; // solid density of dust grains in code units, typically 3 g/cm^3 in physical units
 
   hg = h*radius; //gas scale height
-  St_mid = M_PI/2.0*dustsz*dustsolidrho/(sigma0/DUSTTOGAS*pow(radius,-a)); // midplane Stokes number
+  if(constSt==YES){
+    St_mid = STOKESNUMBER;
+  }else{
+    St_mid = M_PI/2.0*dustsz*dustsolidrho/(sigma0/DUSTTOGAS*pow(radius,-a)); // midplane Stokes number
+  }
   omegakep = 1.0*sin(colatitude)/(sqrt(radius)*sqrt(radius)*sqrt(radius));
   alpha = VISCOSITY/(omegakep*hg*hg);//*(pow(radius,0.2))*1.8;
   hd = hg*sqrt(alpha/(alpha+St_mid));

@@ -58,8 +58,10 @@ void FillSources_Predict ()
 	      sv[l][m] = -se[l][m]*(GAMMA-1.0)/rho[m];
 	    else
 	      sv[l][m] = (e[smm]*e[smm]*rho[smm]-e[smp]*e[smp]*rho[smp])*sinvdx/rho[m];
+		  
+		 
 	  }
-	  if (EXTERNALPOTENTIAL == YES) {
+	  if (EXTERNALPOTENTIAL == YES) {// grav. acceleration
 	    sv[l][m] += -(pot[smp]-pot[smm])*sinvdx;
 	  }
 	  if (GridFriction[l] != 0.0)
@@ -186,7 +188,7 @@ void FillSources (flag, loc)
 		smm = m-stride[l];
 		sinvdx = 1.0/(center[l][smp]-center[l][smm]);
 		sinvdx *= metric_coef;
-		if (KEPLERIAN)
+		if (KEPLERIAN) // grav. acceleration
 		  sv[l][m] = pot[m]*pot[m]*(1./pot[smp]-1./pot[smm])*sinvdx;
 		else
 		  sv[l][m] = (pot[smm]-pot[smp])*sinvdx;
@@ -219,7 +221,7 @@ void FillSources (flag, loc)
 	    mp[l] = m+stride[l];
 	    mm[l] = m-stride[l];
 	  }
-	  if (!__CARTESIAN) {
+	  if (!__CARTESIAN) { //geometric source terms
 	    vphi = vtheta = 0.0;
 	    if (_AZIM_ < NDIM)
 	      vphi = v[_AZIM_][m];
@@ -234,11 +236,11 @@ void FillSources (flag, loc)
 		sv[_RAD_][m] += rad*(vphi*vphi+vtheta*vtheta);
 	      if (_COLAT_ < NDIM) {
 		cot = (inter[_COLAT_][mp[_COLAT_]]-inter[_COLAT_][m])*invvol[m]*rad;	
-		sv[_COLAT_][m] += rad*vphi*vphi*cot;
+		sv[_COLAT_][m] += rad*vphi*vphi*cot; //geom source COLAT
 	      }
 	    } else {
 	      if (_RAD_ < NDIM)
-		sv[_RAD_][m] += rad*vphi*vphi;
+		sv[_RAD_][m] += rad*vphi*vphi; //geom source RAD
 	    }
 	  }
 	}

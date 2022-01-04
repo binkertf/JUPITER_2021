@@ -17,19 +17,48 @@ inline boolean boundary (rho,e,u,v,w,rhog,eg,ug,vg,wg,x,xg,yg,zg,condition,line,
   real entropy, temp1, temp2;
   switch (condition) {
   /* usual conditions */
-  case 1:	       /* REFLECTING */
+  case 1:	       /*COLATITUDE REFLECTING*/
     *rhog = rho;
     *eg   = e;
     *ug   = -u;
     *vg   = v;
     *wg   = w;
     break;
+  case 2:	       /* OUTFLOW */
+    *rhog = rho;
+    *eg   = e;
+    *ug   = u;
+    *vg   = v;
+    *wg   = w;
+    break;
   case 3: //Colatitude 3D, rigid boundary;
     *vg = v; //
-    *wg = w; //
+    *wg = 0.0 ; //
     *ug = 0.0; //
     *rhog = rho;
     *eg   = e;
+    break;
+  case 4:	       /* RADIAL KEPLERIAN (isothermal, gas) */
+      {
+      real xi;
+      xi = SIGMASLOPE+1+FLARINGINDEX; //.+FLARINGINDEX;
+      *rhog = rho*pow(xg/x,-xi); //rho;
+      *eg   = e;
+      *ug   = u; //colatitude
+      *vg   = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
+      *wg   = w;
+    }
+    break;
+    case 5:	       /* RADIAL KEPLERIAN (isothermal, dust) */
+      {
+      real xi;
+      xi = SIGMASLOPE+1+FLARINGINDEX; //.+FLARINGINDEX;
+      *rhog = rho; //rho*pow(xg/x,-xi); //rho;
+      *eg   = e;
+      *ug   = u; //colatitude
+      *vg   = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
+      *wg   = w;
+    }
     break;
   case 99: //Colatitude 3D, for high altitude regions, adiabatic
     if (predictive) break;
@@ -49,19 +78,12 @@ case 98: //Colatitude 3D, for high altitude regions, ISOTHERMAL, probably not co
     *rhog = exp(log(rho)+(xg-x)*cos(.5*(x+xg))*zg*zg/(e*zg*zg*zg)); //zg: radius, x: colat
     *eg = *rhog*e/rho;
     break;
-  case 2:	       /* OUTFLOW */
-    *rhog = rho;
-    *eg   = e;
-    *ug   = u;
-    *vg   = v;
-    *wg   = w;
-    break;
   case 19:	       /* dust */
       {
       real xi;
       xi = SIGMASLOPE+1+FLARINGINDEX; //.+FLARINGINDEX;
       *rhog = rho*pow(xg/x,-xi); //rho;
-      *eg   = 0.0;
+      *eg   = e;
       *ug   = 0.0; //colatitude
       *vg   = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
       *wg   = 0.0;
@@ -196,8 +218,10 @@ void TrueBC_fp (fluid)
 		vtg2=&vel[dim2][m_gh];
 	      }
         // Fabian added stuff here
+        if (!Isothermal){
         if ((bc==30) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
           bc = 19;
+        }
         }
         // til here
 	      boundary (dens[m_in],energy[m_in],vp,vt1,vt2,&dens[m_gh],\

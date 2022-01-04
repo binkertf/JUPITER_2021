@@ -77,7 +77,6 @@ void ConservativeUpdate (real dt)
      momenta. */
   if (VISCOSITY > 1e-16)
     JUP_SAFE(ApplyViscousStress (dt));
-
   /* The function below must be AFTER the flux update due to the
      viscosity, as the viscous stress alters the momenta fluxes. It
      must also be placed, obviously, BEFORE the conservative update
@@ -244,15 +243,11 @@ void ConservativeDustUpdate (real dt)
   _radius = fw->desc->Center[_RAD_];
   radint  = fw->desc->Edges[_RAD_];
   _colatitude = fw->desc->Center[_COLAT_];
-  energy = fw->Energy;
-  energy_tot = fw->Energy_tot;
   Density = fw->Density;	/* In this loop the momentum[3]  array
 				   is   filled; if appropriate one  of
 				   these values represents the angular
 				   momentum */
-  /* In the non isothermal case we also fill the total energy (internal+kinetic) for each zone */
-  centrif  = fw->Centrifugal_acc;
-  coriolis = fw->Coriolis;
+
   for (idm = 0; idm < NDIM; idm++) {
     Velf = Velocity[idm];
     rhov[idm] = fw->RawMassFlux[idm];
@@ -323,8 +318,6 @@ void ConservativeDustUpdate (real dt)
     for (j = Nghost[1]; j < gncell[1]-Nghost[1]; j++) {
       for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
 	m = i*stride[0]+j*stride[1]+k*stride[2];
-	delta_energy_tot = 0.0;
-	delta_energy     = 0.0;
 	delta_mass=0.0;
 	for (idm = 0; idm < NDIM; idm++) {
 	  m_other_side = m+stride[idm];

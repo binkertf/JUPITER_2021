@@ -164,8 +164,6 @@ void InitWholeHierarchy (NbRestart)
 
 
 
-
-
   // The RT needs to be initialized from top to bottom.
   if (Stellar) { //We synchronize boundaries of Energy Rad fields prior to next loop. Needed for restart
     for (lev = 0; lev <= LevMax; lev++) {
