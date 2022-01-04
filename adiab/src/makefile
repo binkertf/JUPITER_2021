@@ -105,11 +105,11 @@ MAINOBJ      =  main.o out.o in.o low.o var.o switch.o create.o iter.o\
 		ray_tracing.o ray_integ.o ray_background.o\
 		hstatprep.o hstatwrite.o hstatinit.o hstatscorr.o\
 		hstatvalues.o meridcorrflux.o meridhighlev.o\
-		enecorr.o fillsource_pot.o fillsource_geom_col.o\
+		enecorr.o fillsource_diff.o fillsource_pot.o fillsource_geom_col.o\
 		filletot.o fillsource_geom_rad.o fillsource_predict.o\
                 judit.o RT_accessories.o RT_main.o RT_solve.o RT_matrix.o\
 		RT_boundaries.o RT_stellarirrad.o RT_viscousheating.o\
-		muscl_adiab.o predictor_adiab.o densfloor.o
+		muscl_adiab.o predictor_adiab.o predictor.o densfloor.o
 
 DUMMY	    = mpi_dummy.o
 

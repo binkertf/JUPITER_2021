@@ -142,22 +142,8 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
       init = DISKSPEEDFACTOR*pow(radius, -1.5)*sqrt(1.-2.*b*(GAMMA-1.0)/GAMMA*h2);
     break;
   case _energy_:
-    init = h*h*pow(radius, -2.*b);
-    if (!Isothermal) {
-      if (NDIM == 3) {
-	// e is not defined the same way in adiabatic.
-	// But we want P to be the same in IsoT and adiabatic:
-	rho = sigma0/sqrt(2.0*M_PI)/h		\
-	  *pow(radius,-xi) * pow(isc, w);
-	if (fabs(f) < 1e-10) // flat case
-	  rho *= pow(isc , -hm2);
-	else		   // flaring case
-	  rho *= exp(hm2 * (1. - isc2f)/2./f);
-	init *= rho/(GAMMA-1.);
-      } else {
-	init *= sigma0*pow(radius,-a)/(GAMMA-1.0);
-      }
-    }
+    init = alpha / (alpha+St_mid) * h*h*pow(radius, -2.*b);
+    
     break;
   case _vrad_:			// Viscous drift
     init = 3.0*VISCOSITY/radius*(xi-1.5);

@@ -93,6 +93,7 @@ void plm2 ();
 void plm_adiab ();
 void HydroKernel ();
 void DustKernel ();
+void DustDiffPresKernel ();
 void DustDiffKernel ();
 void Compute_Fluxes_Iso ();
 void Compute_Fluxes_Adi ();

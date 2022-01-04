@@ -267,7 +267,7 @@ case kepler3d:
 	break;
 case keplerdust:
 	fprintf (init, "   density   = keplerian_dust_init(_density_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
-	fprintf (init, "   energy    = 0.0;\n");
+	fprintf (init, "   energy    = keplerian_dust_init(_density_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);;\n");
 	fprintf (init, "   vrad      = keplerian_dust_init(_vrad_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
 	fprintf (init, "   v_azimuth = keplerian_dust_init(_vazimuth_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
 	fprintf (init, "   v_colatitude= keplerian_dust_init(_vcolatitude_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");

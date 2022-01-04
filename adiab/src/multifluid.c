@@ -90,7 +90,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
 {
   real ***v, **d, **cs;
   long gncell[3], stride[3], m, i, j, k, l;
-  real e, d1, d2, cs2, acs, v1, v2, idenom, dustsz, dustsolidrho, stokes, mfp;
+  real e, d1, d2, cs2, acs, v1, v2, idenom, dustsz, dustsolidrho, stokes, mfp, diff_f, delta, tau_s;
   FluidPatch *fluid;
 
   real *_radius, *_colat, *_azimuth;
@@ -145,7 +145,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
               if(constSt==YES)
                 C = omegakep/(d2*(STOKESNUMBER));//const stokes number
               else //constant particle size
-                C=0.64*omegakep/dustsz;
+                C=0.64*omegakep/(dustsz * dustsolidrho);
 
                 C=C*(1.0+pow((DUSTDENSFLOOR*10./d1),5)); //smooth coupling limiter
               break;
@@ -155,7 +155,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
               if(constSt==YES){
                 C = omegakep/(d2*STOKESNUMBER);//const stokes number
               }else{
-                C=1.6*sqrt(cs2)/dustsz; //const dust particle size
+                C=1.6*sqrt(cs2)/(dustsz * dustsolidrho); //const dust particle size
                 C=C*(1.0+pow((DUSTDENSFLOOR*100./d1),5)); //smooth coupling limiter
               }
               
@@ -207,4 +207,53 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
       }
     }
   }
+
+//#########################################################################################################
+// Diffusion Pressure
+for (i = 0; i < gncell[0]; i++) {
+    for (j = 0; j < gncell[1]; j++) {
+      for (k = 0; k < gncell[2]; k++) {
+	      m = i*stride[0]+j*stride[1]+k*stride[2];
+        d1 = d[0][m]; /* dust density*/
+	      d2 = d[1][m]; /* gas density*/
+
+        if (Isothermal){
+          cs2 = cs[1][m]; /* square of the local sound speed of the gas*/
+          radius = _radius[m];
+
+          if (NDIM ==3){
+            if(constSt==TRUE){
+              delta = VISCOSITY/(sqrt(cs2)*ASPECTRATIO*radius);
+              diff_f = delta/(delta+STOKESNUMBER);
+
+              cs[0][m] = diff_f * cs2; //dust diff pressure
+
+            }else{ //constant particle size
+
+              tau_s = sqrt(M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(cs2) * d2);
+              cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/cs2);
+
+            }
+          }
+
+          
+          
+
+        }
+
+      }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 }
