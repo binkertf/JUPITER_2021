@@ -39,7 +39,7 @@ inline boolean boundary (rho,e,u,v,w,rhog,eg,ug,vg,wg,x,xg,yg,zg,condition,line,
     *eg   = e;
     break;
   case 4:	       /* RADIAL KEPLERIAN (isothermal, gas) */
-      {
+      if (predictive) break;
       real xi;
       xi = SIGMASLOPE+1+FLARINGINDEX; //.+FLARINGINDEX;
       *rhog = rho*pow(xg/x,-xi); //rho;
@@ -47,7 +47,6 @@ inline boolean boundary (rho,e,u,v,w,rhog,eg,ug,vg,wg,x,xg,yg,zg,condition,line,
       *ug   = u; //colatitude
       *vg   = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
       *wg   = w;
-    }
     break;
     case 5:	       /* RADIAL KEPLERIAN (isothermal, dust) */
       {
@@ -56,7 +55,7 @@ inline boolean boundary (rho,e,u,v,w,rhog,eg,ug,vg,wg,x,xg,yg,zg,condition,line,
       *rhog = rho; //rho*pow(xg/x,-xi); //rho;
       *eg   = e;
       *ug   = u; //colatitude
-      *vg   = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
+      *vg   = v; (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
       *wg   = w;
     }
     break;
@@ -79,15 +78,16 @@ case 98: //Colatitude 3D, for high altitude regions, ISOTHERMAL, probably not co
     *eg = *rhog*e/rho;
     break;
   case 19:	       /* dust */
+      if (predictive) break;
       {
       real xi;
       xi = SIGMASLOPE+1+FLARINGINDEX; //.+FLARINGINDEX;
       *rhog = rho*pow(xg/x,-xi); //rho;
       *eg   = e;
-      *ug   = 0.0; //colatitude
+      *ug   = u; //colatitude
       *vg   = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
-      *wg   = 0.0;
-    }
+      *wg   = w;
+      }
       break;
     /* problem-specific conditions */
   case 10 : // simple keplerian with dim azim < dim z or dim colat
@@ -221,6 +221,9 @@ void TrueBC_fp (fluid)
         if (!Isothermal){
         if ((bc==30) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
           bc = 19;
+        }
+        if ((bc==99) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
+          bc = 4;
         }
         }
         // til here

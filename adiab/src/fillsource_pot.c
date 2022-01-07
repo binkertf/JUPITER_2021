@@ -49,8 +49,8 @@ void FillSources_pot (flag, loc)
 	      smm = m-stride[l];
 	      sinvdx = 1.0/(center[l][smp]-center[l][smm]);
 	      sinvdx *= metric_coef;
-	      sv[l][m] = (pot[smm]-pot[smp])*sinvdx;
-	    } else {
+        sv[l][m] = (pot[smm]-pot[smp])*sinvdx;
+        } else {
 	      sv[l][m] = 0.0;
 	    }
 	  }

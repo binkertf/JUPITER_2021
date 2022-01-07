@@ -1,7 +1,8 @@
 #include "jupiter.h"
 
-void FillSources_diff (flag, loc) 
+void FillSources_diff (flag, loc, dt) 
      long flag, loc;
+     real dt;
 {
   long i, j, k, l, m, smp, smm, Size;
   (void) flag;
@@ -22,7 +23,7 @@ void FillSources_diff (flag, loc)
   a2 = fw->Energy; //diffusion sound speed squared
 
   rho_g = fw->next->Density->Field;
-  cs2 = fw->next->Energy->Field; //gas sound speed squared
+  cs2 = fw->next->Energy->Field; //gas sound speed squared (isothermal) / internal energy (radiative)
 
   invvol = d->InvVolume;
   for (i = 0; i < NDIM; i++) {
@@ -49,12 +50,19 @@ void FillSources_diff (flag, loc)
 	  if (l == 1) metric_coef = invm[1][0][i] * invm[1][1][k];
 	  m = i*stride[0]+j*stride[1]+k*stride[2];
 	  if (d->CommSource[m] & loc) {
-
 	      smp = m+stride[l];
 	      smm = m-stride[l];
 	      sinvdx = 1.0/(center[l][smp]-center[l][smm]);
 	      sinvdx *= metric_coef;
 	      sv[l][m] = 1. / rho_g[m] * (a2[smp] * rho_g[smp] - a2[smm] * rho_g[smm])*sinvdx;
+
+        //diffusion limiter
+        if ((sv[l][m]*dt)>a2[m]){
+          sv[l][m] = a2[m] / dt; 
+        } 
+        if ((sv[l][m]*dt)<-a2[m]){
+          sv[l][m] = -a2[m] / dt; 
+        }
 	  }
 	}
       }

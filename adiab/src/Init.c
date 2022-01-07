@@ -219,6 +219,7 @@ void InitWholeHierarchy (NbRestart)
 		Fluid = Fluid->next;
 		}
 	}
+	FluidCoupling (item, 0.0);
 	item = item->next;
       }
     }

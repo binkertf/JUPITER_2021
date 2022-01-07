@@ -100,7 +100,7 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
   }
   omegakep = 1.0*sin(colatitude)/(sqrt(radius)*sqrt(radius)*sqrt(radius));
   alpha = VISCOSITY/(omegakep*hg*hg);//*(pow(radius,0.2))*1.8;
-  hd = hg*sqrt(alpha/(alpha+St_mid));
+  hd = hg; //*sqrt(alpha/(alpha+St_mid));
 
   xi = a+1.+f;
   b = .5-f;
@@ -118,15 +118,11 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
     if (NDIM ==2)
       init = sigma0*pow(radius,-a);
     else if (NDIM ==3) {
-      init = sigma0*pow(radius,-a)/sqrt(2.0*M_PI)/hd*exp(-St_mid/alpha*(exp(radius*cos(colatitude)*radius*cos(colatitude)/(2.*hg*hg))-1.0)-radius*cos(colatitude)*radius*cos(colatitude)/(2.*hg*hg)); //acc. to Fromang & Nelson 2009 Eq. (19)
-      //init = sigma0/sqrt(2.0*M_PI)/h*pow(radius,-xi) * pow(isc, w);
-
-      /*
-      if (fabs(f) < 1e-10)
-	     init *= pow(isc , -hm2); // flat case
-      else
-	     init *= exp(hm2 * (1. - isc2f)/2./f);// flaring case
-       */
+      if(constSt==TRUE){
+        init = sigma0*pow(radius,-a)/sqrt(2.0*M_PI)/hd*exp(-radius*cos(colatitude)*radius*cos(colatitude)/(2*hd*hd));
+      }else{
+        init = sigma0*pow(radius,-a)/sqrt(2.0*M_PI)/hd*exp(-St_mid/alpha*(exp(radius*cos(colatitude)*radius*cos(colatitude)/(2.*hg*hg))-1.0)-radius*cos(colatitude)*radius*cos(colatitude)/(2.*hg*hg)); //acc. to Fromang & Nelson 2009 Eq. (19)
+      }      
     }
     if(init < DUSTDENSFLOOR)
       init = DUSTDENSFLOOR;
@@ -151,6 +147,7 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
       init = 3.0*VISCOSITY/radius*(a-.5);
     break;
   case _vcolatitude_:
+  init = 0.0;
     break;
   default:
     prs_error ("Unknown component in %s at line %d", __FILE__, __LINE__);

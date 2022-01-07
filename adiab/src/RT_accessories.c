@@ -347,6 +347,7 @@ void ComputeOpacity() {
     }else{
     opacity =  kappa(temper[l],0.01*dens[l]+0.99*(100.*dustdens[l]));
     }
+    opacity =  DUSTTOGAS*100.*kappa(temper[l],dens[l]);
 
   opas[l] = DUSTTOGAS*100.*3.5*RHO0*R0;
 	opar[l] = opacity; //Rosseland mean opacity (for radiative cooling)

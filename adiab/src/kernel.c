@@ -2,6 +2,11 @@
 
 static Beam beam, beam2;
 
+//######################################################################
+// HYDROKERNEL
+// this kernel treats gas fluids
+//######################################################################
+
 void HydroKernel (dt)
      real dt;
 {
@@ -11,9 +16,6 @@ void HydroKernel (dt)
     size[i] = CurrentFluidPatch->desc->ncell[i];
   if (Stellar) //i.e. non isothermal
     ComputeQplus(); // viscous heating computation
-  if (mGFO){ 
-    JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
-  }
   if (mPLM){ 
     JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
     JUP_SAFE(FillSlopes ());
@@ -24,7 +26,7 @@ void HydroKernel (dt)
       Predictor_adiab (dt);
     }else{
       Predictor (dt); //Not implemented correctly in isothermal...
-      //prs_error ("ERROR: Isothermal + MUSCL not implemented correctly. Better use PLM or GFO method.");
+      prs_error ("ERROR: Isothermal + MUSCL not implemented correctly. Use PLM or GFO method.");
     }
   }
   if (!Isothermal)
@@ -35,14 +37,14 @@ void HydroKernel (dt)
     JUP_SAFE(AllocBeam_PLM (&beam, CurrentFluidPatch->desc->gncell[dim]));
     for (k = 0; k < size[ip2]; k++) {
       for (j = 0; j < size[ip1]; j++) {
-	JUP_SAFE(FillBeam (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
-	/* Scan a beam of the active mesh */
-  JUP_SAFE(__Prepare_Riemann_States (&beam, dt));
-	/* which is used to prepare the Riemann States */
-	JUP_SAFE(__Compute_Fluxes (&beam, dt)); 
-	/* The Riemann solver is then called and the fluxes evaluated */
-	JUP_SAFE(FillFluxes (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
-	/* and fluxes are stored for that dim */
+	      JUP_SAFE(FillBeam (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
+	      /* Scan a beam of the active mesh */
+        JUP_SAFE(__Prepare_Riemann_States (&beam, dt));
+	      /* which is used to prepare the Riemann States */
+	      JUP_SAFE(__Compute_Fluxes (&beam, dt)); 
+	      /* The Riemann solver is then called and the fluxes evaluated */
+	      JUP_SAFE(FillFluxes (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
+	      /* and fluxes are stored for that dim */
       }
     }
   }
@@ -69,12 +71,10 @@ void HydroKernel (dt)
       JUP_SAFE(EnergyCorrection2 (dt));
   }
   /* Apply source terms (potential gradient, centrifugal force) */
-
   if (KEPLERIAN && !NoStockholm)
     ApplyStockholmBoundaryConditionsDust (dt);
-      //ApplyStockholmBoundaryConditions (dt);
-
-    if (Stellar) {
+    //ApplyStockholmBoundaryConditions (dt);
+  if (Stellar) {
     JUP_SAFE (RT_main(dt)); /* only apply to the gas fluid*/
     //if there is a dust fluid, fill dust temperature after gas temperature has been computed
     if (NbFluids>1){
@@ -84,9 +84,9 @@ void HydroKernel (dt)
 }
 
 //######################################################################
-
+// DUSTKERNEL
+// this kernel treats dust as a pressureless fluid in the absence of turbulent diffusion
 //######################################################################
-
 
 void DustKernel (dt)
       real dt;
@@ -95,10 +95,6 @@ void DustKernel (dt)
   lev = CurrentFluidPatch->desc->level;
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
-  //JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
-  //JUP_SAFE(FillSources_Predict());
-  //JUP_SAFE(FillSlopes ());
-  //Predictor (dt); 
   for (dim = 0; dim < NDIM; dim++) { /* For each dimension */
     ip1 = (dim == 0);
     ip2 = 2-(dim == 2);
@@ -120,44 +116,28 @@ void DustKernel (dt)
       }
     }
   }
-
-  //if (DUSTDIFF == YES){
-    //JUP_SAFE(DustDiffusion (dt));
-  //}
-
   JUP_SAFE(ConservativeDustUpdate (dt));
   JUP_SAFE(DustDensFloor());
-
   /* and the conservative update is performed, together */
   /* with a face flux monitoring */
-  //JUP_SAFE(PressureCorrection (dt));
   /* Needs to be done *before* the source filling in SPHERICAL */
   JUP_SAFE(FillSources_geom_col (UPDATE, EVERYWHERE));
   JUP_SAFE(Source (dt));
-  //if (lev < HIGHRESLEVEL) {
-    //if (!Isothermal)
-      //JUP_SAFE(EnergyCorrection (dt));
-  //}
   /* Leave this after source step in order not to interfere with the
      divergence evaluation performed earlier. */
   JUP_SAFE(FillSources_geom_rad (UPDATE, EVERYWHERE));
   JUP_SAFE(Source (dt));
   JUP_SAFE(FillSources_pot (UPDATE, EVERYWHERE));
   JUP_SAFE(Source (dt));
-  //if (lev >= HIGHRESLEVEL) {
-    //if (!Isothermal)
-      //JUP_SAFE(EnergyCorrection2 (dt));
-  //}
   /* Apply source terms (potential gradient, centrifugal force) */
   if (KEPLERIAN && !NoStockholm) {
     ApplyStockholmBoundaryConditionsDust (dt);
   }
-
 }
 
-
 //######################################################################
-
+// DUSTDIFFPRESKERNEL
+// this kernel treats dust as a fluid with diffusion pressure (see Klahr+2021)
 //######################################################################
 
 void DustDiffPresKernel (dt)
@@ -167,10 +147,10 @@ void DustDiffPresKernel (dt)
   lev = CurrentFluidPatch->desc->level;
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
-  JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
-  //JUP_SAFE(FillSources_Predict());
-  //JUP_SAFE(FillSlopes ());
-  //Predictor (dt); 
+  if (mPLM || mMUSCL){ 
+    JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
+    JUP_SAFE(FillSlopes ());
+  } 
   for (dim = 0; dim < NDIM; dim++) { /* For each dimension */
     ip1 = (dim == 0);
     ip2 = 2-(dim == 2);
@@ -179,7 +159,12 @@ void DustDiffPresKernel (dt)
       for (j = 0; j < size[ip1]; j++) {
 	      JUP_SAFE(FillBeam (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
 	      /* Scan a beam of the active mesh */
-        JUP_SAFE(__Prepare_Riemann_States (&beam, dt));
+        if(Stellar){
+          JUP_SAFE(plm (&beam, dt));
+          //JUP_SAFE(__Prepare_Riemann_States (&beam, dt));
+        }else{
+          JUP_SAFE(__Prepare_Riemann_States (&beam, dt));
+        }
 	      /* which is used to prepare the Riemann States */
 	      JUP_SAFE(Compute_Fluxes_Iso(&beam, dt));
         /* The Riemann solver is then called and the fluxes evaluated */
@@ -188,13 +173,10 @@ void DustDiffPresKernel (dt)
       }
     }
   }
-
-  JUP_SAFE(ConservativeUpdate (dt));
+  JUP_SAFE(ConservativeDustUpdate (dt));
   JUP_SAFE(DustDensFloor());
-
   /* and the conservative update is performed, together */
   /* with a face flux monitoring */
-  //JUP_SAFE(PressureCorrection (dt));
   /* Needs to be done *before* the source filling in SPHERICAL */
   JUP_SAFE(FillSources_geom_col (UPDATE, EVERYWHERE));
   JUP_SAFE(Source (dt));
@@ -204,26 +186,19 @@ void DustDiffPresKernel (dt)
   JUP_SAFE(Source (dt));
   JUP_SAFE(FillSources_pot (UPDATE, EVERYWHERE));
   JUP_SAFE(Source (dt));
-
-  JUP_SAFE(FillSources_diff (UPDATE, EVERYWHERE));
-  JUP_SAFE(Source (dt));
-
-
-
+  //JUP_SAFE(FillSources_diff (UPDATE, EVERYWHERE, dt));
+  //JUP_SAFE(Source (dt));
   /* Apply source terms (potential gradient, centrifugal force) */
   if (KEPLERIAN && !NoStockholm) {
     ApplyStockholmBoundaryConditionsDust (dt);
   }
-
 }
 
-
 //######################################################################
-
+// DUSTDIFFKERNEL
+// this kernel treats dust as a pressurless fluid with tubulent diffusion 
+// modelled as a souce term in the mass equation (!OBSOLETE!). 
 //######################################################################
-
-
-
 
 void DustDiffKernel (dt)
       real dt;

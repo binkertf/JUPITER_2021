@@ -90,7 +90,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
 {
   real ***v, **d, **cs;
   long gncell[3], stride[3], m, i, j, k, l;
-  real e, d1, d2, cs2, acs, v1, v2, idenom, dustsz, dustsolidrho, stokes, mfp, diff_f, delta, tau_s;
+  real e, d1, d2, cs2, acs, acs2, acs2_2, v1, v2, idenom, dustsz, dustsolidrho, stokes, mfp, diff_f, delta, tau_s;
   FluidPatch *fluid;
 
   real *_radius, *_colat, *_azimuth;
@@ -146,19 +146,19 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
                 C = omegakep/(d2*(STOKESNUMBER));//const stokes number
               else //constant particle size
                 C=0.64*omegakep/(dustsz * dustsolidrho);
-
+              if (DUSTDIFF == NO)
                 C=C*(1.0+pow((DUSTDENSFLOOR*10./d1),5)); //smooth coupling limiter
               break;
 
             case 3: // NDIM == 3
-              omegakep = 1.0*sin(colat)/sqrt(radius*radius*radius);
               if(constSt==YES){
+                omegakep = 1.0*sin(colat)/(sqrt(radius)*sqrt(radius)*sqrt(radius));
                 C = omegakep/(d2*STOKESNUMBER);//const stokes number
               }else{
                 C=1.6*sqrt(cs2)/(dustsz * dustsolidrho); //const dust particle size
-                C=C*(1.0+pow((DUSTDENSFLOOR*100./d1),5)); //smooth coupling limiter
+                if (DUSTDIFF == NO)
+                  C=C*(1.0+pow((DUSTDENSFLOOR*100./d1),5)); //smooth coupling limiter
               }
-              
               break;
 
             default:
@@ -174,7 +174,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
             C=1.334*acs/(dustsz*dustsolidrho);
             //where DUSTSIZE is the product of partcle diameter and dust solid density in code units*/
 
-            C=C*(1.0+pow((DUSTDENSFLOOR*100/d1),5)); //smooth coupling limiter
+            //C=C*(1.0+pow((DUSTDENSFLOOR*100/d1),5)); //smooth coupling limiter
           }
         }
 
@@ -196,7 +196,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
 
 
           // Here, I set the dust density to the dustfloor in the irradiated region
-          if (!Isothermal){
+          if (FALSE == TRUE){ //if (!Isothermal){
             if((colat/M_PI*180.0) <= (90.-STELLDEG) || (colat/M_PI*180.0) >= (90.+STELLDEG)) {
             d[0][m]=DUSTDENSFLOOR;
             v[0][l][m]=v2;
@@ -210,7 +210,8 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
 
 //#########################################################################################################
 // Diffusion Pressure
-for (i = 0; i < gncell[0]; i++) {
+  if ((DUSTDIFF == YES) || (VISCOSITY < 1e-15)){
+  for (i = 0; i < gncell[0]; i++) {
     for (j = 0; j < gncell[1]; j++) {
       for (k = 0; k < gncell[2]; k++) {
 	      m = i*stride[0]+j*stride[1]+k*stride[2];
@@ -229,31 +230,43 @@ for (i = 0; i < gncell[0]; i++) {
               cs[0][m] = diff_f * cs2; //dust diff pressure
 
             }else{ //constant particle size
-
               tau_s = sqrt(M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(cs2) * d2);
               cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/cs2);
-
             }
           }
 
           
           
 
+        }else{//radiative
+          acs2 = cs2/d2*GAMMA*(GAMMA-1.0); //adiabatic sound speed squared
+          //acs2 = 0.25*cs2/d2*GAMMA*(GAMMA-1.0); //adiabatic sound speed squared
+
+          if (acs2<(0.035*0.035)) acs2 = 0.035*0.035; //lower limit gas sound speed
+
+          acs2_2 = 0.5*0.01*d2/d2*GAMMA*(GAMMA-1.0);
+          if(constSt==TRUE){
+              prs_error ("ERROR: Constant Stokes number not implemented in radiative setup. Use constant particle size instead. \n");
+              //delta = VISCOSITY/(sqrt(cs2)*ASPECTRATIO*radius);
+              //diff_f = delta/(delta+STOKESNUMBER);
+
+              //cs[0][m] = diff_f * cs2; //dust diff pressure
+
+            }else{ //constant particle size
+              tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(acs2) * d2);
+              cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/acs2);
+
+              //if (cs[0][m]< (1e-1*0.05*1e-1*0.05)) cs[0][m] = 1e-1*0.05*1e-1*0.05;
+              //cs[0][m] = 0.05*0.05;
+              //printf("%.6f \n",sqrt(cs2));
+
+            }
+
         }
 
       }
     }
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 }

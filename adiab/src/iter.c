@@ -36,9 +36,11 @@ void ItereLevel (dt, level)
         if (Fluid->next==NULL){ //gas
           HydroKernel (dt);
         }else{
-            if (DUSTDIFF == YES){
+            if ((DUSTDIFF == YES) || (VISCOSITY < 1e-15)){
               //SendToSecondary(Fluid->next);//create a second fluid patch for the gas to access in the diffusion calculation
+              if(Stellar)Isothermal = TRUE;
               DustDiffPresKernel (dt);
+              if(Stellar)Isothermal = FALSE;
             }else{
               //SendToSecondary(Fluid->next);//create a second fluid patch for the gas to access in the diffusion calculation
               DustKernel (dt);
