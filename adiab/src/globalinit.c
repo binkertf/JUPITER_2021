@@ -4,6 +4,28 @@ long GlobalInit (argc, argv)
      int argc;
      char *argv[];
 {
+      prs_msg ( "\n\n");
+      prs_msg ( "                 .        ___---___                    . \n");                  
+      prs_msg ( "        .              .--\\       --.     .     .         .\n");
+      prs_msg ( "                     ./.;_.\\     __/~ \\.     \n");
+      prs_msg ( "                    /;  / `-'  __\\    . \\              \n");              
+      prs_msg ( "  .        .       / ,--'     / .   .;   \\        |\n");
+      prs_msg ( "                  | .|       /       __   |      -O-       .\n");
+      prs_msg ( "                 |__/    __ |  . ;   \\ | . |      |\n");
+      prs_msg ( "                 |      /  \\_    . ;| \\___|    \n");
+      prs_msg ( "    .    o       |      \\  .~\\___,--'     |           .\n");
+      prs_msg ( "                  |     | . ; ~~~~\\_    __|\n");
+      prs_msg ( "     |             \\    \\   .  .  ; \\  /_/   .\n");
+      prs_msg ( "    -O-        .    \\   /         . |  ~/                  .\n");
+      prs_msg ( "     |    .          ~\\ \\   .      /  /~          o \n");
+      prs_msg ( "   .                   ~--___ ; ___--~       \n");
+      prs_msg ( "                  .          ---         .         \n");     
+      prs_msg ( "             __  _  _  ____  __  ____  ____  ____ \n");  
+      prs_msg ( "           _(  )/ )( \\(  _ \\(  )(_  _)(  __)(  _ \\ \n");  
+      prs_msg ( "          / \\) \\) \\/ ( ) __/ )(   )(   ) _)  )   /\n");  
+      prs_msg ( "          \\____/\\____/(__)  (__) (__) (____)(__\\_)\n");       
+      prs_msg ( "\n\n");
+
   long NbRestart=0;
   char parameters[MAXLINELENGTH];
   GridFileInfo grids[MAXGRIDS];

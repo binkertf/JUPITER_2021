@@ -30,29 +30,26 @@ void Predictor (dt)
   for (l = 0; l < NDIM; l++) {
     for (k = ngh[2]; k < gncell[2]-ngh[2]; k++) {
       for (j = ngh[1]; j < gncell[1]-ngh[1]; j++) {
-	for (i = ngh[0]; i < gncell[0]-ngh[0]; i++) {
-	  m = i*stride[0]+j*stride[1]+k*stride[2];
-	  var = 0.0;
-	  for (n=0; n < NDIM; n++) {
-	    var -= v[n][m]*slope_rho[n][m];
-	    var -= rho[m]*slope_v[n][n][m];
-	  }
-	  var += source_rho[m];
-	  rhop[m] = rho[m] + .5*dt*var;
-	  for (p=0; p < NDIM; p++) { /* Loop on velocity component */
-	    var = 0.0;
-	    for (n=0; n < NDIM; n++) /* Loop on slope direction */
-	      var += -v[n][m]*slope_v[n][p][m];
-	    var += source_v[p][m];
-	    var += -e[m]/rho[m]*slope_rho[p][m];
-	    /* Note that the -Grad Cs^2 is missing in this prediction step. */
-	    /* This is fine for a smoothly varying fixed temperature field 
-	       such as the one we deal with in a locally isothermal disk. In an
-	       adiabatic formulation, the slope of the internal energy should 
-	       also be calculated and be added to the pressure gradient.  */
-	    vp[p][m] = v[p][m] + .5*dt*var;
-	  }
-	}
+	      for (i = ngh[0]; i < gncell[0]-ngh[0]; i++) {
+	        m = i*stride[0]+j*stride[1]+k*stride[2];
+	        var = 0.0;
+	        for (n=0; n < NDIM; n++) {
+	          var -= v[n][m]*slope_rho[n][m];
+	          var -= rho[m]*slope_v[n][n][m];
+	        }
+	        var += source_rho[m];
+	        rhop[m] = rho[m] + .5*dt*var;
+	        for (p=0; p < NDIM; p++) { /* Loop on velocity component */
+	          var = 0.0;
+	          for (n=0; n < NDIM; n++) /* Loop on slope direction */
+	            var += -v[n][m]*slope_v[n][p][m];
+	          var += source_v[p][m];
+	          var += -e[m]/rho[m]*slope_rho[p][m];
+	          /* Note that the -Grad Cs^2 is missing in this prediction step. */
+            /* The Cs^2 term is accounted for in FillSources_Predict() and added to source_v */
+	          vp[p][m] = v[p][m] + .5*dt*var;
+	        }
+	      }
       }
     }
   }

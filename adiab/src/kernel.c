@@ -22,6 +22,7 @@ void HydroKernel (dt)
   }
   if (mMUSCL) {
     JUP_SAFE(FillSources_Predict());
+    JUP_SAFE(FillSlopes ());
     if (!Isothermal){
       Predictor_adiab (dt);
     }else{
@@ -92,9 +93,15 @@ void DustKernel (dt)
       real dt;
 {
   long i, j, k, size[3], dim, ip1, ip2, lev;
+  if(Stellar)Isothermal = TRUE;
   lev = CurrentFluidPatch->desc->level;
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
+    JUP_SAFE(FillSources_Predict());
+    JUP_SAFE(FillSlopes ());
+    JUP_SAFE(Predictor (dt));
+
+
   for (dim = 0; dim < NDIM; dim++) { /* For each dimension */
     ip1 = (dim == 0);
     ip2 = 2-(dim == 2);
@@ -133,6 +140,7 @@ void DustKernel (dt)
   if (KEPLERIAN && !NoStockholm) {
     ApplyStockholmBoundaryConditionsDust (dt);
   }
+  if(Stellar)Isothermal = FALSE;
 }
 
 //######################################################################
@@ -144,12 +152,18 @@ void DustDiffPresKernel (dt)
       real dt;
 {
   long i, j, k, size[3], dim, ip1, ip2, lev;
+  if(Stellar)Isothermal = TRUE;
   lev = CurrentFluidPatch->desc->level;
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
-  if (mPLM || mMUSCL){ 
+  if (mPLM){ 
     JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
     JUP_SAFE(FillSlopes ());
+  }
+  if (mMUSCL) {
+    JUP_SAFE(FillSources_Predict());
+    JUP_SAFE(FillSlopes ());
+    JUP_SAFE(Predictor (dt)); 
   } 
   for (dim = 0; dim < NDIM; dim++) { /* For each dimension */
     ip1 = (dim == 0);
@@ -160,8 +174,7 @@ void DustDiffPresKernel (dt)
 	      JUP_SAFE(FillBeam (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
 	      /* Scan a beam of the active mesh */
         if(Stellar){
-          JUP_SAFE(plm (&beam, dt));
-          //JUP_SAFE(__Prepare_Riemann_States (&beam, dt));
+          JUP_SAFE(muscl (&beam, dt));
         }else{
           JUP_SAFE(__Prepare_Riemann_States (&beam, dt));
         }
@@ -186,12 +199,13 @@ void DustDiffPresKernel (dt)
   JUP_SAFE(Source (dt));
   JUP_SAFE(FillSources_pot (UPDATE, EVERYWHERE));
   JUP_SAFE(Source (dt));
-  //JUP_SAFE(FillSources_diff (UPDATE, EVERYWHERE, dt));
-  //JUP_SAFE(Source (dt));
+  JUP_SAFE(FillSources_diff (UPDATE, EVERYWHERE, dt));
+  JUP_SAFE(Source (dt));
   /* Apply source terms (potential gradient, centrifugal force) */
   if (KEPLERIAN && !NoStockholm) {
     ApplyStockholmBoundaryConditionsDust (dt);
   }
+  if(Stellar)Isothermal = FALSE;
 }
 
 //######################################################################

@@ -58,8 +58,6 @@ void FillSources_Predict ()
 	      sv[l][m] = -se[l][m]*(GAMMA-1.0)/rho[m];
 	    else
 	      sv[l][m] = (e[smm]*e[smm]*rho[smm]-e[smp]*e[smp]*rho[smp])*sinvdx/rho[m];
-		  
-		 
 	  }
 	  if (EXTERNALPOTENTIAL == YES) {// grav. acceleration
 	    sv[l][m] += -(pot[smp]-pot[smm])*sinvdx;

@@ -128,7 +128,7 @@ AUTOPOT	    = libpot.cx  potcode.c  includes/pot.h dumppot.c
 
 include	.config
 
-EXENAME        = ../jupiter_rad
+EXENAME        = ../jupiter
 
 ARCHIVE		= $(EXENAME:../%=../.src.%.tar)
 ARCHIVECOMP	= $(EXENAME:../%=../.src.%.tar.bz2)

@@ -219,7 +219,8 @@ void InitWholeHierarchy (NbRestart)
 		Fluid = Fluid->next;
 		}
 	}
-	FluidCoupling (item, 0.0);
+	if(DUSTDIFF == YES)
+	MultifluidDiffusionPressure (item, 0.0);
 	item = item->next;
       }
     }

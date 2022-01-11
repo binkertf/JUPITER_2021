@@ -28,6 +28,7 @@ void ItereLevel (dt, level)
     GetEnergyRadFromLevel (level-1);
   }
   while (item != NULL) {
+    //MultifluidDiffusionPressure (item, dt); // Communicate turbulent diffusion pressure to dust fluids 
     if ((level == item->level) && (item->cpu == CPU_Rank)) {
       Fluid = item->Fluid;
       SetFluidProperties (Fluid);
@@ -36,11 +37,9 @@ void ItereLevel (dt, level)
         if (Fluid->next==NULL){ //gas
           HydroKernel (dt);
         }else{
-            if ((DUSTDIFF == YES) || (VISCOSITY < 1e-15)){
+            if ((DUSTDIFF == YES) && (VISCOSITY > 1e-15)){
               //SendToSecondary(Fluid->next);//create a second fluid patch for the gas to access in the diffusion calculation
-              if(Stellar)Isothermal = TRUE;
               DustDiffPresKernel (dt);
-              if(Stellar)Isothermal = FALSE;
             }else{
               //SendToSecondary(Fluid->next);//create a second fluid patch for the gas to access in the diffusion calculation
               DustKernel (dt);
@@ -51,6 +50,7 @@ void ItereLevel (dt, level)
       }
     }
     FluidCoupling (item, dt);	/* Couple all fluids accessible to this item */
+    MultifluidDiffusionPressure (item, dt); // Communicate turbulent diffusion pressure to dust fluids 
     /* This must be done after the individual steps on each fluid */
     item = item->next;
   }

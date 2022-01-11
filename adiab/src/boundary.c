@@ -218,12 +218,13 @@ void TrueBC_fp (fluid)
 		vtg2=&vel[dim2][m_gh];
 	      }
         // Fabian added stuff here
-        if (!Isothermal){
+        //if (!Isothermal)
+        {
         if ((bc==30) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
           bc = 19;
         }
         if ((bc==99) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
-          bc = 4;
+          bc = 19;
         }
         }
         // til here
