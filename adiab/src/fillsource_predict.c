@@ -40,33 +40,35 @@ void FillSources_Predict ()
   for (i = 0; i < 3; i++)
     ngh[i] = (Nghost[i] > 0 ? Nghost[i]-1 : 0);
   for (l = 0; l < NDIM; l++) {
-    for (k = ngh[2]; k < gncell[2]-ngh[2]; k++) {
-      for (j = ngh[1]; j < gncell[1]-ngh[1]; j++) {
-	if (l == 0) metric_coef = invm[0][0][j] * invm[0][1][k];
-	for (i = ngh[0]; i < gncell[0]-ngh[0]; i++) {
-	  if (l == 2) metric_coef = invm[2][0][i] * invm[2][1][j];
-	  if (l == 1) metric_coef = invm[1][0][i] * invm[1][1][k];
-	  m = i*stride[0]+j*stride[1]+k*stride[2];
-	  smp = m+stride[l];
-	  smm = m-stride[l];
-	  sinvdx = 1.0/(center[l][smp]-center[l][smm]);
-	  sinvdx *= metric_coef;
-	  sv[l][m] = 0.0;
-	  /* Pressure gradient below */
-	  if (mMUSCL) {
-	    if (!Isothermal)
-	      sv[l][m] = -se[l][m]*(GAMMA-1.0)/rho[m];
-	    else
-	      sv[l][m] = (e[smm]*e[smm]*rho[smm]-e[smp]*e[smp]*rho[smp])*sinvdx/rho[m];
-	  }
-	  if (EXTERNALPOTENTIAL == YES) {// grav. acceleration
-	    sv[l][m] += -(pot[smp]-pot[smm])*sinvdx;
-	  }
-	  if (GridFriction[l] != 0.0)
-	    sv[l][m] -= v[l][m]*GridFriction[l];
-	}
-      }
+	for (k = ngh[2]; k < gncell[2]-ngh[2]; k++) {
+    	for (j = ngh[1]; j < gncell[1]-ngh[1]; j++) {
+			if (l == 0) metric_coef = invm[0][0][j] * invm[0][1][k];
+			for (i = ngh[0]; i < gncell[0]-ngh[0]; i++) {
+	  			if (l == 2) metric_coef = invm[2][0][i] * invm[2][1][j];
+	  			if (l == 1) metric_coef = invm[1][0][i] * invm[1][1][k];
+	  			m = i*stride[0]+j*stride[1]+k*stride[2];
+	  			smp = m+stride[l];
+	  			smm = m-stride[l];
+	  			sinvdx = 1.0/(center[l][smp]-center[l][smm]);
+	  			sinvdx *= metric_coef;
+	  			sv[l][m] = 0.0;
+	  			/* Pressure gradient below */
+	  			if (mMUSCL) {
+	    			if (!Isothermal){
+	    				sv[l][m] = -se[l][m]*(GAMMA-1.0)/rho[m];
+					}else{
+	    				sv[l][m] = (e[smm]*e[smm]*rho[smm]-e[smp]*e[smp]*rho[smp])*sinvdx/rho[m];
+					}
+				}
+				if (EXTERNALPOTENTIAL == YES) {// grav. acceleration
+	    			sv[l][m] += -(pot[smp]-pot[smm])*sinvdx;
+	  			}
+	  			if (GridFriction[l] != 0.0)
+	    		sv[l][m] -= v[l][m]*GridFriction[l];
+			}
+		}
     }
+    
   }
   
   for (k = ngh[2]; k < gncell[2]-ngh[2]; k++) {

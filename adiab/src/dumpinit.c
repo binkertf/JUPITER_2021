@@ -272,6 +272,20 @@ case keplerdust:
 	fprintf (init, "   v_azimuth = keplerian_dust_init(_vazimuth_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
 	fprintf (init, "   v_colatitude= keplerian_dust_init(_vcolatitude_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
 	break;
+case keplerdust_diff:
+	fprintf (init, "   density   = keplerian_dust_diffusion_init(_density_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   energy    = keplerian_dust_diffusion_init(_density_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);;\n");
+	fprintf (init, "   vrad      = keplerian_dust_diffusion_init(_vrad_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   v_azimuth = keplerian_dust_diffusion_init(_vazimuth_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   v_colatitude= keplerian_dust_diffusion_init(_vcolatitude_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	break;
+case keplergas_diff:
+	fprintf (init, "   density   = keplerian_gas_diffusion_init(_density_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   energy    = keplerian_gas_diffusion_init(_density_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);;\n");
+	fprintf (init, "   vrad      = keplerian_gas_diffusion_init(_vrad_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   v_azimuth = keplerian_gas_diffusion_init(_vazimuth_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   v_colatitude= keplerian_gas_diffusion_init(_vcolatitude_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	break;
 case essai:
 	fprintf (init, "   density   = SIGMA0;\n");
 	fprintf (init, "   vrad      = 0.0;\n");
@@ -412,6 +426,36 @@ case throop:
 	fprintf (init, "   vx         = vx        *interm3 + (1.-interm3)*0.0;\n");
 	fprintf (init, "   vy         = vy        *interm3 + (1.-interm3)*0.0;\n");
 	fprintf (init, "   vz         = vz        *interm3 + (1.-interm3)*(-3.);\n");
+	break;
+case W19_1_g:
+	fprintf (init, "   density = 1.0;\n");
+	fprintf (init, "   vx = 0.0;\n");
+	fprintf (init, "   energy = CS*CS;\n");
+	break;
+case W19_1_d:
+	fprintf (init, "   density = 1.0-2.0032051282051285e-05*sin(0.02*x);\n");
+	fprintf (init, "   vx = 0.001*cos(0.02*x);\n");
+	fprintf (init, "   energy = CS*CS;\n");
+	break;
+case W19_1_d_05:
+	fprintf (init, "   density = 1.0+0.001*0.050505050505050504*sin(5.0*x);\n");
+	fprintf (init, "   vx = 0.001*cos(5.0*x);\n");
+	fprintf (init, "   energy = CS*CS;\n");
+	break;
+case W19_1_d_2:
+	fprintf (init, "   density = 1.0+0.001*cos(0.05*x);\n");
+	fprintf (init, "   vx = 0.0;\n");
+	fprintf (init, "   energy = CS*CS;\n");
+	break;
+case W19_1_d_3:
+	fprintf (init, "   density = 1.0 + 0.0001 * 0.5 * cos(5.0*x);\n");
+	fprintf (init, "   vx = 0.0001 * cos(5.0*x);\n");
+	fprintf (init, "   energy = CS*CS;\n");
+	break;
+case W19_1_d_4:
+	fprintf (init, "   density = 1.0 - 0.0001 * 0.5 * cos(5.0*x);\n");
+	fprintf (init, "   vx = 0.0001 * cos(5.0*x);\n");
+	fprintf (init, "   energy = CS*CS;\n");
 	break;
 default:
 	break;

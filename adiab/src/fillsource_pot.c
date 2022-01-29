@@ -49,7 +49,10 @@ void FillSources_pot (flag, loc)
 	      smm = m-stride[l];
 	      sinvdx = 1.0/(center[l][smp]-center[l][smm]);
 	      sinvdx *= metric_coef;
-        sv[l][m] = (pot[smm]-pot[smp])*sinvdx;
+        if (KEPLERIAN)
+          sv[l][m] = pot[m]*pot[m]*(1./pot[smp]-1./pot[smm])*sinvdx; //???
+        else
+          sv[l][m] = (pot[smm]-pot[smp])*sinvdx;
         } else {
 	      sv[l][m] = 0.0;
 	    }

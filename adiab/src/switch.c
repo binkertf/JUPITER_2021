@@ -287,52 +287,102 @@ void SetGlobalVariables () {
   }
   if(!set) prs_error ("Invalid Riemann Solver code.");
 
-if (strncasecmp(DUSTSOLVER, "FO", 2) == 0) {
-    pInfo ("First order dust solver\n");
-    __Compute_Fluxes_pressureless = &Compute_Fluxes_pressureless1;
-  } else {
-    if (strncasecmp(DUSTSOLVER, "HO", 2) == 0) {
-      pInfo ("Higher order dust solver\n");
-      __Compute_Fluxes_pressureless = &Compute_Fluxes_pressureless2;
-    } else {
-	      prs_error ("Invalid dust solver code.");
-    }
-  }
-
   if (strncasecmp(METHOD, "PLM", 3) == 0) {
     if(Isothermal){
       pInfo ("Piecewise linear method\n");
       __Prepare_Riemann_States = &plm;
+      __Prepare_Riemann_States_Dust = &gfo;
+      if (DIFFMODE == 1){
+        __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
+      }else{
+        __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless2;
+      }
     }else{
       pInfo ("Piecewise linear method adiabatic\n");
       __Prepare_Riemann_States = &plm_adiab;
+      __Prepare_Riemann_States_Dust = &gfo;
+      if (DIFFMODE == 1){
+        __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
+      }else{
+        __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless2;
+      }
     }
     mPLM = YES;
-  } else {
+  }else{
     if (strncasecmp(METHOD, "GFO", 3) == 0) {
       if(Isothermal){
-	pInfo ("Godunov First Order method\n");
-	__Prepare_Riemann_States = &gfo;
+	      pInfo ("Godunov First Order method\n");
+	      __Prepare_Riemann_States = &gfo;
+        __Prepare_Riemann_States_Dust = &gfo;
+        if (DIFFMODE == 1){
+          __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
+        }else{
+          __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless1;
+        }
       }else{
-	pInfo ("Godunov First Order method adiabatic\n");
-	__Prepare_Riemann_States = &gfo_adiab;
+	      pInfo ("Godunov First Order method adiabatic\n");
+	      __Prepare_Riemann_States = &gfo_adiab;
+        __Prepare_Riemann_States_Dust = &gfo;
+        if (DIFFMODE == 1){
+          __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
+        }else{
+          __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless1;
+        }
       }
       mGFO = YES;
-    } else {
+    }else{
       if (strncasecmp(METHOD, "MUS", 3) == 0) {
-	if(Isothermal){
-	  pInfo ("MUSCL-Hancock method\n");
-	  __Prepare_Riemann_States = &muscl;
-	}else{
-	  pInfo ("MUSCL-Hancock method for adiabatic setup\n");
-	  __Prepare_Riemann_States = &muscl_adiab;
-	}
-	mMUSCL = YES;
-      } else {
-	prs_error ("Invalid Godunov method code.");
+	      if(Isothermal){
+	        pInfo ("MUSCL-Hancock method\n");
+	        __Prepare_Riemann_States = &muscl;
+          if (DIFFMODE == 0){
+             __Prepare_Riemann_States_Dust = &muscl;
+             __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless1;
+          }
+          if (DIFFMODE == 1){
+            __Prepare_Riemann_States_Dust = &muscl;
+            __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
+          }
+          if (DIFFMODE == 2){
+            __Prepare_Riemann_States_Dust = &gfo;
+            __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless2;
+          }
+	      }else{
+	        pInfo ("MUSCL-Hancock method for adiabatic setup\n");
+	        __Prepare_Riemann_States = &muscl_adiab;
+          if (DIFFMODE == 0){
+             __Prepare_Riemann_States_Dust = &muscl;
+             __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless1;
+          }
+          if (DIFFMODE == 1){
+            __Prepare_Riemann_States_Dust = &muscl;
+            __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
+          }
+          if (DIFFMODE == 2){
+            __Prepare_Riemann_States_Dust = &gfo;
+            __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless2;
+          }
+        }
+        mMUSCL = YES;
+      }else{
+	        prs_error ("Invalid Godunov method code.");
       }
     }
   }
+
+  if (strncasecmp(SLIMITER, "MINMOD", 6) == 0) {
+    __TVDslope = &minmod;
+    pInfo ("MINMOD slope limiter\n");
+}else{
+  if (strncasecmp(SLIMITER, "SUPERB", 6) == 0) {
+    __TVDslope = &superbee;
+    pInfo ("SUPERBEE slope limiter\n");
+  }else{
+    prs_error ("Invalid slope limiter.");
+  }
+}
+
+
   Periodic[0] = DIM1PERIODIC;
   Periodic[1] = DIM2PERIODIC;
   Periodic[2] = DIM3PERIODIC;

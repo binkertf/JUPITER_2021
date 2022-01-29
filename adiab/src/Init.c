@@ -219,12 +219,23 @@ void InitWholeHierarchy (NbRestart)
 		Fluid = Fluid->next;
 		}
 	}
-	if(DUSTDIFF == YES)
-	MultifluidDiffusionPressure (item, 0.0);
 	item = item->next;
       }
     }
   }
+
+	for (lev = 0; lev <= LevMax; lev++) {
+    	item = Grid_CPU_list;
+      	while (item != NULL) {
+			MultifluidDiffusionPressure (item, 0.0);
+			MultifluidDustEnergyToZero (item, 0.0);
+			item = item->next;
+      	}
+    }
+
+
+
+
   FreshStart = NO;
   if (Stretch == YES)
     *NbRestart = 0;

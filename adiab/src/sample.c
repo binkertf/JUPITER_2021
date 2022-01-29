@@ -799,6 +799,7 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
         St = t_stop * omegakep; //local Stokes number
       }
       D_d = D_d/(1.0+St*St); // see Youdin&Lithwick (2007)
+      
     }
 
     //diffusion time-scale limit 1 - this is likely too conservative
@@ -807,14 +808,17 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
     //  D_d = dx * dx / t_stop;
     //}
 
-    Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux
+
+    //Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux
+    Pi = -D_d*sqrt((rhogL)*(rhogR))*(rhoR/(rhogR)-rhoL/(rhogL))/dx; //diffusion flux
 
     // Diffusion flux limiter - the diffusion velocity must be smaller than the sound speed in gas
+    /*
     cs = 0.1 * sqrt(csL * csR);
     v_d = sqrt(Pi * Pi) / sqrt(rhoL * rhoR); //diffusion velocity
     if(v_d > cs){
       Pi = sgn(Pi) * cs * sqrt(rhoL * rhoR);
-    }
+    }*/
 
     //diffusion time-scale limit 2 - the diffusion timescale must be larger than the stopping time
     //v_d = sqrt(Pi * Pi) / sqrt(rhoL * rhoR); //diffusion velocity

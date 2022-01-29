@@ -243,7 +243,7 @@ void ExecCommUpVarLIL (long lev, long nb, int *fieldtype) /* With slope limiter 
 		    for (g = 0; g < 3; g++)
 		      isl[g] = (g == h ? is[g]-1 : is[g]);
 		    srcm = comm_adapt (srcm, comp[l], msm, isl, sqz, desc, +1, l/nvar);
-		      loc_slope[h] = .25 * TVDslope (srcp-src,src-srcm);
+		      loc_slope[h] = .25 * __TVDslope (srcp-src,src-srcm);
 		  } else {
 		    loc_slope[h] = 0.0;
 		  }

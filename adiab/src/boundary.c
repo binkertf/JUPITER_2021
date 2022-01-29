@@ -43,19 +43,20 @@ inline boolean boundary (rho,e,u,v,w,rhog,eg,ug,vg,wg,x,xg,yg,zg,condition,line,
       real xi;
       xi = SIGMASLOPE+1+FLARINGINDEX; //.+FLARINGINDEX;
       *rhog = rho*pow(xg/x,-xi); //rho;
-      *eg   = e;
+      *eg   = *rhog*e/rho;
       *ug   = u; //colatitude
       *vg   = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
       *wg   = w;
     break;
     case 5:	       /* RADIAL KEPLERIAN (isothermal, dust) */
       {
+      if (predictive) break;
       real xi;
       xi = SIGMASLOPE+1+FLARINGINDEX; //.+FLARINGINDEX;
-      *rhog = rho; //rho*pow(xg/x,-xi); //rho;
-      *eg   = e;
+      *rhog = rho*pow(xg/x,-xi); //rho;
+      *eg   = 0.0;
       *ug   = u; //colatitude
-      *vg   = v; (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
+      *vg   = v; //(v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
       *wg   = w;
     }
     break;
@@ -226,6 +227,9 @@ void TrueBC_fp (fluid)
         if ((bc==99) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
           bc = 19;
         }
+          if ((bc==4) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
+          bc = 4;
+          }
         }
         // til here
 	      boundary (dens[m_in],energy[m_in],vp,vt1,vt2,&dens[m_gh],\

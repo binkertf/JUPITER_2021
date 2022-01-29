@@ -90,7 +90,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
 {
   real ***v, **d, **cs;
   long gncell[3], stride[3], m, i, j, k, l;
-  real e, d1, d2, cs2, acs, acs2, acs2_2, v1, v2, idenom, dustsz, dustsolidrho, stokes, mfp, diff_f, delta, tau_s;
+  real e, d1, d2, cs2, acs, acs2, acs2_2, v1, v2, idenom, dustsz, dustsolidrho, stokes, mfp, diff_f, delta, tau_s, omega_coll, lamba_mfp;
   FluidPatch *fluid;
 
   real *_radius, *_colat, *_azimuth;
@@ -103,8 +103,9 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
     return;
   }
 
-  dustsz = DUSTSIZE / R0; // diameter of dust grains in code units
+  dustsz = DUSTSIZE / R0; // radius of dust grains in code units
   dustsolidrho = DUSTSOLIDRHO / RHO0; // solid density of dust grains in code units, typically 3 g/cm^3 in physical units
+  omega_coll = 2.0 * M_PI * dustsz * dustsz; //collision cross section
 
   v = (real ***)prs_malloc (sizeof(real *) * NbFluids);
   d = (real **)prs_malloc (sizeof(real **) * NbFluids);
@@ -124,7 +125,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
   _azimuth = item->Fluid->desc->Center[_AZIM_];
   for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
     for (j = Nghost[1]; j < gncell[1]-Nghost[1]; j++) {
-      for (k = Nghost[2]; k < gncell[2]-Nghost[2]; k++) {
+      for (k = Nghost[2]; k < gncell[2]-Nghost[2]; k++) {        
 	      m = i*stride[0]+j*stride[1]+k*stride[2];
 	      d1 = d[0][m]; /* dust density*/
 	      d2 = d[1][m]; /* gas density*/
@@ -135,7 +136,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
         colat = _colat[m];
 
         tau_s = 0.0;// stopping time
-
+        
         if (Isothermal){
           switch (NDIM){
             case 1: // NDIM == 1
@@ -151,13 +152,15 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
             case 2: // NDIM == 2
               omegakep = 1.0/sqrt(radius*radius*radius);
               if(constSt==YES){
-                C = omegakep/(d2*(STOKESNUMBER));//const stokes number
+                C = omegakep/(d2*STOKESNUMBER);//const stokes number
                 tau_s = STOKESNUMBER / omegakep;
+
+
               }else{ //constant particle size
                 C=0.64*omegakep/(dustsz * dustsolidrho);
                 tau_s = M_PI / 2.0 * dustsz * dustsolidrho / d2 / omegakep;
               }
-              if (DUSTDIFF == NO)
+              if (DIFFMODE != 1)
                 C=C*(1.0+pow((DUSTDENSFLOOR*10./d1),5)); //smooth coupling limiter
               break;
 
@@ -165,11 +168,11 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
               omegakep = 1.0*sin(colat)/(sqrt(radius)*sqrt(radius)*sqrt(radius));
               if(constSt==YES){
                 tau_s = STOKESNUMBER/omegakep;
-                C = omegakep/(d2*STOKESNUMBER);//const stokes number
+                C = omegakep/(d2*STOKESNUMBER);//const Stokes number
               }else{
                 C=1.6*sqrt(cs2)/(dustsz * dustsolidrho); //const dust particle size
                 tau_s = sqrt(M_PI / 8.0) * dustsz * dustsolidrho / sqrt(cs2) / d2 / omegakep;
-                if (DUSTDIFF == NO)
+                if (DIFFMODE !=1)
                   C=C*(1.0+pow((DUSTDENSFLOOR*100./d1),5)); //smooth coupling limiter
               }
               break;
@@ -188,14 +191,22 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
             //C=C*(1.0+pow((DUSTDENSFLOOR*100/d1),5)); //smooth coupling limiter
           }
         }
-/* commented out for testing. DONT FORGERT TO REMOVE!
+
         if (dt>tau_s)prs_error ("\n\nWARNING: Gas-dust coupling time is not resolved.\n\
 This could lead to errors. If you wish to ignore, \n\
 comment out this warning in multifluid.c and \n\
 PROCEED AT YOUR OWN RISK! \n\n\
 t_stop = %.2e\n\
 dt =     %.2e\n",tau_s,dt);
-*/
+
+        if (constSt!=YES){ 
+          lamba_mfp = 1.0 / (omega_coll* d2 / XMH); //gas mean-free-path
+          if (lamba_mfp< ((4.0/9.0)*dustsz)){
+            prs_error ("\n\nWARNING: Epstein might not be valid.\n\
+Consider implementing Stokes drag or ignore this message at your own risk.\n");
+
+          }
+        }
 
         // implicit velocity update 
 	      for (l = 0; l < NDIM; l++) {
@@ -204,14 +215,17 @@ dt =     %.2e\n",tau_s,dt);
           e = C*dt;
           idenom = 1./(1.+(d1+d2)*e);
 	        v[0][l][m] = (v1*(1.+d1*e)+v2*d2*e)*idenom; //dust velocity
-	        v[1][l][m] = (v2*(1.+d2*e)+v1*d1*e)*idenom; //gas velocity
+          if (BACKREACTION == YES){
+            v[1][l][m] = (v2*(1.+d2*e)+v1*d1*e)*idenom; //gas velocity
+          }
+
 
 
           // hard coupling limiter
-          if (d1<=DUSTDENSFLOOR){  
-            v[0][l][m]=v2;
-            v[1][l][m]=v2;
-          }
+          //if (d1<=DUSTDENSFLOOR){  
+            //v[0][l][m]=v2;
+            //v[1][l][m]=v2;
+          //}
 
 
           // Here, I set the dust density to the dustfloor in the irradiated region
@@ -223,6 +237,11 @@ dt =     %.2e\n",tau_s,dt);
   	        }
           }
 	      }
+
+
+        if (DIFFMODE != 1) cs[0][m] = 0.0; //set dust "energy" to zero when there is no diffusion pressure
+
+
       }
     }
   }
@@ -241,13 +260,12 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
   real *_radius, *_colat, *_azimuth;
   real radius, colat, azimuth, omegakep, C;
 
-  if ((NbFluids < 2) || (DUSTDIFF == NO) || (VISCOSITY < 1e-15)) return;
+  if ((NbFluids < 2) || (DIFFMODE != 1) || (VISCOSITY < 1e-15)) return;
   if (item->cpu != CPU_Rank) return;
   if (NbFluids > 2) {
     pWarning ("Diffusion pressure of more than two fluids not implemented.\n");
     return;
   }
-
   v = (real ***)prs_malloc (sizeof(real *) * NbFluids);
   d = (real **)prs_malloc (sizeof(real **) * NbFluids);
   cs = (real **)prs_malloc (sizeof(real **) * NbFluids);
@@ -281,6 +299,30 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
         colat = _colat[m];
 
         if (Isothermal){//isothermal
+          if (NDIM ==1){
+            tau_s = STOKESNUMBER;
+            cs[0][m] = VISCOSITY / tau_s; //VISCOSITY / (tau_s + VISCOSITY/cs2);
+          }
+
+          if (NDIM ==2){
+          omegakep = 1.0/sqrt(radius*radius*radius);
+           if(constSt==TRUE){//constant Stokes number
+              delta = VISCOSITY/(sqrt(cs2)*ASPECTRATIO*radius);
+              diff_f = delta/(delta+STOKESNUMBER);
+              cs[0][m] = diff_f * cs2; //dust turbulent diffusion pressure
+
+              //remove the following line after testing:
+              tau_s = STOKESNUMBER / omegakep;
+              cs[0][m] = VISCOSITY / tau_s;
+              //until here
+              
+            }else{ //constant particle size
+              tau_s = M_PI / 2.0 * dustsz * dustsolidrho / d2 / omegakep;
+              cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/cs2);
+            }
+          }
+
+
           if (NDIM ==3){
             if(constSt==TRUE){//constant Stokes number
               delta = VISCOSITY/(sqrt(cs2)*ASPECTRATIO*radius);
@@ -302,6 +344,55 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
             //printf("%.6f \n",sqrt(cs2));
           }
         }
+      }
+    }
+  }
+}
+
+
+
+
+void MultifluidDustEnergyToZero (item, dt)	/* Turbulent diffusion pressure in dust fluids */
+     tGrid_CPU *item;
+     real dt;
+{
+  real ***v, **d, **cs;
+  long gncell[3], stride[3], m, i, j, k, l;
+  real e, d1, d2, cs2, acs, acs2, acs2_min, acs2_2, v1, v2, idenom, dustsz, dustsolidrho, stokes, mfp, diff_f, delta, tau_s;
+  FluidPatch *fluid;
+
+  real *_radius, *_colat, *_azimuth;
+  real radius, colat, azimuth, omegakep, C;
+
+  if ((NbFluids < 2) || (DIFFMODE == 1)) return;
+  if (item->cpu != CPU_Rank) return;
+
+
+  v = (real ***)prs_malloc (sizeof(real *) * NbFluids);
+  d = (real **)prs_malloc (sizeof(real **) * NbFluids);
+  cs = (real **)prs_malloc (sizeof(real **) * NbFluids);
+  fluid = item->Fluid;
+  i = 0;
+  while (fluid != NULL) {
+    d[i] = fluid->Density->Field;
+    v[i] = fluid->Velocity->Field;
+    cs[i]= fluid->Energy->Field;
+    fluid = fluid->next;
+    i++;
+  }
+  getgridsize (item, gncell, stride);
+  _radius = item->Fluid->desc->Center[_RAD_];
+  _colat = item->Fluid->desc->Center[_COLAT_];
+  _azimuth = item->Fluid->desc->Center[_AZIM_];
+  
+
+  for (i = 0; i < gncell[0]; i++) {
+    for (j = 0; j < gncell[1]; j++) {
+      for (k = 0; k < gncell[2]; k++) {
+	      m = i*stride[0]+j*stride[1]+k*stride[2];
+
+        cs[0][m] = 0.0; //set dust "energy" to zero when there is no diffusion pressure
+
       }
     }
   }

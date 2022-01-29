@@ -28,22 +28,20 @@ void ItereLevel (dt, level)
     GetEnergyRadFromLevel (level-1);
   }
   while (item != NULL) {
-    //MultifluidDiffusionPressure (item, dt); // Communicate turbulent diffusion pressure to dust fluids 
     if ((level == item->level) && (item->cpu == CPU_Rank)) {
       Fluid = item->Fluid;
       SetFluidProperties (Fluid);
       while (Fluid != NULL) {
         SendToCurrent (Fluid);
         if (Fluid->next==NULL){ //gas
-          HydroKernel (dt);
-        }else{
-            if ((DUSTDIFF == YES) && (VISCOSITY > 1e-15)){
-              //SendToSecondary(Fluid->next);//create a second fluid patch for the gas to access in the diffusion calculation
-              DustDiffPresKernel (dt);
-            }else{
-              //SendToSecondary(Fluid->next);//create a second fluid patch for the gas to access in the diffusion calculation
-              DustKernel (dt);
-            }
+          //HydroKernel (dt);
+        }else{ //dust
+          if (DIFFMODE != 2){
+            DustKernel (dt);
+          }else{
+            SendToSecondary(Fluid->next);//create a second fluid patch for the gas to access in the diffusion calculation
+            DustDiffKernel (dt);
+          }
         }
         CurrentToPatch (Fluid);
 	      Fluid = Fluid->next;
