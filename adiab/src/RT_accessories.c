@@ -549,7 +549,7 @@ void FillDust ()
   dustfluid = CurrentFluidPatch->Fluid->prev;
   long gncell[3], stride[3];
   long i,j,h,l;
-  real *gastemper, *dusttemper;
+  real *gastemper, *dusttemper, *dustdens;
   real temp,temp_SI;
   getgridsize (gasfluid->desc, gncell, stride);
   gastemper    = gasfluid->Temperature;
