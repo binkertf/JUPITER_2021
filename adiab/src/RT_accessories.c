@@ -315,6 +315,7 @@ void ComputeOpacity() {
   long i, j,h, l,nr, ns, ni;
   real *opar, *opap, *opas, *temper, *dens, *gasdens, *dustdens;
   real opacity;
+  real temp_SI,smoother;
   fw = CurrentFluidPatch;
   gasdens    = gasfluid->Density;
   dustdens    = dustfluid->Density->Field;
@@ -342,11 +343,21 @@ void ComputeOpacity() {
 	//	multiplication by a factor 100 of DUSTTOGAS as opacity is
 	//      already calculated for a dust to gas ratio of 0.01
 
-  if ((temper[l]*TEMP0)>1500.0){
-    opacity =  DUSTTOGAS*100.*kappa(temper[l],dens[l]);
-    }else{
-    opacity =  kappa(temper[l],0.01*dens[l]+0.99*(100.*dustdens[l]));
-    }
+  // if ((temper[l]*TEMP0)>1500.0){
+  //   opacity =  DUSTTOGAS*100.*kappa(temper[l],dens[l]);
+  //   }else{
+  //   opacity =  kappa(temper[l],0.01*dens[l]+0.99*(100.*dustdens[l]));
+  //   }
+
+      temp_SI = temper[l]*TEMP0;
+      if (temp_SI<1500.0){
+       opacity =  kappa(temper[l],0.01*dens[l]+0.99*(100.*dustdens[l]));
+      } else if ((temp_SI>=1500.0)&&(temp_SI<=3000)){
+       smoother = pow(cos(PI*(temp_SI-1500)/3000),2);
+       opacity =  kappa(temper[l],(0.01+0.99*(1-smoother))*dens[l]+(0.99-0.99*(1-smoother))*(100.*dustdens[l]));
+      } else{
+        opacity =  DUSTTOGAS*100.*kappa(temper[l],dens[l]);
+      }
 
   opas[l] = DUSTTOGAS*100.*3.5*RHO0*R0;
 	opar[l] = opacity; //Rosseland mean opacity (for radiative cooling)
@@ -537,19 +548,26 @@ void FillDust ()
   dustfluid = CurrentFluidPatch->Fluid->prev;
   long gncell[3], stride[3];
   long i,j,h,l;
-  real *gastemper, *dusttemper;
-  real temp;
+  real *gastemper, *dusttemper,*dustdens;
+  real temp,temp_SI;
   getgridsize (gasfluid->desc, gncell, stride);
   gastemper    = gasfluid->Temperature;
   dusttemper    = dustfluid->Temperature->Field;
-
+  dustdens     = dustfluid->Density->Field;
   for (h = 0; h < gncell[2]; h++) {
     for (i = 0; i < gncell[1]; i++) {
       for (j = 0; j < gncell[0]; j++) {
 	      l = j+i*stride[1]+h*stride[2];
           temp = gastemper[l];
           dusttemper[l] = temp; //we set the dust temperature equal to the gas temperature
-
+          temp = gastemper[l];
+          dusttemper[l] = temp; //we set the dust temperature equal to the gas temperature
+          temp_SI = temp*TEMP0;
+          if ((temp_SI>=1500)&&(temp_SI<=3000)) {
+              dustdens[l] = dustdens[l]*pow(cos(PI*(temp_SI-1500)/3000),2) + DUSTDENSFLOOR;
+          }else if (temp_SI>3000) {
+              dustdens[l] = DUSTDENSFLOOR;
+          }
       }
     }
   }
