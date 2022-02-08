@@ -77,6 +77,7 @@ real	DUSTSOLIDRHO;
 real	DUSTTOGAS;
 real	DUSTDENSFLOOR;
 boolean	DUSTDIFF;
+boolean	DUSTEVAP;
 long	OUTPUTATREFINEMENT;
 long	FinestLevel;
 long	HIGHRESLEVEL;
