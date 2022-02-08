@@ -40,6 +40,7 @@ extern	char	RIEMANNSOLVER[512];
 extern	char	DUSTSOLVER[512];
 extern	real	STOKESNUMBER;
 extern	char	CONSTSTOKES[512];
+extern	boolean	SAMPLETSTOP;
 extern	char	ADIABATIC[512];
 extern	char	METHOD[512];
 extern	char	SLIMITER[512];

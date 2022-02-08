@@ -108,6 +108,7 @@ void CorrectFluxesFromFinerLevel ();
 void Source ();
 void DustDiffusion ();
 boolean boundary ();
+real StoppingTimeLimit ();
 real CourantLimit ();
 real CourantLimitGlobal ();
 void ViscousStress ();

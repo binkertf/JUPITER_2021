@@ -192,7 +192,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
           }
         }
 
-        if (dt>tau_s)prs_error ("\n\nWARNING: Gas-dust coupling time is not resolved.\n\
+       if (dt>tau_s)prs_error ("\n\nWARNING: Gas-dust coupling time is not resolved.\n\
 This could lead to errors. If you wish to ignore, \n\
 comment out this warning in multifluid.c and \n\
 PROCEED AT YOUR OWN RISK! \n\n\
