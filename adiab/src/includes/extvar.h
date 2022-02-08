@@ -77,6 +77,7 @@ extern	real	DUSTSOLIDRHO;
 extern	real	DUSTTOGAS;
 extern	real	DUSTDENSFLOOR;
 extern	boolean	DUSTDIFF;
+extern	boolean	DUSTEVAP;
 extern	long	OUTPUTATREFINEMENT;
 extern	long	FinestLevel;
 extern	long	HIGHRESLEVEL;
