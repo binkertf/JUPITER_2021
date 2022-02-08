@@ -348,7 +348,7 @@ void ComputeOpacity() {
         }else{
           opacity =  kappa(temper[l],0.01*dens[l]+0.99*(100.*dustdens[l]));
         }
-      }else{
+      }else if (DUSTEVAP==YES){
         temp_SI = temper[l]*TEMP0;
         if (temp_SI<1500.0){
           opacity =  kappa(temper[l],0.01*dens[l]+0.99*(100.*dustdens[l]));
@@ -358,6 +358,8 @@ void ComputeOpacity() {
         }else{
           opacity =  DUSTTOGAS*100.*kappa(temper[l],dens[l]);
         }
+      }else{
+        prs_error("Opacity not computed correctly, check RT_accessories.c\n");
       }
 
   opas[l] = DUSTTOGAS*100.*3.5*RHO0*R0;
