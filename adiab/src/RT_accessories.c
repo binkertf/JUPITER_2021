@@ -4,7 +4,7 @@
 //  For the gas opacities (~> 3000 K the Bell and Lin's gas opacities are used and smoothed together
 //  with the dust opacities.)
 
-inline real opjudit(real temp,real rho) {
+static inline real opjudit(real temp,real rho) {
   real power1,power2,power3;
   real t234,t456,t678;
   real ak1,ak2,ak3,bk1,bk2,bk3_2,bk3_3;
@@ -342,13 +342,25 @@ void ComputeOpacity() {
 	l = j+i*stride[1]+h*stride[2];
 	//	multiplication by a factor 100 of DUSTTOGAS as opacity is
 	//      already calculated for a dust to gas ratio of 0.01
-      if(DUSTEVAP==NO){
-        if ((temper[l]*TEMP0)>1500.0){
-          opacity =  DUSTTOGAS*100.*kappa(temper[l],dens[l]);
-        }else{
-          opacity =  kappa(temper[l],0.01*dens[l]+0.99*(100.*dustdens[l]));
-        }
-      }else if (DUSTEVAP==YES){
+      // if(DUSTEVAP==NO){
+        // if ((temper[l]*TEMP0)>1500.0){
+          // opacity =  DUSTTOGAS*100.*kappa(temper[l],dens[l]);
+        // }else{
+          // opacity =  kappa(temper[l],0.01*dens[l]+0.99*(100.*dustdens[l]));
+        // }
+      // }else if (DUSTEVAP==YES){
+      //   temp_SI = temper[l]*TEMP0;
+      //   if (temp_SI<1500.0){
+      //     opacity =  kappa(temper[l],0.01*dens[l]+0.99*(100.*dustdens[l]));
+      //   }else if ((temp_SI>=1500.0)&&(temp_SI<=3000)){
+      //     smoother = pow(cos(PI*(temp_SI-1500)/3000),2);
+      //     opacity =  kappa(temper[l],(0.01+0.99*(1-smoother))*dens[l]+(0.99-0.99*(1-smoother))*(100.*dustdens[l]));
+      //   }else{
+      //     opacity =  DUSTTOGAS*100.*kappa(temper[l],dens[l]);
+      //   }
+      // }else{
+      //   prs_error("Opacity not computed correctly, check RT_accessories.c\n");
+      // }
         temp_SI = temper[l]*TEMP0;
         if (temp_SI<1500.0){
           opacity =  kappa(temper[l],0.01*dens[l]+0.99*(100.*dustdens[l]));
@@ -357,10 +369,7 @@ void ComputeOpacity() {
           opacity =  kappa(temper[l],(0.01+0.99*(1-smoother))*dens[l]+(0.99-0.99*(1-smoother))*(100.*dustdens[l]));
         }else{
           opacity =  DUSTTOGAS*100.*kappa(temper[l],dens[l]);
-        }
-      }else{
-        prs_error("Opacity not computed correctly, check RT_accessories.c\n");
-      }
+        }      
 
   opas[l] = DUSTTOGAS*100.*3.5*RHO0*R0;
 	opar[l] = opacity; //Rosseland mean opacity (for radiative cooling)

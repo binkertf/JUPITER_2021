@@ -79,11 +79,21 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
 					   except   as   a  temporary,
 					   unitialized variable */
   real pot;
+  FluidPatch *dustfluid;
+  real *dustdens;
+  real dmass=0,dmass2=0,dtmass=0,dtmass2=0;
+
   dens = fp->Density->Field;  // density is called for the densityfloor
   InvVolume = fp->desc->InvVolume;
   temp = fp->Temperature->Field; 
   energ = fp->Energy->Field; 
   getgridsize (fp->desc, gncell, stride);
+
+  if (fp->next==NULL){
+    dustfluid = fp->prev;
+    dustdens = dustfluid->Density->Field;
+  }
+
   for (i = 0; i < 3; i++)	/* 3, not NDIM */
     center[i] = fp->desc->Center[i];
 
@@ -200,13 +210,31 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
 	    cut_dens=CurrentFluidPatch->Density[m];
 	    mass=mass+cut_dens/InvVolume[m];
 	    temp1=temp1+temp[m];
+
+      if (fp->next==NULL){
+        dmass=dmass+dustdens[m]/InvVolume[m];
+        }
 	    }
     	    if(center[_AZIM_][m] < 0.0+daz*2.2 && center[_AZIM_][m] > 0.0-(daz*2.2) && center[_RAD_][m] < 1.0+dr*2.2 &&  center[_RAD_][m] > 1.0-(dr*2.2) && center[_COLAT_][m] > (M_PI/2.)-(dco*2.2) &&  center[_COLAT_][m] < (M_PI/2.)) {
 	    cut_dens2=CurrentFluidPatch->Density[m];
 	    mass2=mass2+cut_dens2/InvVolume[m];
 	    temp2=temp2+temp[m];
-	    }
+	    
+      if (fp->next==NULL){
+        dmass2=dmass2+dustdens[m]/InvVolume[m];
         }
+      }
+        }
+      }
+    }
+  }
+
+  if (fp->next==NULL){
+    MPI_Allreduce (&dmass, &dtmass, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce (&dmass2, &dtmass2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    if ((dtmass/4.0)>=DUSTUCAP){
+      if(center[_AZIM_][m] < 0.0+daz*1.2 && center[_AZIM_][m] > 0.0-(daz*1.2) && center[_RAD_][m] < 1.0+dr*1.2 &&  center[_RAD_][m] > 1.0-(dr*1.2) && center[_COLAT_][m] > (M_PI/2.)-(dco*1.2) &&  center[_COLAT_][m] < (M_PI/2.)) {
+        dustdens[m] = dtmass2/32.0;
       }
     }
   }
