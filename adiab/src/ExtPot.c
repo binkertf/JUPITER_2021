@@ -212,7 +212,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
 	    temp1=temp1+temp[m];
 
       if (fp->next==NULL){
-        dmass=dmass+dustdens[m]/InvVolume[m];
+        dmass=dmass+dustdens[m];
         }
 	    }
     	    if(center[_AZIM_][m] < 0.0+daz*2.2 && center[_AZIM_][m] > 0.0-(daz*2.2) && center[_RAD_][m] < 1.0+dr*2.2 &&  center[_RAD_][m] > 1.0-(dr*2.2) && center[_COLAT_][m] > (M_PI/2.)-(dco*2.2) &&  center[_COLAT_][m] < (M_PI/2.)) {
@@ -221,7 +221,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
 	    temp2=temp2+temp[m];
 	    
       if (fp->next==NULL){
-        dmass2=dmass2+dustdens[m]/InvVolume[m];
+        dmass2=dmass2+dustdens[m];
         }
       }
         }
