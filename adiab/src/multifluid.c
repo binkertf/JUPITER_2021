@@ -171,9 +171,9 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
                 C = omegakep/(d2*STOKESNUMBER);//const Stokes number
               }else{
                 C=1.6*sqrt(cs2)/(dustsz * dustsolidrho); //const dust particle size
-                tau_s = sqrt(M_PI / 8.0) * dustsz * dustsolidrho / sqrt(cs2) / d2 / omegakep;
-                if (DIFFMODE !=1)
-                  C=C*(1.0+pow((DUSTDENSFLOOR*100./d1),5)); //smooth coupling limiter
+                tau_s = sqrt(M_PI / 8.0) * dustsz * dustsolidrho / sqrt(cs2) / d2;
+                //if (DIFFMODE !=1)
+                C=C*(1.0+pow((DUSTDENSFLOOR*100./d1),5)); //smooth coupling limiter
               }
               break;
 
@@ -187,17 +187,17 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
             omegakep = 1.0*sin(colat)/(sqrt(radius)*sqrt(radius)*sqrt(radius));
             acs = sqrt(cs2/d2*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
             C=1.334*acs/(dustsz*dustsolidrho);
-            tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / acs / d2 / omegakep;
-            //C=C*(1.0+pow((DUSTDENSFLOOR*100/d1),5)); //smooth coupling limiter
+            tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / acs / d2;
+            C=C*(1.0+pow((DUSTDENSFLOOR*100/d1),5)); //smooth coupling limiter
           }
         }
 
-       if (dt>tau_s)prs_error ("\n\nWARNING: Gas-dust coupling time is not resolved.\n\
+       /*if (dt>tau_s)prs_error ("\n\nWARNING: Gas-dust coupling time is not resolved.\n\
 This could lead to errors. If you wish to ignore, \n\
 comment out this warning in multifluid.c and \n\
 PROCEED AT YOUR OWN RISK! \n\n\
 t_stop = %.2e\n\
-dt =     %.2e\n",tau_s,dt);
+dt =     %.2e\n",tau_s,dt);*/
 
         if (constSt!=YES){ 
           lamba_mfp = 1.0 / (omega_coll* d2 / XMH); //gas mean-free-path
@@ -222,10 +222,10 @@ Consider implementing Stokes drag or ignore this message at your own risk.\n");
 
 
           // hard coupling limiter
-          //if (d1<=DUSTDENSFLOOR){  
-            //v[0][l][m]=v2;
-            //v[1][l][m]=v2;
-          //}
+          if (d1<=DUSTDENSFLOOR){  
+            v[0][l][m]=v2;
+            v[1][l][m]=v2;
+          }
 
 
           // Here, I set the dust density to the dustfloor in the irradiated region
@@ -239,7 +239,7 @@ Consider implementing Stokes drag or ignore this message at your own risk.\n");
 	      }
 
 
-        if (DIFFMODE != 1) cs[0][m] = 0.0; //set dust "energy" to zero when there is no diffusion pressure
+        if (DIFFMODE != 1) cs[0][m] = 0.0; //sets dust "energy" to zero when there is no diffusion pressure
 
 
       }
@@ -312,8 +312,8 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
               cs[0][m] = diff_f * cs2; //dust turbulent diffusion pressure
 
               //remove the following line after testing:
-              tau_s = STOKESNUMBER / omegakep;
-              cs[0][m] = VISCOSITY / tau_s;
+              //tau_s = STOKESNUMBER / omegakep;
+              //cs[0][m] = VISCOSITY / tau_s;
               //until here
               
             }else{ //constant particle size

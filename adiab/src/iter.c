@@ -34,7 +34,7 @@ void ItereLevel (dt, level)
       while (Fluid != NULL) {
         SendToCurrent (Fluid);
         if (Fluid->next==NULL){ //gas
-          //HydroKernel (dt);
+          HydroKernel (dt);
         }else{ //dust
           if (DIFFMODE != 2){
             DustKernel (dt);

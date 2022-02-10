@@ -53,7 +53,7 @@ void FillSources_Predict ()
 	  			sinvdx *= metric_coef;
 	  			sv[l][m] = 0.0;
 	  			/* Pressure gradient below */
-	  			if (mMUSCL) {
+				  if (mMUSCL) {
 	    			if (!Isothermal){
 	    				sv[l][m] = -se[l][m]*(GAMMA-1.0)/rho[m];
 					}else{
