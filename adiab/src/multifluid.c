@@ -169,10 +169,10 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
               if(constSt==YES){
                 tau_s = STOKESNUMBER/omegakep;
                 C = omegakep/(d2*STOKESNUMBER);//const Stokes number
+                C=C*(1.0+pow((DUSTDENSFLOOR*2./d1),5)); //smooth coupling limiter
               }else{
                 C=1.6*sqrt(cs2)/(dustsz * dustsolidrho); //const dust particle size
                 tau_s = sqrt(M_PI / 8.0) * dustsz * dustsolidrho / sqrt(cs2) / d2;
-                //if (DIFFMODE !=1)
                 C=C*(1.0+pow((DUSTDENSFLOOR*100./d1),5)); //smooth coupling limiter
               }
               break;

@@ -101,13 +101,13 @@ void DustKernel (dt)
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
   if (mPLM){ 
-    JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
     JUP_SAFE(FillSlopes ());
+    JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
   }
   if (mMUSCL) {
-    JUP_SAFE(FillSources_Predict());
     JUP_SAFE(FillSlopes ());
-    JUP_SAFE(Predictor_iso (dt)); //??
+    JUP_SAFE(FillSources_Predict());
+    JUP_SAFE(Predictor_iso (dt));
   } 
   if(Stellar)Isothermal = FALSE;
   for (dim = 0; dim < NDIM; dim++) { /* For each dimension */

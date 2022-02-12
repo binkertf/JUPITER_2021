@@ -291,19 +291,21 @@ void SetGlobalVariables () {
     if(Isothermal){
       pInfo ("Piecewise linear method\n");
       __Prepare_Riemann_States = &plm;
-      __Prepare_Riemann_States_Dust = &gfo;
       if (DIFFMODE == 1){
+        __Prepare_Riemann_States_Dust = &plm;
         __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
       }else{
+        __Prepare_Riemann_States_Dust = &gfo;
         __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless2;
       }
     }else{
       pInfo ("Piecewise linear method adiabatic\n");
       __Prepare_Riemann_States = &plm_adiab;
-      __Prepare_Riemann_States_Dust = &gfo;
       if (DIFFMODE == 1){
+        __Prepare_Riemann_States_Dust = &plm;
         __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
       }else{
+        __Prepare_Riemann_States_Dust = &gfo;
         __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless2;
       }
     }

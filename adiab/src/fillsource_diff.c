@@ -124,6 +124,10 @@ void FillSources_diff_gas (flag, loc, dt)
 	          sinvdx = 1.0/(center[l][smp]-center[l][smm]);
 	          sinvdx *= metric_coef;
 	          sv[l][m] = a2[m] * (rho_d[smp] / rho_g[smp] - rho_d[smm] / rho_g[smm]) * sinvdx;
+
+            if (rho_d[m] <= 1.5 * DUSTDENSFLOOR)
+              sv[l][m] = 0.0; 
+
             
             //diffusion limiter
             if ((sv[l][m]*dt)>a2[m]){

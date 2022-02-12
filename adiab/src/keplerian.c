@@ -107,7 +107,7 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
   }
   omegakep = 1.0*sin(colatitude)/(sqrt(radius)*sqrt(radius)*sqrt(radius));
   alpha = VISCOSITY/(omegakep*hg*hg);//*(pow(radius,0.2))*1.8;
-  hd = hg; //*sqrt(alpha/(alpha+St_mid));
+  hd = hg*sqrt(alpha/(alpha+St_mid));
 
   xi = a+1.+f;
   b = .5-f;
