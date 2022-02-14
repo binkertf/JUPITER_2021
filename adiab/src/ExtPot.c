@@ -233,9 +233,18 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
     MPI_Allreduce (&dmass, &dtmass, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce (&dmass2, &dtmass2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     if ((dtmass/4.0)>=DUSTUCAP){
-      if(center[_AZIM_][m] < 0.0+daz*1.2 && center[_AZIM_][m] > 0.0-(daz*1.2) && center[_RAD_][m] < 1.0+dr*1.2 &&  center[_RAD_][m] > 1.0-(dr*1.2) && center[_COLAT_][m] > (M_PI/2.)-(dco*1.2) &&  center[_COLAT_][m] < (M_PI/2.)) {
-        dustdens[m] = dtmass2/32.0;
-      }
+      for (k = 0; k < gncell[2]; k++) { /* ghosts are included */
+        for (j = 0; j < gncell[1]; j++) {
+          for (i = 0; i < gncell[0]; i++) {
+            m = i*stride[0]+j*stride[1]+k*stride[2];
+            if (fp->desc->level==LevMax){
+              if(center[_AZIM_][m] < 0.0+daz*1.2 && center[_AZIM_][m] > 0.0-(daz*1.2) && center[_RAD_][m] < 1.0+dr*1.2 &&  center[_RAD_][m] > 1.0-(dr*1.2) && center[_COLAT_][m] > (M_PI/2.)-(dco*1.2) &&  center[_COLAT_][m] < (M_PI/2.)) {
+                dustdens[m] = dtmass2/32.0;
+              }
+            }
+          }
+        } 
+      }  
     }
   }
   MPI_Allreduce (&mass, &tmass, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
