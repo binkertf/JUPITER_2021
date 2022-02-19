@@ -310,12 +310,6 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
               delta = VISCOSITY/(sqrt(cs2)*ASPECTRATIO*radius);
               diff_f = delta/(delta+STOKESNUMBER);
               cs[0][m] = diff_f * cs2; //dust turbulent diffusion pressure
-
-              //remove the following line after testing:
-              //tau_s = STOKESNUMBER / omegakep;
-              //cs[0][m] = VISCOSITY / tau_s;
-              //until here
-              
             }else{ //constant particle size
               tau_s = M_PI / 2.0 * dustsz * dustsolidrho / d2 / omegakep;
               cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/cs2);
@@ -327,10 +321,20 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
             if(constSt==TRUE){//constant Stokes number
               delta = VISCOSITY/(sqrt(cs2)*ASPECTRATIO*radius);
               diff_f = delta/(delta+STOKESNUMBER);
+              //diff_f = delta / STOKESNUMBER;
               cs[0][m] = diff_f * cs2; //dust turbulent diffusion pressure
+              //remove the following line after testing:
+              //tau_s = STOKESNUMBER / omegakep;
+              //cs[0][m] = VISCOSITY / tau_s;
+              //until here
+              
+              //omegakep = 1.0/sqrt(radius*radius*radius);
+              //cs[0][m] = VISCOSITY * omegakep / STOKESNUMBER;
+
             }else{ //constant particle size
               tau_s = sqrt(M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(cs2) * d2);
               cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/cs2);
+              //cs[0][m] = VISCOSITY / tau_s;
             }
           }
         }else{//radiative
@@ -340,6 +344,7 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
           }else{ //constant particle size
             tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(acs2) * d2);
             cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/(acs2));
+            //cs[0][m] = VISCOSITY / tau_s;
             //cs[0][m] = acs2; 
             //printf("%.6f \n",sqrt(cs2));
           }

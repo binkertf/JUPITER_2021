@@ -94,7 +94,7 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
 {
   real init=0.;
   real h2,  hm2, b, xi, w, isc=1., isc2f=1., rho;
-  real hg, hd, St_mid, dustsz, dustsolidrho, omegakep, alpha;
+  real hg, hd, hd_2, St_mid, dustsz, dustsolidrho, omegakep, alpha;
 
   dustsz = DUSTSIZE / R0; // diameter of dust grains in code units
   dustsolidrho = DUSTSOLIDRHO / RHO0; // solid density of dust grains in code units, typically 3 g/cm^3 in physical units
@@ -142,7 +142,12 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
     if (NDIM == 2) // Check different cases (iso. no iso)
       init = DISKSPEEDFACTOR*pow(radius, -1.5)*sqrt(1.-2.*b*(GAMMA-1.0)/GAMMA*h2);
 
-    init = pow(radius, -1.5);
+    if (DIFFMODE == 1){
+      init = pow(radius, -1.5) * sqrt(1.0-3.0/2.0*VISCOSITY/St_mid*pow(radius, -0.25));
+    }else{
+      init = pow(radius, -1.5);
+    }
+    
     break;
   case _energy_:
       init = alpha / (alpha+St_mid) * h*h*pow(radius, -2.*b);

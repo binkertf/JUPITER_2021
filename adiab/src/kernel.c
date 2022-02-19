@@ -66,10 +66,7 @@ void HydroKernel (dt)
   JUP_SAFE(Source (dt));
   JUP_SAFE(FillSources_pot (UPDATE, EVERYWHERE));
   JUP_SAFE(Source (dt));
-    if ((DIFFMODE == 1) && (BACKREACTION == YES) && (NbFluids>1)){
-      JUP_SAFE(FillSources_diff_gas (UPDATE, EVERYWHERE, dt));
-      JUP_SAFE(Source (dt));
-  }
+
   if (lev >= HIGHRESLEVEL) {
     if (!Isothermal)
       JUP_SAFE(EnergyCorrection2 (dt));
@@ -102,11 +99,11 @@ void DustKernel (dt)
     size[i] = CurrentFluidPatch->desc->ncell[i];
   if (mPLM){ 
     JUP_SAFE(FillSlopes ());
-    JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
+    JUP_SAFE(FillSources_Dust (PREDICT, EVERYWHERE));
   }
   if (mMUSCL) {
     JUP_SAFE(FillSlopes ());
-    JUP_SAFE(FillSources_Predict());
+    JUP_SAFE(FillSources_Predict_Dust());
     JUP_SAFE(Predictor_iso (dt));
   } 
   if(Stellar)Isothermal = FALSE;
@@ -141,12 +138,14 @@ void DustKernel (dt)
      divergence evaluation performed earlier. */
   JUP_SAFE(FillSources_geom_rad (UPDATE, EVERYWHERE));
   JUP_SAFE(Source (dt));
-  JUP_SAFE(FillSources_pot (UPDATE, EVERYWHERE));
-  JUP_SAFE(Source (dt));
   if (DIFFMODE == 1){
       JUP_SAFE(FillSources_diff_dust (UPDATE, EVERYWHERE, dt));
       JUP_SAFE(Source (dt));
   }
+
+  JUP_SAFE(FillSources_pot (UPDATE, EVERYWHERE));
+  JUP_SAFE(Source (dt));
+
   /* Apply source terms (potential gradient, centrifugal force) */
   if (KEPLERIAN && !NoStockholm) {
     ApplyStockholmBoundaryConditionsDust (dt);
