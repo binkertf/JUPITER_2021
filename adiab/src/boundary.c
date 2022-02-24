@@ -220,16 +220,11 @@ void TrueBC_fp (fluid)
 	      }
         // Fabian added stuff here
         //if (!Isothermal)
-        {
         if ((bc==30) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
           bc = 19;
         }
         if ((bc==99) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
           bc = 19;
-        }
-          if ((bc==4) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
-          bc = 4;
-          }
         }
         // til here
 	      boundary (dens[m_in],energy[m_in],vp,vt1,vt2,&dens[m_gh],\

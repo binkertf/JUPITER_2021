@@ -72,9 +72,10 @@ void HydroKernel (dt)
       JUP_SAFE(EnergyCorrection2 (dt));
   }
   /* Apply source terms (potential gradient, centrifugal force) */
-  if (KEPLERIAN && !NoStockholm)
-    //ApplyStockholmBoundaryConditionsDust (dt);
+  if (KEPLERIAN && !NoStockholm){
     ApplyStockholmBoundaryConditions (dt);
+    //ApplyStockholmBoundaryConditionsDust (dt);
+  }
   if (Stellar) {
     JUP_SAFE (RT_main(dt)); /* only apply to the gas fluid*/
     //if there is a dust fluid, fill dust temperature after gas temperature has been computed
@@ -128,7 +129,7 @@ void DustKernel (dt)
   JUP_SAFE(DustDensFloor());
   /* and the conservative update is performed, together */
   /* with a face flux monitoring */
-  if (DIFFMODE == 1){
+  if (diffmode == 1){
     JUP_SAFE(PressureCorrection (dt));
   }
   /* Needs to be done *before* the source filling in SPHERICAL */
@@ -138,7 +139,7 @@ void DustKernel (dt)
      divergence evaluation performed earlier. */
   JUP_SAFE(FillSources_geom_rad (UPDATE, EVERYWHERE));
   JUP_SAFE(Source (dt));
-  if (DIFFMODE == 1){
+  if (diffmode == 1){
       JUP_SAFE(FillSources_diff_dust (UPDATE, EVERYWHERE, dt));
       JUP_SAFE(Source (dt));
   }
@@ -167,13 +168,13 @@ void DustDiffKernel (dt)
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
   if (mPLM){ 
-    JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
     JUP_SAFE(FillSlopes ());
+    JUP_SAFE(FillSources_Dust (PREDICT, EVERYWHERE));
   }
   if (mMUSCL) {
-    JUP_SAFE(FillSources_Predict());
     JUP_SAFE(FillSlopes ());
-    JUP_SAFE(Predictor (dt)); 
+    JUP_SAFE(FillSources_Predict_Dust());
+    JUP_SAFE(Predictor_iso (dt));
   } 
   if(Stellar)Isothermal = FALSE;
   for (dim = 0; dim < NDIM; dim++) { /* For each dimension */

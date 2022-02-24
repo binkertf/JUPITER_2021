@@ -142,7 +142,7 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
     if (NDIM == 2) // Check different cases (iso. no iso)
       init = DISKSPEEDFACTOR*pow(radius, -1.5)*sqrt(1.-2.*b*(GAMMA-1.0)/GAMMA*h2);
 
-    if (DIFFMODE == 1){
+    if (diffmode == 1){
       init = pow(radius, -1.5) * sqrt(1.0-3.0/2.0*VISCOSITY/St_mid*pow(radius, -0.25));
     }else{
       init = pow(radius, -1.5);

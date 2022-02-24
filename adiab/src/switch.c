@@ -287,11 +287,33 @@ void SetGlobalVariables () {
   }
   if(!set) prs_error ("Invalid Riemann Solver code.");
 
+  //diffmode: 
+  if (DIFFMODE==-1){
+    if(DUSTDIFF == NO){
+      diffmode = 0; 
+    }else{
+      diffmode = 1; 
+    }
+  }else{
+    if (DIFFMODE==0){
+      diffmode = 0; 
+    }
+    if (DIFFMODE==1){
+      diffmode = 1; 
+    }
+    if (DIFFMODE==2){
+      diffmode = 2; 
+    }
+    if (DIFFMODE>=3){
+      prs_error ("Invalid DIFFMODE");
+    }
+  }
+
   if (strncasecmp(METHOD, "PLM", 3) == 0) {
     if(Isothermal){
       pInfo ("Piecewise linear method\n");
       __Prepare_Riemann_States = &plm;
-      if (DIFFMODE == 1){
+      if (diffmode == 1){
         __Prepare_Riemann_States_Dust = &plm;
         __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
       }else{
@@ -301,7 +323,7 @@ void SetGlobalVariables () {
     }else{
       pInfo ("Piecewise linear method adiabatic\n");
       __Prepare_Riemann_States = &plm_adiab;
-      if (DIFFMODE == 1){
+      if (diffmode == 1){
         __Prepare_Riemann_States_Dust = &plm;
         __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
       }else{
@@ -316,7 +338,7 @@ void SetGlobalVariables () {
 	      pInfo ("Godunov First Order method\n");
 	      __Prepare_Riemann_States = &gfo;
         __Prepare_Riemann_States_Dust = &gfo;
-        if (DIFFMODE == 1){
+        if (diffmode == 1){
           __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
         }else{
           __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless1;
@@ -325,7 +347,7 @@ void SetGlobalVariables () {
 	      pInfo ("Godunov First Order method adiabatic\n");
 	      __Prepare_Riemann_States = &gfo_adiab;
         __Prepare_Riemann_States_Dust = &gfo;
-        if (DIFFMODE == 1){
+        if (diffmode == 1){
           __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
         }else{
           __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless1;
@@ -337,30 +359,30 @@ void SetGlobalVariables () {
 	      if(Isothermal){
 	        pInfo ("MUSCL-Hancock method\n");
 	        __Prepare_Riemann_States = &muscl;
-          if (DIFFMODE == 0){
+          if (diffmode == 0){
              __Prepare_Riemann_States_Dust = &muscl;
              __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless1;
           }
-          if (DIFFMODE == 1){
+          if (diffmode == 1){
             __Prepare_Riemann_States_Dust = &muscl;
             __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
           }
-          if (DIFFMODE == 2){
+          if (diffmode == 2){
             __Prepare_Riemann_States_Dust = &gfo;
             __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless2;
           }
 	      }else{
 	        pInfo ("MUSCL-Hancock method for adiabatic setup\n");
 	        __Prepare_Riemann_States = &muscl_adiab;
-          if (DIFFMODE == 0){
+          if (diffmode == 0){
              __Prepare_Riemann_States_Dust = &muscl;
              __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless1;
           }
-          if (DIFFMODE == 1){
+          if (diffmode == 1){
             __Prepare_Riemann_States_Dust = &muscl;
             __Compute_Fluxes_Dust = &Compute_Fluxes_Iso;
           }
-          if (DIFFMODE == 2){
+          if (diffmode == 2){
             __Prepare_Riemann_States_Dust = &gfo;
             __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless2;
           }

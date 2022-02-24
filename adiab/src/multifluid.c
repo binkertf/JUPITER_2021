@@ -160,7 +160,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
                 C=0.64*omegakep/(dustsz * dustsolidrho);
                 tau_s = M_PI / 2.0 * dustsz * dustsolidrho / d2 / omegakep;
               }
-              if (DIFFMODE != 1)
+              if (diffmode != 1)
                 C=C*(1.0+pow((DUSTDENSFLOOR*10./d1),5)); //smooth coupling limiter
               break;
 
@@ -239,7 +239,7 @@ Consider implementing Stokes drag or ignore this message at your own risk.\n");
 	      }
 
 
-        if (DIFFMODE != 1) cs[0][m] = 0.0; //sets dust "energy" to zero when there is no diffusion pressure
+        if (diffmode != 1) cs[0][m] = 0.0; //sets dust "energy" to zero when there is no diffusion pressure
 
 
       }
@@ -260,7 +260,7 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
   real *_radius, *_colat, *_azimuth;
   real radius, colat, azimuth, omegakep, C;
 
-  if ((NbFluids < 2) || (DIFFMODE != 1) || (VISCOSITY < 1e-15)) return;
+  if ((NbFluids < 2) || (diffmode != 1) || (VISCOSITY < 1e-15)) return;
   if (item->cpu != CPU_Rank) return;
   if (NbFluids > 2) {
     pWarning ("Diffusion pressure of more than two fluids not implemented.\n");
@@ -369,7 +369,7 @@ void MultifluidDustEnergyToZero (item, dt)	/* Turbulent diffusion pressure in du
   real *_radius, *_colat, *_azimuth;
   real radius, colat, azimuth, omegakep, C;
 
-  if ((NbFluids < 2) || (DIFFMODE == 1)) return;
+  if ((NbFluids < 2) || (diffmode == 1)) return;
   if (item->cpu != CPU_Rank) return;
 
 

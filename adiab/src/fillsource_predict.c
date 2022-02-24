@@ -195,15 +195,11 @@ void FillSources_Predict_Dust ()
 	  			sinvdx *= metric_coef;
 	  			sv[l][m] = 0.0;
 	  			/* Pressure gradient below */
-				  if (mMUSCL) {
-	    			if (!Isothermal){
-	    				sv[l][m] = -se[l][m]*(GAMMA-1.0)/rho[m];
-					}else{
-						sv[l][m] = (e[smm]*rho[smm]-e[smp]*rho[smp])*sinvdx/rho[m];
-					}
+				if (mMUSCL && (diffmode == 1)) {
+	    			sv[l][m] = (e[smm]*rho[smm]-e[smp]*rho[smp])*sinvdx/rho[m];
 				}
-				if (DIFFMODE == 1){
-					//sv[l][m] += 1. / rho_g[m] * (a2[smp] * rho_g[smp] - a2[smm] * rho_g[smm]) * sinvdx;
+				if (diffmode == 1){
+					//sv[l][m] += (a2[smp]  - a2[smm] ) * sinvdx;
 					sv[l][m] += 1. / (rho_g[m] + rho[m]) * (a2[smp] * (rho_g[smp] + rho[smp]) - a2[smm] * (rho_g[smm] + rho[smm])) * sinvdx;
 				}
 				if (EXTERNALPOTENTIAL == YES) {// grav. acceleration
@@ -490,7 +486,7 @@ void FillSources_Dust (flag, loc)
 		sv[l][m] = 0.0;
 	      }
 
-		  if (DIFFMODE == 1){
+		  if (diffmode == 1){
 			sv[l][m] += 1. / rho_g[m] * (a2[smp] * rho_g[smp] - a2[smm] * rho_g[smm]) * sinvdx;
 		   }
 

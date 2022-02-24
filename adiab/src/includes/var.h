@@ -80,6 +80,7 @@ real	DUSTSOLIDRHO;
 real	DUSTTOGAS;
 real	DUSTDENSFLOOR;
 long	DIFFMODE;
+boolean	DUSTDIFF;
 boolean	BACKREACTION;
 long	OUTPUTATREFINEMENT;
 long	FinestLevel;

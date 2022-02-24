@@ -9,6 +9,7 @@ boolean HydroStaticEnforce = NO, HydroStaticReady = NO;
 boolean Radiative = NO, HalfDisk = NO, Stellar = NO;
 boolean Stretch = NO, SmoothTaper = NO, constSt = NO;
 long DebugOutputNb = 0;
+int diffmode = 0;
 /* See comm_adapt.c for the use of HydroStaticReady */
 boolean mPLM = NO, mGFO = NO, mMUSCL = NO;
 boolean constDTG = NO;

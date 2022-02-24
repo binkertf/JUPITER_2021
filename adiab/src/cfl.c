@@ -76,8 +76,7 @@ real CourantLimit (fp)
 	  rho_mon = rho[m];
 	  ene_mon = cs2[m];
 	  i_mon[dim] = i[dim];
-	  if ((strncasecmp(fp->Name, "dust", 4) == 0) && (DIFFMODE != 1)){
-	  //if ((strncasecmp(fp->Name, "dust", 4) == 0)){	  
+	  if ((strncasecmp(fp->Name, "dust", 4) == 0) && (diffmode != 1)){  
 		sum += (fabs(u))/dx;
 	  }else{
 		sum += (fabs(u)+cs)/dx;

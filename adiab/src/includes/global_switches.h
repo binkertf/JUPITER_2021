@@ -18,6 +18,7 @@ extern boolean HydroStaticEnforce, HydroStaticReady;
 extern boolean Radiative, HalfDisk, Stellar;
 extern boolean Stretch, SmoothTaper, constSt;
 extern long DebugOutputNb;
+extern int diffmode;
 extern boolean mPLM, mGFO, mMUSCL;
 extern boolean constDTG;
 extern boolean __SPHERICAL, __CARTESIAN, __CYLINDRICAL;

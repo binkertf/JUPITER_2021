@@ -76,7 +76,8 @@ void InitVariables ()
   var("DUSTSOLIDRHO", &DUSTSOLIDRHO, REAL, NO, "3.0");
   var("DUSTTOGAS", &DUSTTOGAS, REAL, NO, "0.01");
   var("DUSTDENSFLOOR", &DUSTDENSFLOOR, REAL, NO, "1e-15");
-  var("DIFFMODE", &DIFFMODE, INT, NO, "0");
+  var("DIFFMODE", &DIFFMODE, INT, NO, "-1");
+  var("DUSTDIFF", &DUSTDIFF, BOOL, NO, "NO");
   var("BACKREACTION", &BACKREACTION, BOOL, NO, "YES");
   var("OUTPUTATREFINEMENT", &OUTPUTATREFINEMENT, INT, NO, "0");
   var("FINESTLEVEL", &FinestLevel, INT, NO, "0");
@@ -92,6 +93,6 @@ void InitVariables ()
   var("RSTAR", &RSTAR, REAL, NO, "3.0");
   var("STELLDEG", &STELLDEG, REAL, NO, "7.0");
   var("SMRATIO", &SMRATIO, REAL, NO, "2.0");
-  var("R0", &R0, REAL, YES, "77792000000000.0");
-  var("XMSTAR", &XMSTAR, REAL, YES, "1.0");
+  var("R0", &R0, REAL, NO, "77792000000000.0");
+  var("XMSTAR", &XMSTAR, REAL, NO, "1.0");
 }
