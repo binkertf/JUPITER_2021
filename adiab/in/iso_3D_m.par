@@ -1,0 +1,66 @@
+# This is a 3D isothermal setup including one dust fluid
+################################################################################
+# GRID
+################################################################################
+CoordType        		Spherical
+CoordPermut      		213
+
+Size1            		320             #number of azimuthal cells
+Size2            		100             #number ofradial cells
+Size3            		20              #number of polar cells
+
+Range2Low        		0.5
+Range2High       		2.5
+Range1Low        		-3.141592653
+Range1High        		3.141592653
+Range3Low        		1.4415764
+Range3High       		1.57079632679489
+
+NDIM              		3
+Dim1Periodic        		True    
+Keplerian           		True    
+################################################################################
+# PLANET / GASDISK
+################################################################################
+R0                  	7.7792e13   #cm (5.2 AU), is needed because the dust grain size is defined in units of cm
+PLANETMASS        		1.0e-3
+MASSTAPER         		10
+ASPECTRATIO       		0.05
+VISCOSITY         		1.0e-5
+SIGMA0            		1.0e-4
+SIGMASLOPE        		0.5
+Gamma             		1.0
+FLARINGINDEX 			0.0
+
+PotentialCode       		planet3d
+ExternalPotential   		True                #stellar potential
+InitCode           	 	kepler3d/keplerdust     #initial condition gas/dust
+RIEMANNSOLVER	     		2S
+
+FLUIDS              		gas/dust
+################################################################################
+# DUST
+################################################################################
+DUSTDIFF			TRUE       #dust trubulent diffusion 
+CONSTSTOKES			FALSE       #dust grains have constant size (FALSE) or constant Stokes number (TRUE)
+STOKESNUMBER        0.01        #Stokes number if CONSTSTOKES = TRUE
+DUSTSIZE			0.1         #dust grain radius in units of cm if CONSTSTOKES = FALSE
+DUSTTOGAS           0.01        #dust-to-gas ratio
+DUSTDENSFLOOR		1e-15       #dust density floor value
+SAMPLETSTOP         NO          #do we sample the dust stopping time
+################################################################################
+# NUMERICS
+################################################################################
+NODAMPING           		NO          #wave damping at the radial boundaries
+METHOD				MUSCL               #numerical reconstruction scheme (GFO / PLM / MUSCL)
+
+#OUTPUTDIR			~
+OUTPUTDIR           		/home/moon/fbinkert/JUPITER_2021/adiab/data
+OmegaFrame          		1.00049987506       #sqrt(1+PLANETMASS)
+DT                  		6.28318530718   #output timestep (not computational timestep), one planet orbit is equal to 2*pi
+NINTERM             		10              #one output after NINTERM output timsteps (DT)
+NTOT                		100             #nomber of total output timesteps. The total nuber of outputs is NTOT/NINTERM
+
+################################################################################
+#GRIDINFO
+-3.141592653   0.5  1.4415764   3.141592653    2.5  1.57079632679489    0 0 4 1 0 4 1

@@ -1,0 +1,56 @@
+# This is a 3D isothermal setup (gas only)
+################################################################################
+# GRID
+################################################################################
+CoordType        		Spherical
+CoordPermut      		213
+
+Size1            		314         #number of azimuthal cells
+Size2            		100         #number ofradial cells
+Size3            		20          #number of polar cells
+
+Range2Low        		0.4         #if you change anything here, don't forget to also change the GRIDINFO at the bottom of this file (and vice versa)
+Range2High       		2.4
+Range1Low        		-3.141592653
+Range1High        		3.141592653
+Range3Low        		1.4415764
+Range3High       		1.57079632679489
+
+NDIM              		3
+Dim1Periodic        		True
+Keplerian           		True
+################################################################################
+# PLANET / GASDISK
+################################################################################
+PLANETMASS        		1.0e-3
+MASSTAPER         		10
+ASPECTRATIO       		0.05
+VISCOSITY         		1e-5
+SIGMA0            		1.479e-3
+SIGMASLOPE        		1.0
+Gamma             		1.0
+FLARINGINDEX 			0.0
+
+
+
+PotentialCode       		planet3d
+ExternalPotential   		True
+InitCode            		kepler3d
+RIEMANNSOLVER	     		2S
+
+FLUIDS              		gas
+################################################################################
+# NUMERICS
+################################################################################
+OmegaFrame          	    1.00049987506    #sqrt(1+PLANETMASS)
+NODAMPING           		NO  #wave damping at the radial boundaries
+METHOD				        MUSCL   #numerical reconstruction scheme (GFO / PLM / MUSCL)
+
+#OUTPUTDIR           		~
+OUTPUTDIR           		/home/moon/fbinkert/JUPITER_2021/adiab/data
+DT                  		6.28318530718   #output timestep (not computational timestep), one planet orbit is equal to 2*pi
+NINTERM             		1              #one output after NINTERM output timsteps (DT)
+NTOT                		10             #nomber of total output timesteps. The total nuber of outputs is NTOT/NINTERM
+################################################################################
+#GRIDINFO
+-3.141592653   0.4  1.4415764   3.141592653    2.4	1.57079632679489    0 0 4 1 0 4 1
