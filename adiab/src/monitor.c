@@ -164,7 +164,7 @@ void MonitorSublimatedDustMass(){
     else {
       log = prs_opena ("dustSublmass.dat");
     }
-    fprintf (log, "%ld\t%.17g\t%.17g\t%.17g\t%.17g\n",\
+    fprintf (log, "%ld\t%.17g\t%.17g\n",\
        CurrentOutputNumber, GlobalDate, DustSublMass);
     fclose (log);
   }
@@ -183,7 +183,7 @@ void MonitorRemovedDustMass(){
     else {
       log = prs_opena ("dustmass_remv.dat");
     }
-    fprintf (log, "%ld\t%.17g\t%.17g\t%.17g\t%.17g\n",\
+    fprintf (log, "%ld\t%.17g\t%.17g\n",\
        CurrentOutputNumber, GlobalDate, DustAvgMass);
     fclose (log);
   }
