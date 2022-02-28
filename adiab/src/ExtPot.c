@@ -81,7 +81,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
   real pot;
   FluidPatch *dustfluid;
   real *dustdens;
-  real dmass=0,dmass2=0,dtmass=0,dtmass2=0;
+  real dmass=0,dmass2=0,dtmass=0,dtmass2=0,dmass_loss=0,tdmass_loss=0,dmass_repl;
 
   dens = fp->Density->Field;  // density is called for the densityfloor
   InvVolume = fp->desc->InvVolume;
@@ -89,7 +89,8 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
   energ = fp->Energy->Field; 
   getgridsize (fp->desc, gncell, stride);
 
-  if (fp->next==NULL){
+  
+  if (fp->next==NULL && !DUSTUCAP==NO){
     dustfluid = fp->prev;
     dustdens = dustfluid->Density->Field;
   }
@@ -211,16 +212,19 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
 	    mass=mass+cut_dens/InvVolume[m];
 	    temp1=temp1+temp[m];
 
-      if (fp->next==NULL){
-        dmass=dmass+dustdens[m];
-        }
-	    }
+     
+      if (fp->next==NULL && !DUSTUCAP==NO){
+          dmass=dmass+dustdens[m];
+          }
+	     }
+     
     	    if(center[_AZIM_][m] < 0.0+daz*2.2 && center[_AZIM_][m] > 0.0-(daz*2.2) && center[_RAD_][m] < 1.0+dr*2.2 &&  center[_RAD_][m] > 1.0-(dr*2.2) && center[_COLAT_][m] > (M_PI/2.)-(dco*2.2) &&  center[_COLAT_][m] < (M_PI/2.)) {
 	    cut_dens2=CurrentFluidPatch->Density[m];
 	    mass2=mass2+cut_dens2/InvVolume[m];
 	    temp2=temp2+temp[m];
 	    
-      if (fp->next==NULL){
+       
+      if (fp->next==NULL && !DUSTUCAP==NO){
         dmass2=dmass2+dustdens[m];
         }
       }
@@ -229,7 +233,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
     }
   }
 
-  if (fp->next==NULL){
+  if (fp->next==NULL && !DUSTUCAP==NO){
     MPI_Allreduce (&dmass, &dtmass, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce (&dmass2, &dtmass2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     if ((dtmass/4.0)>=DUSTUCAP){
@@ -239,14 +243,19 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
             m = i*stride[0]+j*stride[1]+k*stride[2];
             if (fp->desc->level==LevMax){
               if(center[_AZIM_][m] < 0.0+daz*1.2 && center[_AZIM_][m] > 0.0-(daz*1.2) && center[_RAD_][m] < 1.0+dr*1.2 &&  center[_RAD_][m] > 1.0-(dr*1.2) && center[_COLAT_][m] > (M_PI/2.)-(dco*1.2) &&  center[_COLAT_][m] < (M_PI/2.)) {
+                dmass_repl = dustdens[m] - dtmass2/32.0;
                 dustdens[m] = dtmass2/32.0;
+                dmass_loss += dmass_repl/InvVolume[m];
               }
             }
           }
         } 
       }  
     }
+  MPI_Allreduce (&dmass_loss, &tdmass_loss, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  DustAvgMass +=tdmass_loss;
   }
+
   MPI_Allreduce (&mass, &tmass, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   MPI_Allreduce (&mass2, &tmass2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   MPI_Allreduce (&temp1, &ttemp1, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
