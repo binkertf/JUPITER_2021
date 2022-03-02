@@ -54,13 +54,11 @@ SAMPLETSTOP         NO          #do we sample the dust stopping time
 NODAMPING           		NO          #wave damping at the radial boundaries
 METHOD				MUSCL               #numerical reconstruction scheme (GFO / PLM / MUSCL)
 
-#OUTPUTDIR			~
-OUTPUTDIR           		/home/moon/fbinkert/JUPITER_2021/adiab/data
+OUTPUTDIR			~
 OmegaFrame          		1.00049987506       #sqrt(1+PLANETMASS)
 DT                  		6.28318530718   #output timestep (not computational timestep), one planet orbit is equal to 2*pi
 NINTERM             		10              #one output after NINTERM output timsteps (DT)
 NTOT                		200             #nomber of total output timesteps. The total nuber of outputs is NTOT/NINTERM
-
 ################################################################################
 #GRIDINFO
 -3.141592653   0.4  3.141592653    2.4   0 0 4 0 4

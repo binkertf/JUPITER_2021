@@ -1,0 +1,81 @@
+# This is a two-fluid radiative setup (gas + dust)
+################################################################################
+# GRID
+################################################################################
+CoordType		Spherical
+CoordPermut        	213   # Azimuth, Radius and Colatitude
+
+#Size1              	640     #number of azimuthal cells
+Size1            	2       #number of azimuthal cells
+Size2            	200     #number of radial cells,strangely, below 120 cells, it crashes
+Size3            	20      #number of polar cells
+
+Range2Low        	0.4     #if you change anything here, don't forget to also change the GRIDINFO at the bottom of this file (and vice versa)
+Range2High        	2.4
+Range1Low        	-3.141592653
+Range1High        	3.141592653
+Range3Low          	1.4415764
+Range3High          	1.57079632679489
+
+NDIM            	3
+
+Dim1Periodic        	True
+Keplerian           	True
+HALFDISK            	YES
+SMRATIO			2.0
+################################################################################
+# STAR
+################################################################################
+XMSTAR		    	1.0
+STELLAR             	YES
+StellDeg            	7.
+Tstar               	5780.             #temperature of the star in Kelvin
+Rstar               	1.0               #star radius in unit of the Sun Radius
+################################################################################
+# PLANET / GASDISK
+################################################################################
+R0                  	4.488e14   #cm (30 AU)
+PLANETMASS         	0.0
+#PLANETMASS          	1.0e-3
+MASSTAPER           	10
+ASPECTRATIO         	0.05
+Viscosity           	1.0e-5
+SIGMA0              	1.479e-3
+SIGMASLOPE          	0.5
+GAMMA	              	1.43
+ADIABATIC           	YES
+Flaringindex        	0.28
+
+PotentialCode       	planet3d
+ExternalPotential   	True
+InitCode            	kepler3d/keplerdust
+RIEMANNSOLVER		    2S
+METHOD			        MUSCL       #numerical reconstruction scheme (GFO / PLM / MUSCL)
+
+OmegaFrame          	1.0004998750624609      #sqrt(1+PLANETMASS)
+
+FLUIDS			gas/dust
+################################################################################
+# DUST
+################################################################################
+DUSTDIFF			FALSE       #dust trubulent diffusion 
+CONSTSTOKES			FALSE       #dust grains either have constant size (FALSE) or constant Stokes number (TRUE)
+STOKESNUMBER        0.01        #Stokes number if CONSTSTOKES = TRUE
+DUSTSIZE			0.1         #dust grain radius in units of cm if CONSTSTOKES = FALSE
+DUSTTOGAS           0.01        #dust-to-gas ratio
+DUSTDENSFLOOR		1e-15       #dust density floor value
+SAMPLETSTOP         NO          #do we sample the dust stopping time
+################################################################################
+# NUMERICS
+################################################################################
+OUTPUTDIR           	~
+DT                  	6.28318530718
+NINTERM             	1
+NTOT                	100
+
+NODAMPING           	YES
+HighResLevel        	1
+VISCUTOFFLEVEL      	100
+################################################################################
+#GRIDINFO
+-3.141592653   0.4  1.4415764   3.141592653    2.4  1.57079632679489 0 0 30 99 0 30 1

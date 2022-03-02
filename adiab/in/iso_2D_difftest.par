@@ -47,9 +47,10 @@ FLUIDS                  gas/dust
 # DUST
 ################################################################################
 DUSTDENSFLOOR		1e-20
+SAMPLETSTOP         YES         #do we sample the stopping time
 DIFFMODE            1   #0: no turbulent diffusion / 1: diffusion pressure / 2: mass diffusion
 CONSTSTOKES			TRUE    
-STOKESNUMBER        1
+STOKESNUMBER        1e-4
 DUSTTOGAS           0.01
 DUSTSIZE		    0.1
 DUSTSOLIDRHO 		1.0
@@ -69,7 +70,7 @@ OUTPUTATREFINEMENT      500
 FINESTLEVEL             1
 METHOD			MUSCL
 
-OUTPUTDIR		    /e/ldata/users/fbinkert/diff/2D_tests_2022/diffpres_St2_D2
+OUTPUTDIR		    /e/ldata/users/fbinkert/diff/2D_tests_2022/diffpres_St2_D2_XX
 
 DT                   0.1
 NINTERM              1

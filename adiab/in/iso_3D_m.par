@@ -6,10 +6,10 @@ CoordType        		Spherical
 CoordPermut      		213
 
 Size1            		320             #number of azimuthal cells
-Size2            		100             #number ofradial cells
+Size2            		100             #number of radial cells
 Size3            		20              #number of polar cells
 
-Range2Low        		0.5
+Range2Low        		0.5             #if you change anything here, don't forget to also change the GRIDINFO at the bottom of this file (and vice versa)
 Range2High       		2.5
 Range1Low        		-3.141592653
 Range1High        		3.141592653
@@ -52,10 +52,9 @@ SAMPLETSTOP         NO          #do we sample the dust stopping time
 # NUMERICS
 ################################################################################
 NODAMPING           		NO          #wave damping at the radial boundaries
-METHOD				MUSCL               #numerical reconstruction scheme (GFO / PLM / MUSCL)
+METHOD				        MUSCL       #numerical reconstruction scheme (GFO / PLM / MUSCL)
 
-#OUTPUTDIR			~
-OUTPUTDIR           		/home/moon/fbinkert/JUPITER_2021/adiab/data
+OUTPUTDIR			~
 OmegaFrame          		1.00049987506       #sqrt(1+PLANETMASS)
 DT                  		6.28318530718   #output timestep (not computational timestep), one planet orbit is equal to 2*pi
 NINTERM             		10              #one output after NINTERM output timsteps (DT)
