@@ -152,23 +152,6 @@ void MonitorTorqueZ () {// Output torqueZ.dat, containing torque density as a fu
   free(colatitudes);
 }
 
-// void MonitorSublimatedDustMass(){
-//   FILE *log;
-//   char command[MAXLINELENGTH];
-//  if (!CPU_Rank) {
-//     if ( CurrentOutputNumber == 0 ) { // a new file is created for each simulation
-//       sprintf(command, "cd %s; mv -f dustSublmass.dat dustSublmass.dat.old", OUTPUTDIR);
-//       system (command);
-//       log = prs_open ("dustSublmass.dat");
-//     }
-//     else {
-//       log = prs_opena ("dustSublmass.dat");
-//     }
-//     fprintf (log, "%ld\t%.17g\t%.17g\n",\
-//        CurrentOutputNumber, GlobalDate, DustSublMass);
-//     fclose (log);
-//   }
-// }
 
 void ReadRemDustMass(NbRestart) 
      long NbRestart;
