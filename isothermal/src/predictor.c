@@ -46,9 +46,9 @@ void Predictor (dt)
 	    var += source_v[p][m];
 	    var += -e[m]/rho[m]*slope_rho[p][m];
 	    /* Note that the -Grad Cs^2 is missing in this prediction step. */
-	    /* This is fine for a smoothly varying fixed temperature field 
+	    /* This is fine for a smoothly varying fixed temperature field
 	       such as the one we deal with in a locally isothermal disk. In an
-	       adiabatic formulation, the slope of the internal energy should 
+	       adiabatic formulation, the slope of the internal energy should
 	       also be calculated and be added to the pressure gradient.  */
 	    vp[p][m] = v[p][m] + .5*dt*var;
 	  }

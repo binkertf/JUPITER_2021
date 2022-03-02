@@ -322,12 +322,18 @@ void SendToCurrent (fp)
   for (dm = 0; dm < NDIM; dm++) {
     memcpy (CurrentFluidPatch->Velocity[dm], fp->Velocity->Field[dm], (size_t)size);
   }
+ 
+
   if (EXTERNALPOTENTIAL == YES) {
-    if ((GlobalDate >= DatePotentialConstant) && (fp->PotentialSet))
+     
+    if ((GlobalDate >= DatePotentialConstant) && (fp->PotentialSet)){
       memcpy(CurrentFluidPatch->Potential, fp->Potential->Field, (size_t)size);
-    else
+    }else{
       ComputeExternalPotential (GlobalDate, fp, 0.0, CurrentFluidPatch->Potential, EVERYWHERE);
+    }
+      
   }
+ 
   /* Note that the potential in the above expression is evaluated at
      t=0; as such it is a time independent external potential */
 }

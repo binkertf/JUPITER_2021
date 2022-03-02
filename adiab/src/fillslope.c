@@ -80,12 +80,12 @@ void FillSlopes () {
 	      rhoc = rho[m];
 	      rhop = rho[mp[l]];
 	      rhom = rho[mm[l]];
-	      srho[l][m] = invdx[l]*TVDslope(rhop-rhoc,rhoc-rhom);
+	      srho[l][m] = invdx[l]*__TVDslope(rhop-rhoc,rhoc-rhom);
 	      if (!Isothermal) {
 		ec = energy[m];
 		ep = energy[mp[l]];
 		em = energy[mm[l]];
-		se[l][m] = invdx[l]*TVDslope(ep-ec,ec-em);
+		se[l][m] = invdx[l]*__TVDslope(ep-ec,ec-em);
 	      }
 	    }
 	    w1 = ind[ip1];
@@ -95,7 +95,7 @@ void FillSlopes () {
 	    vc = v[n][m]*met[n][0][w1]*met[n][1][w2]; /* We enforce having linear velocities */
 	    vp = v[n][mp[l]]*met[n][0][w1+d1]*met[n][1][w2+d2];
 	    vm = v[n][mm[l]]*met[n][0][w1-d1]*met[n][1][w2-d2];
-	    sv[l][n][m] = invdx[l]*TVDslope(vp-vc,vc-vm);
+	    sv[l][n][m] = invdx[l]*__TVDslope(vp-vc,vc-vm);
 	  }
 	}
       }
@@ -182,12 +182,12 @@ void FillSlopes_Dust () {
 		rhop = rhop-rho0[msp];
 		rhom = rhom-rho0[msm];
 	      }
-	      srho[l][m] = invdx[l]*TVDslope(rhop-rhoc,rhoc-rhom);
+	      srho[l][m] = invdx[l]*__TVDslope(rhop-rhoc,rhoc-rhom);
 	      //	  if (!Isothermal) {
 	      //	    ec = energy[m];
 	      //	    ep = energy[mp[l]];
 	      //	    em = energy[mm[l]];
-	      //	    se[l][m] = invdx[l]*TVDslope(ep-ec,ec-em);
+	      //	    se[l][m] = invdx[l]*__TVDslope(ep-ec,ec-em);
 	      //	  }
 	    }
 	    invf = 1.0;
@@ -214,7 +214,7 @@ void FillSlopes_Dust () {
 	    vc *= fvel[0];
 	    vp *= fvel[1];
 	    vm *= fvel[2];
-	    sv[l][n][m] = invf*invdx[l]*TVDslope(vp-vc,vc-vm);
+	    sv[l][n][m] = invf*invdx[l]*__TVDslope(vp-vc,vc-vm);
 	  }
 	}
       }

@@ -81,7 +81,8 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
   real pot;
   dens = fp->Density->Field;  // density is called for the densityfloor
   InvVolume = fp->desc->InvVolume;
-  temp = fp->Temperature->Field; 
+  if (!Isothermal)
+    temp = fp->Temperature->Field; 
   energ = fp->Energy->Field; 
   getgridsize (fp->desc, gncell, stride);
   for (i = 0; i < 3; i++)	/* 3, not NDIM */
@@ -137,7 +138,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
 
 //    if (fp->desc->level ==5)  SMOOTHING=SMOOTHING*2.;
   //  if (fp->desc->level ==6)  SMOOTHING=SMOOTHING*4.;
-    pInfo ("Smoothing at %g on lev %d: %g\n", GlobalDate, fp->desc->level, SMOOTHING);
+    //pInfo ("Smoothing at %g on lev %d: %g\n", GlobalDate, fp->desc->level, SMOOTHING);
 
 
 // ============================ till here ============================
@@ -181,6 +182,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
   }
 // modification made from here
 // This part is for monitoring the mass in the innermost cells:
+if (!Isothermal){
    for (k = Nghost[2]; k < gncell[2]-Nghost[2]; k++) {
     for (j = Nghost[1]; j < gncell[1]-Nghost[1]; j++) {
       for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
@@ -210,6 +212,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
       }
     }
   }
+
   MPI_Allreduce (&mass, &tmass, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   MPI_Allreduce (&mass2, &tmass2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   MPI_Allreduce (&temp1, &ttemp1, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
@@ -219,4 +222,5 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
   pInfo ("Temperature average 4 cells %g, 32 cells: %g at date %.15g\n", ttemp1/4.0,ttemp2/32., GlobalDate);
   }
 // till here
+}
 }

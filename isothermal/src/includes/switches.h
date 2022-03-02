@@ -24,6 +24,7 @@ void    (*__Prepare_Riemann_States)();
 void    (*__Compute_Fluxes)();
 void    (*__Compute_Fluxes_pressureless)();
 void    (*__ExecCommUpVar)();
+real    (*__TVDslope)();
 real     GlobalDate = 0.0;
 real GlobalDateInit;
 int CPU_Rank, CPU_Number;

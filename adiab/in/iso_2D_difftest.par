@@ -1,0 +1,80 @@
+# This is a 2-D isothermal setup (gas + dust)
+################################################################################
+# GRID
+################################################################################
+CoordType        Cylindrical
+CoordPermut      213
+
+Size1            2
+Size2            1000
+Size3            1
+
+Range1Low        -3.141592653
+Range1High        3.141592653
+
+Range2Low        0.1
+Range2High       2.5
+
+Range3Low        0.0
+Range3High       0.0
+
+NDIM              2
+R0                  1.0
+################################################################################
+# STAR
+################################################################################
+XMSTAR		    	1.0
+STELLAR             	NO
+################################################################################
+# PLANET / GASDISK
+################################################################################
+PLANETMASS        		0.0
+MASSTAPER         		10
+ASPECTRATIO       		0.05
+VISCOSITY         		1.0e-2
+SIGMA0            		1.0
+SIGMASLOPE        		0.0
+Gamma             		1.0
+ADIABATIC           	NO
+Flaringindex        	0.0
+
+DISKSPEEDFACTOR          1.00008
+
+InitCode             keplergas_diff/keplerdust_diff
+PotentialCode       		planet3d
+FLUIDS                  gas/dust
+################################################################################
+# DUST
+################################################################################
+DUSTDENSFLOOR		1e-20
+SAMPLETSTOP         YES         #do we sample the stopping time
+DIFFMODE            1   #0: no turbulent diffusion / 1: diffusion pressure / 2: mass diffusion
+CONSTSTOKES			TRUE    
+STOKESNUMBER        1e-4
+DUSTTOGAS           0.01
+DUSTSIZE		    0.1
+DUSTSOLIDRHO 		1.0
+BACKREACTION        NO
+################################################################################
+# NUMERICS
+################################################################################
+RIEMANNSOLVER	     2S
+OmegaFrame            1.0
+Dim1Periodic         True
+Keplerian            TRUE
+ExternalPotential   	TRUE
+COURANTNUMBER                       0.5
+SLIMITER            MINMOD  #MINMOD / SUPERBEE
+NODAMPING            YES
+OUTPUTATREFINEMENT      500
+FINESTLEVEL             1
+METHOD			MUSCL
+
+OUTPUTDIR		    /e/ldata/users/fbinkert/diff/2D_tests_2022/diffpres_St2_D2_XX
+
+DT                   0.1
+NINTERM              1
+NTOT                 25
+################################################################################
+#GRIDINFO
+-3.141592653   0.1  3.141592653    2.5   0 0 4 0 4

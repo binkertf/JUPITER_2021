@@ -30,8 +30,10 @@ void ApplyViscousStress (dt)
 	  m = i[0]*stride[0]+i[1]*stride[1]+i[2]*stride[2];
 	  m_other_side = m+stride[dim];
 	  InterfaceInf = fp->desc->InterSurface[dim][m];
-	  for (l = 0; l < NDIM; l++)
+	  if (!Isothermal){
+	  	for (l = 0; l < NDIM; l++)
 	    fp->Flux_tot_energy[dim][m] -= InterfaceInf*dt*st[l][m]*fp->InterfaceVel[dim][l][m];
+	  }
 	  /* The above is the implementation of the additional term in
 Quillen's equations. Remember that st[l][m] is, upon the call to
 ViscousStress() above, the flux of momentum component l across the

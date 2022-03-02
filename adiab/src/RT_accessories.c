@@ -342,6 +342,7 @@ void ComputeOpacity() {
 	l = j+i*stride[1]+h*stride[2];
 	//	multiplication by a factor 100 of DUSTTOGAS as opacity is
 	//      already calculated for a dust to gas ratio of 0.01
+
       if(DUSTEVAP==NO){
         if ((temper[l]*TEMP0)>1500.0){
           opacity =  DUSTTOGAS*100.*kappa(temper[l],dens[l]);
@@ -361,6 +362,7 @@ void ComputeOpacity() {
       }else{
         prs_error("Opacity not computed correctly, check RT_accessories.c\n");
       }
+
 
   opas[l] = DUSTTOGAS*100.*3.5*RHO0*R0;
 	opar[l] = opacity; //Rosseland mean opacity (for radiative cooling)

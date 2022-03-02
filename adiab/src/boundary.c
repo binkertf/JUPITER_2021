@@ -17,19 +17,48 @@ inline boolean boundary (rho,e,u,v,w,rhog,eg,ug,vg,wg,x,xg,yg,zg,condition,line,
   real entropy, temp1, temp2;
   switch (condition) {
   /* usual conditions */
-  case 1:	       /* REFLECTING */
+  case 1:	       /*COLATITUDE REFLECTING*/
     *rhog = rho;
     *eg   = e;
     *ug   = -u;
     *vg   = v;
     *wg   = w;
     break;
+  case 2:	       /* OUTFLOW */
+    *rhog = rho;
+    *eg   = e;
+    *ug   = u;
+    *vg   = v;
+    *wg   = w;
+    break;
   case 3: //Colatitude 3D, rigid boundary;
     *vg = v; //
-    *wg = w; //
+    *wg = 0.0 ; //
     *ug = 0.0; //
     *rhog = rho;
     *eg   = e;
+    break;
+  case 4:	       /* RADIAL KEPLERIAN (isothermal, gas) */
+      if (predictive) break;
+      real xi;
+      xi = SIGMASLOPE+1+FLARINGINDEX; //.+FLARINGINDEX;
+      *rhog = rho*pow(xg/x,-xi); //rho;
+      *eg   = *rhog*e/rho;
+      *ug   = u; //colatitude
+      *vg   = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
+      *wg   = w;
+    break;
+    case 5:	       /* RADIAL KEPLERIAN (isothermal, dust) */
+      {
+      if (predictive) break;
+      real xi;
+      xi = SIGMASLOPE+1+FLARINGINDEX; //.+FLARINGINDEX;
+      *rhog = rho*pow(xg/x,-xi); //rho;
+      *eg   = 0.0;
+      *ug   = u; //colatitude
+      *vg   = v; //(v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
+      *wg   = w;
+    }
     break;
   case 99: //Colatitude 3D, for high altitude regions, adiabatic
     if (predictive) break;
@@ -49,23 +78,17 @@ case 98: //Colatitude 3D, for high altitude regions, ISOTHERMAL, probably not co
     *rhog = exp(log(rho)+(xg-x)*cos(.5*(x+xg))*zg*zg/(e*zg*zg*zg)); //zg: radius, x: colat
     *eg = *rhog*e/rho;
     break;
-  case 2:	       /* OUTFLOW */
-    *rhog = rho;
-    *eg   = e;
-    *ug   = u;
-    *vg   = v;
-    *wg   = w;
-    break;
   case 19:	       /* dust */
+      if (predictive) break;
       {
       real xi;
       xi = SIGMASLOPE+1+FLARINGINDEX; //.+FLARINGINDEX;
       *rhog = rho*pow(xg/x,-xi); //rho;
-      *eg   = 0.0;
+      *eg   = e;
       *ug   = 0.0; //colatitude
       *vg   = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
       *wg   = 0.0;
-    }
+      }
       break;
     /* problem-specific conditions */
   case 10 : // simple keplerian with dim azim < dim z or dim colat
@@ -98,6 +121,19 @@ case 98: //Colatitude 3D, for high altitude regions, ISOTHERMAL, probably not co
       *ug = 0.0;
       *vg = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;//(v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
       *wg = 0.0; //w;
+    }
+    break;
+    case 31 : 
+    if (predictive) break;
+    {
+      real xi, beta;
+      xi = SIGMASLOPE+1.+FLARINGINDEX;
+      beta = .5-FLARINGINDEX;
+      *rhog = rho*pow(xg/x,-xi);
+      *eg = e*pow(xg/x,-2.*beta-xi);
+      *ug = u;
+      *vg = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
+      *wg = w; 
     }
     break;
   case 11 : // keplerian 2-3D : radius (valid for COORDPERMUT = 123 or 213 or 231)
@@ -196,7 +232,11 @@ void TrueBC_fp (fluid)
 		vtg2=&vel[dim2][m_gh];
 	      }
         // Fabian added stuff here
+        //if (!Isothermal)
         if ((bc==30) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
+          bc = 19;
+        }
+        if ((bc==99) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
           bc = 19;
         }
         // til here

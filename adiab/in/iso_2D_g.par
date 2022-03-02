@@ -1,0 +1,57 @@
+# This is a 2D isothermal setup (gas only)
+################################################################################
+# GRID
+################################################################################
+CoordType        		Cylindrical
+CoordPermut      		213
+
+Size1            		320             #number of azimuthal cells
+Size2            		100             #number of radial cells
+Size3            		1   
+
+Range2Low        		0.4             #if you change anything here, don't forget to also change the GRIDINFO at the bottom of this file (and vice versa)
+Range2High       		2.4
+Range1Low        		-3.141592653
+Range1High        		3.141592653
+Range3Low        		0.0
+Range3High       		0.0
+
+NDIM              		2
+Dim1Periodic       		True
+Keplerian           	True
+################################################################################
+# PLANET / GASDISK
+################################################################################
+#R0                  	4.488e14   #cm (this does not do anything in isothemral gas simus because they are dimensionless, but it is still here)
+#XMSTAR		    	    1.0        #(same as above)
+
+PLANETMASS        		1.0e-3
+MASSTAPER         		10
+ASPECTRATIO       		0.05
+VISCOSITY         		1.0e-5
+SIGMA0            		2.0e-4
+SIGMASLOPE        		0.5
+Gamma             		1.0
+FLARINGINDEX 			0.0
+
+PotentialCode       		planet3d    
+ExternalPotential   		True        #stellar potential
+InitCode            		kepler3d    #initial condition
+RIEMANNSOLVER	     		2S          
+
+FLUIDS              		gas
+################################################################################
+# NUMERICS
+################################################################################
+NODAMPING           		NO          #wave damping at the radial boundaries
+METHOD				MUSCL               ##numerical reconstruction scheme (GFO / PLM / MUSCL)
+
+OUTPUTDIR			~
+OmegaFrame          		1.00049987506   #sqrt(1+PLANETMASS)
+DT                  		6.28318530718   #output timestep (not computational timestep), one planet orbit is equal to 2*pi
+NINTERM             		10              #one output after NINTERM output timsteps (DT)
+NTOT                		200             #nomber of total output timesteps. The total nuber of outputs is NTOT/NINTERM
+
+################################################################################
+#GRIDINFO
+-3.141592653   0.4  3.141592653    2.4   0 0 4 0 4

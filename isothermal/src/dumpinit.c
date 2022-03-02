@@ -54,7 +54,7 @@ case W19_1_g:
 case W19_1_d:
 	fprintf (init, "   density = 1.0+0.001*cos(x*6.28318530718);\n");
 	fprintf (init, "   vx = 1.0;\n");
-	fprintf (init, "   energy = 0.0;\n");
+	fprintf (init, "   energy = CS*CS;\n");
 	break;
 case W19_2_g:
 	fprintf (init, "   density = 1.0;\n");
@@ -64,7 +64,7 @@ case W19_2_g:
 case W19_2_d:
 	fprintf (init, "   density = 1.0+6.451433001183836*0.001*sin(x*6.28318530718);\n");
 	fprintf (init, "   vx = 1.0+0.001*cos(x*6.28318530718);\n");
-	fprintf (init, "   energy = 0.0;\n");
+	fprintf (init, "   energy = CS*CS;\n");
 	break;
 case sod1d:
 	fprintf (init, "   density = 1.0;\n");
@@ -169,6 +169,13 @@ case keplerdust:
 	fprintf (init, "   vrad      = 0.0;\n");
 	fprintf (init, "   v_azimuth = keplerian_dust_init(_vazimuth_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
 	fprintf (init, "   v_colatitude= 0.0; //keplerian_dust_init(_vcolatitude_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	break;
+case keplerdust_2:
+	fprintf (init, "   density   = keplerian_dust_init(_density_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   energy    = keplerian_dust_init(_energy_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   vrad      = 0.0; //keplerian_init(_vrad_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   v_azimuth = keplerian_dust_init(_vazimuth_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
+	fprintf (init, "   v_colatitude= 0.0; //keplerian_init(_vcolatitude_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);\n");
 	break;
 case essai:
 	fprintf (init, "   density   = SIGMA0;\n");

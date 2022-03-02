@@ -75,12 +75,12 @@ void FillSlopes () {
 		rhop = rhop-rho0[msp];
 		rhom = rhom-rho0[msm];
 	      }
-	      srho[l][m] = invdx[l]*TVDslope(rhop-rhoc,rhoc-rhom);
+	      srho[l][m] = invdx[l]*__TVDslope(rhop-rhoc,rhoc-rhom);
 	      //	  if (!Isothermal) {
 	      //	    ec = energy[m];
 	      //	    ep = energy[mp[l]];
 	      //	    em = energy[mm[l]];
-	      //	    se[l][m] = invdx[l]*TVDslope(ep-ec,ec-em);
+	      //	    se[l][m] = invdx[l]*__TVDslope(ep-ec,ec-em);
 	      //	  }
 	    }
 	    invf = 1.0;
@@ -107,11 +107,10 @@ void FillSlopes () {
 	    vc *= fvel[0];
 	    vp *= fvel[1];
 	    vm *= fvel[2];
-	    sv[l][n][m] = invf*invdx[l]*TVDslope(vp-vc,vc-vm);
+	    sv[l][n][m] = invf*invdx[l]*__TVDslope(vp-vc,vc-vm);
 	  }
 	}
       }
     }
   }
 }
-	

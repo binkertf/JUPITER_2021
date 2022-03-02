@@ -1,7 +1,7 @@
 #include "jupiter.h"
 #include "init.h"
 
-#define PERCENTMARGIN 10
+#define PERCENTMARGIN 15
 /* The above means that we damp perturbations up to +/- 15% of the
    mesh radial boundaries */
 
@@ -96,7 +96,7 @@ real dt;
 	    ene[m] = (ene[m]+lambda*ene0)/(1.+lambda);
 	  }
 	  vel[_RAD_][m] = (vel[_RAD_][m]+lambda*vrad0)/(1.+lambda);
-	  vel[_AZIM_][m] = (vel[_AZIM_][m]+lambda*vtheta0)/(1.+lambda);
+	  //vel[_AZIM_][m] = (vel[_AZIM_][m]+lambda*vtheta0)/(1.+lambda);
 	  if (_COLAT_ < NDIM)
 	    vel[_COLAT_][m] = vel[_COLAT_][m]/(1.+lambda);
 	}
@@ -196,6 +196,55 @@ real dt;
 	            vel[_COLAT_][m] = vel[_COLAT_][m]*lambda/(dt+lambda);
 	      }
       }
+    }
+  }
+}
+
+
+void DensFloorVelocityLimit ()
+{
+  FluidWork *fw;
+  real *center[3];
+  real *vel[3], *dens, *ene, ramp=0.0, lambda, R_in, R_out;
+  real rho0, ene0, vrad0, vtheta0, vphi0, Rmin, Rmax;
+  long i, j, k, m, gncell[3], stride[3], dim;
+  real radius, azimuth=0.0, colatitude, x, y, z;
+  real vx, vy, vz, vrad, v_azimuth, v_colatitude;
+  real density, energy, axial_radius;
+  real interm1, interm2, interm3; /* Work variables for user convenience */
+  fw = CurrentFluidPatch;
+  getgridsize (fw->desc, gncell, stride);
+  SetFluidProperties (fw->Fluid);
+  for (dim = 0; dim < 3; dim++) {
+    center[dim] = fw->desc->Center[dim];
+    vel[dim] = fw->Velocity[dim];
+  }
+  
+  dens = fw->Density;
+  ene = fw->Energy;
+  for (k = 0; k < gncell[2]; k++) {
+    for (j = 0; j < gncell[1]; j++) {
+      for (i = 0; i < gncell[0]; i++) { 
+	      m = i*stride[0]+j*stride[1]+k*stride[2];
+	      radius = center[_RAD_][m];
+	      colatitude = center[_COLAT_][m];
+        density = energy = -1e20;
+
+        #include "libinit.cx"
+
+	      rho0 = density;
+	      vrad0 = vrad;
+	      vphi0 = v_azimuth;
+        vtheta0 = v_colatitude;
+
+   
+        if (dens[m]<=1e-11){
+          if (_COLAT_ < NDIM){
+            vel[_COLAT_][m] = vtheta0;
+          }
+        }
+
+	    }
     }
   }
 }

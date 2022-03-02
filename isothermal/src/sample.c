@@ -509,14 +509,12 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
       D_d = D_d/(1.0+St*St); // see Youdin&Lithwick (2007)
     }
 
-    //if ((__CYLINDRICAL || __SPHERICAL) && (dim == _COLAT_)) { //account for epicycle oscillations in radial direction
-      //St = STOKESNUMBER;
-      //D_d = D_d/(1.0+St*St); // see Youdin&Lithwick (2007)
-    //}
+    if ((__CYLINDRICAL || __SPHERICAL) && (dim == _COLAT_)) {
+        D_d = D_d/(1.0+STOKESNUMBER*STOKESNUMBER);
+    }
 
-    Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux (geometric mean)
-
-
+    //Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux (geometric mean)
+    Pi = -D_d*sqrt((rhogL)*(rhogR))*(rhoR/(rhogR)-rhoL/(rhogL))/dx; //diffusion flux (geometric mean)
 
     // Diffusion flux limiter
     cs = sqrt(beam2->cs[i-1]*beam2->cs[i]); //gas sound speed
@@ -536,4 +534,132 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
 
   }
 
+}
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+
+
+void Compute_Fluxes_DiffPres (beam, dt)
+     Beam *beam;
+     real dt;
+{
+  long i,dim,k;
+  real rhoL, rhoR, aL, aR, uL, uR, vpL[2], vpR[2];
+  real us, ps, S_shock, a_godunov,diff_f, delta;
+  real rho_i, u_i, vp_i[2]; 	/* _i like 'interface' */
+  real mass_flux, pu_flux;
+  real surfdt;
+  real a2, uf, v0=0.0, radius;
+  /* Azimuthal flux corrections for Keplerian disks below */
+  real C_mass_1=1.0, C_mass_2=1.0;
+  real C_mom_1=1.0, C_mom_2=1.0;
+  boolean HSE;
+  dim = beam->dim[0];
+  HSE = CorrHydroStat[dim];
+  if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) {
+    radius = beam->radius;
+    v0 = radius * OMEGAFRAME;
+    if (KEPLERIAN && MERIDIANCORRECTION) {
+      C_mass_1 = beam->masscorr1;
+      C_mass_2 = beam->masscorr2;
+      C_mom_1 = beam->momcorr1;
+      C_mom_2 = beam->momcorr2;
+    }
+  }
+  for (i = Nghost[dim]; i <= beam->length-Nghost[dim]; i++) {
+    uL   = beam->uL[i];
+    uR   = beam->uR[i];
+    for (k = 0; k < NDIM-1; k++) {
+      vpL[k] = beam->v_perp_L[k][i];
+      vpR[k] = beam->v_perp_R[k][i];
+    }
+    rhoL = beam->rhoL[i];
+    rhoR = beam->rhoR[i];
+
+    //printf("%.2e\n", beam->cs[i]);
+
+
+    if (HSE) {
+      a2 = beam->cs2i[i];
+      aR = aL   = sqrt(a2);
+    } else {
+      aR = aL   = .5*(beam->cs[i-1]+beam->cs[i]);
+      aR = aL   = .5*(beam->cs[i-1]+beam->cs[i]);
+      a2 = aL * aL;
+    }
+    //printf("%.12f\n", sqrt(a2));
+    /* Call the Riemann solver */
+    __Riemann_Solver (rhoL, rhoR, uL, uR, aL, aR, &us, &ps);
+    if (0.0 < us) {
+      /* we are in the star or left region or fan */
+      for (k = 0; k < NDIM-1; k++)
+	vp_i[k] = vpL[k];
+      a_godunov = aL;
+      if (us < uL) {		/* There is a left shock */
+	S_shock = uL-sqrt(ps/rhoL);
+	if (0.0 < S_shock) {	/* We are at the left of the left shock */
+	  u_i = uL;
+	  rho_i = rhoL;
+	} else {		/* we are in the star region */
+	  u_i = us;
+	  rho_i = ps/a2;
+	}
+      } else {			/* There is a left rarefaction */
+	if (0.0 < uL-aL) {	/* We are in the left region */
+	  u_i = uL;
+	  rho_i = rhoL;
+	} else {
+	  if (0.0 > us-aL) {	/* We are in the star region */
+	    u_i = us;
+	    rho_i = ps/a2;
+	  } else {		/* We are in the fan */
+	    u_i = aL;
+	    rho_i = rhoL*exp((uL-u_i)/aL);
+	  }
+	}
+      }
+    } else {			/* We are in the star or right region or fan */
+      for (k = 0; k < NDIM-1; k++)
+	vp_i[k] = vpR[k];
+      a_godunov = aR;
+      if (us > uR) {		/* There is a right shock */
+	S_shock = uR+sqrt(ps/rhoR);
+	if (0.0 > S_shock) {	/* we are at the right of the right shock */
+	  u_i = uR;
+	  rho_i = rhoR;
+	} else {		/* we are in the star region */
+	  u_i = us;
+	  rho_i = ps/a2;
+	}
+      } else {			/* There is a right rarefaction */
+	if (0.0 > uR+aR) {	/* we are in the right part */
+	  u_i = uR;
+	  rho_i = rhoR;
+	} else {
+	  if (0.0 < us+aR) {	/* we are in the star region */
+	    u_i = us;
+	    rho_i = ps/a2;
+	  } else {		/* we are in the fan */
+	    u_i = -aR;
+	    rho_i = rhoR*exp(-(uR-u_i)/aR);
+	  }
+	}
+      }
+    }
+    if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) {
+      uf = u_i+v0;
+      mass_flux =rho_i*(uf*C_mass_1-v0*C_mass_2);
+      pu_flux = (a2+uf*uf)*C_mom_1-v0*uf*C_mom_2;
+      pu_flux *= radius * rho_i;
+    } else {
+      mass_flux =rho_i*u_i;
+      pu_flux   = rho_i*(a2+u_i*u_i);
+    }
+    surfdt = beam->intersurface[i] * dt;
+    beam->mass_flux[i] = mass_flux * surfdt;
+    beam->momentum_flux[0][i] = pu_flux * surfdt;
+    for (k = 0; k < NDIM-1; k++)
+      beam->momentum_flux[k+1][i] = rho_i*vp_i[k]*u_i * surfdt;
+    beam->pressure_godunov[i] = rho_i*a2;
+  }
 }

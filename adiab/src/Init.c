@@ -164,8 +164,6 @@ void InitWholeHierarchy (NbRestart)
 
 
 
-
-
   // The RT needs to be initialized from top to bottom.
   if (Stellar) { //We synchronize boundaries of Energy Rad fields prior to next loop. Needed for restart
     for (lev = 0; lev <= LevMax; lev++) {
@@ -225,6 +223,19 @@ void InitWholeHierarchy (NbRestart)
       }
     }
   }
+
+	for (lev = 0; lev <= LevMax; lev++) {
+    	item = Grid_CPU_list;
+      	while (item != NULL) {
+			MultifluidDiffusionPressure (item, 0.0);
+			MultifluidDustEnergyToZero (item, 0.0);
+			item = item->next;
+      	}
+    }
+
+
+
+
   FreshStart = NO;
   if (Stretch == YES)
     *NbRestart = 0;

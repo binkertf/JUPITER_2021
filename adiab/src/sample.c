@@ -384,7 +384,6 @@ void Compute_Fluxes_pressureless1 (beam, dt) /* fisrt order pressureless flux */
     rhoR = beam->rhoR[i];
 
     aR = aL = a2 = 0.0; /* sound speed is zero for pressurless fluid */
-
     /* Call the Riemann solver */
     GetStar_PRESSURELESS(rhoL, rhoR, uL, uR, aL, aR, &us, &ps); /* the pressureless solver calculates the delta wave velocity uL */
     if (( uL < 0.0 ) && ( uR > 0.0 )){ /* the two states are moving away from each other leaving vacuum in between. The flux is zero */
@@ -417,8 +416,8 @@ void Compute_Fluxes_pressureless1 (beam, dt) /* fisrt order pressureless flux */
         u_i = 0.5*(uL+uR);
       }
     }
-
-
+ 
+if(!Isothermal){
           if (dim == _RAD_) {
       beam->centrifugal_acc[i] = vp_i[0]*vp_i[0];
       if (_COLAT_ < NDIM)
@@ -428,8 +427,7 @@ void Compute_Fluxes_pressureless1 (beam, dt) /* fisrt order pressureless flux */
       if (__SPHERICAL)
 	beam->coriolis[i] *= sin(beam->colatitude);
     }
-
-
+}
 
       if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) { /* compute the flux vector G here (azimuthal flux) and save as angular flux */
       uf = u_i+v0; /* linear azimuthal velocity*/
@@ -456,8 +454,10 @@ void Compute_Fluxes_pressureless1 (beam, dt) /* fisrt order pressureless flux */
     beam->momentum_flux[0][i] = pu_flux * surfdt;
     for (k = 0; k < NDIM-1; k++)
       beam->momentum_flux[k+1][i] = rho_i*vp_i[k]*u_i * surfdt;
-      beam->tot_energy_flux[i] = 0.0;
-    beam->pressure_godunov[i] = 0.0;
+      if (!Isothermal){
+        beam->tot_energy_flux[i] = 0.0;
+      }
+      beam->pressure_godunov[i] = 0.0;
   }
 }
 
@@ -690,7 +690,7 @@ void Compute_Fluxes_pressureless2 (beam, dt) /* higher order pressureless flux *
 /*----------------------------------------------------------------------*/
 
 
-
+if(!Isothermal){
 
           if (dim == _RAD_) {
       beam->centrifugal_acc[i] = vp_i[0]*vp_i[0];
@@ -701,7 +701,7 @@ void Compute_Fluxes_pressureless2 (beam, dt) /* higher order pressureless flux *
       if (__SPHERICAL)
 	beam->coriolis[i] *= sin(beam->colatitude);
     }
-
+}
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) {
       uf = u_i+v0;
       mass_flux =rho_i*(uf*C_mass_1-v0*C_mass_2); /*density flux*/
@@ -741,7 +741,9 @@ void Compute_Fluxes_pressureless2 (beam, dt) /* higher order pressureless flux *
     beam->momentum_flux[0][i] = pu_flux * surfdt;
     for (k = 0; k < NDIM-1; k++)
       beam->momentum_flux[k+1][i] = pup_flux[k] * surfdt;
-      beam->tot_energy_flux[i] = 0.0;
+      if (!Isothermal){
+        beam->tot_energy_flux[i] = 0.0;
+      }
       beam->pressure_godunov[i] = 0.0;
   }
 }
@@ -772,16 +774,31 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
     dx = beam->center[i]-beam->center[i-1];
     D_d = VISCOSITY;
 
-    csL = sqrt(beam2->cs[i-1]/rhogL*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
-    csR = sqrt(beam2->cs[i]/rhogR*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
-
-    t_stop = sqrt(M_PI*GAMMA/8.0)*dustsolidrho*dustsz/(sqrt(rhogL*rhogR)*sqrt(csL*csR)); //local stopping time
+    if (!Isothermal){
+      csL = sqrt(beam2->cs[i-1]/rhogL*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
+      csR = sqrt(beam2->cs[i]/rhogR*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
+      if(!constSt==YES){
+        t_stop = sqrt(M_PI*GAMMA/8.0)*dustsolidrho*dustsz/(sqrt(rhogL*rhogR)*sqrt(csL*csR));; //local stopping time
+      }
+    }else{
+      csL = beam2->cs[i-1];
+      csR = beam2->cs[i];
+      if(!constSt==YES){
+        t_stop = sqrt(M_PI/8.0)*dustsolidrho*dustsz/(sqrt(rhogL*rhogR)*sqrt(csL*csR));; //local stopping time
+      }
+    }
 
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _RAD_)) { //account for epicycle oscillations in radial direction
-      radius = beam->center[i];
-      omegakep = 1.0/(sqrt(radius)*sqrt(radius)*sqrt(radius)); //local keplerian frequeny (at midplane)
-      St = t_stop * omegakep; //local Stokes number
+      if(constSt==YES){
+        St = STOKESNUMBER;
+      }
+      else{
+        radius = beam->center[i];
+        omegakep = 1.0/(sqrt(radius)*sqrt(radius)*sqrt(radius)); //local keplerian frequeny (at midplane)
+        St = t_stop * omegakep; //local Stokes number
+      }
       D_d = D_d/(1.0+St*St); // see Youdin&Lithwick (2007)
+      
     }
 
     //diffusion time-scale limit 1 - this is likely too conservative
@@ -790,21 +807,15 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
     //  D_d = dx * dx / t_stop;
     //}
 
+
     Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux
+    //Pi = -D_d*sqrt((rhogL)*(rhogR))*(rhoR/(rhogR)-rhoL/(rhogL))/dx; //diffusion flux
 
     // Diffusion flux limiter - the diffusion velocity must be smaller than the sound speed in gas
     cs = 0.1 * sqrt(csL * csR);
     v_d = sqrt(Pi * Pi) / sqrt(rhoL * rhoR); //diffusion velocity
     if(v_d > cs){
       Pi = sgn(Pi) * cs * sqrt(rhoL * rhoR);
-    }
-
-    //diffusion time-scale limit 2 - the diffusion timescale must be larger than the stopping time
-    v_d = sqrt(Pi * Pi) / sqrt(rhoL * rhoR); //diffusion velocity
-    v_d_max = dx / t_stop; // diffusion velocity limit
-
-    if(v_d > v_d_max){
-      Pi = sgn(Pi) * v_d_max * sqrt(rhoL * rhoR);
     }
 
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) { //add geometrical correction

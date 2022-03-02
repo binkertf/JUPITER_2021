@@ -1,0 +1,61 @@
+CoordType        Cartesian
+CoordPermut      213
+
+Size1            500
+Size2            1
+Size3            1
+
+Range1Low        0.0
+Range1High        125.66370614359172
+
+Range2Low        0.0
+Range2High       0.0
+
+Range3Low        0.0
+Range3High       0.0
+
+NDIM              1
+
+Viscosity         4.0
+
+InitCode             W19_1_g/W19_1_d_2
+
+RIEMANNSOLVER	     2S
+
+R0                  1.0
+XMSTAR              1.0
+
+Dim1Periodic         True
+OUTPUTDIR		    /e/ldata/users/fbinkert/diff/1D_tests_2022/massdiff_k_small_2
+Keplerian            FALSE
+ExternalPotential   	FALSE
+
+FLUIDS                  gas/dust
+CFLSECURITY							0.9
+COURANTNUMBER                       0.9
+
+DUSTDENSFLOOR						1e-15
+
+CS                  2.0
+DIFFMODE               2    #0: no turbulent diffusion / 1: diffusion pressure / 2: mass diffusion
+CONSTSTOKES			TRUE
+STOKESNUMBER        		1.0
+DUSTTOGAS           		0.01
+DUSTSIZE		1.0
+DUSTSOLIDRHO 		1.0
+BACKREACTION        NO
+SLIMITER            MINMOD  #MINMOD / SUPERBEE
+
+
+DT                   5 #31.25
+NINTERM              1
+NTOT                 100
+NODAMPING            YES
+
+OUTPUTATREFINEMENT      500
+FINESTLEVEL             1
+
+METHOD			MUSCL
+
+#GRIDINFO
+0.0  125.66370614359172   0 0 0

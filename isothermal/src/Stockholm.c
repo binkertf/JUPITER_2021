@@ -1,7 +1,7 @@
 #include "jupiter.h"
 #include "init.h"
 
-#define PERCENTMARGIN 30
+#define PERCENTMARGIN 15
 #define HIGHPERCENTMARGIN 2
 /* The above means that we damp perturbations up to +/- 20% of the
    mesh radial boundaries */
@@ -190,7 +190,7 @@ real dt;
              //if(fw->Fluid->next == NULL)
              dens[m] = (dens[m]*lambda+rho0*dt)/(dt+lambda);
              vel[_RAD_][m] = (vel[_RAD_][m]*lambda+vrad0*dt)/(dt+lambda);
-             vel[_AZIM_][m] = (vel[_AZIM_][m]*lambda+vtheta0*dt)/(dt+lambda);
+             //vel[_AZIM_][m] = (vel[_AZIM_][m]*lambda+vtheta0*dt)/(dt+lambda);
              if (_COLAT_ < NDIM)
          	      vel[_COLAT_][m] = vel[_COLAT_][m]*lambda/(dt+lambda);
 

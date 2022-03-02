@@ -37,6 +37,7 @@ addinitcode ("vkoffring2d", vkoffring2d);
 addinitcode ("sod2d", sod2d);
 addinitcode ("kepler3d", kepler3d);
 addinitcode ("keplerdust", keplerdust);
+addinitcode ("keplerdust_2", keplerdust_2);
 addinitcode ("essai", essai);
 addinitcode ("tides", tides);
 addinitcode ("homogeneity1", homogeneity1);
