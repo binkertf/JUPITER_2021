@@ -50,6 +50,7 @@ void HydroKernel (dt)
   }
   JUP_SAFE(ConservativeUpdate (dt));
   JUP_SAFE(DensFloor());
+  //JUP_SAFE(DensFloorVelocityLimit());
   /* and the conservative update is performed, together */
   /* with a face flux monitoring */
   JUP_SAFE(PressureCorrection (dt));
@@ -73,7 +74,7 @@ void HydroKernel (dt)
   }
   /* Apply source terms (potential gradient, centrifugal force) */
   if (KEPLERIAN && !NoStockholm){
-    ApplyStockholmBoundaryConditions (dt);
+    //ApplyStockholmBoundaryConditions (dt);
     //ApplyStockholmBoundaryConditionsDust (dt);
   }
   if (Stellar) {
@@ -201,9 +202,6 @@ void DustDiffKernel (dt)
   DiffusionUpdate (dt);
   JUP_SAFE(ConservativeDustUpdate (dt));
   JUP_SAFE(DustDensFloor());
-
-
-
   /* and the conservative update is performed, together */
   /* with a face flux monitoring */
   //JUP_SAFE(PressureCorrection (dt));

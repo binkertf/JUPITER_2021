@@ -360,8 +360,14 @@ void SetGlobalVariables () {
 	        pInfo ("MUSCL-Hancock method\n");
 	        __Prepare_Riemann_States = &muscl;
           if (diffmode == 0){
-             __Prepare_Riemann_States_Dust = &muscl;
-             __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless1;
+            if (DUSTMETHOD == 0){
+              __Prepare_Riemann_States_Dust = &gfo;
+              __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless2;
+            }else{
+              __Prepare_Riemann_States_Dust = &muscl;
+              __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless1;
+            }
+             
           }
           if (diffmode == 1){
             __Prepare_Riemann_States_Dust = &muscl;
@@ -375,8 +381,13 @@ void SetGlobalVariables () {
 	        pInfo ("MUSCL-Hancock method for adiabatic setup\n");
 	        __Prepare_Riemann_States = &muscl_adiab;
           if (diffmode == 0){
-             __Prepare_Riemann_States_Dust = &muscl;
-             __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless1;
+            if (DUSTMETHOD == 0){
+              __Prepare_Riemann_States_Dust = &gfo;
+              __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless2;
+            }else{
+              __Prepare_Riemann_States_Dust = &muscl;
+              __Compute_Fluxes_Dust = &Compute_Fluxes_pressureless1;
+            }
           }
           if (diffmode == 1){
             __Prepare_Riemann_States_Dust = &muscl;

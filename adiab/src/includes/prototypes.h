@@ -335,6 +335,7 @@ void muscl_adiab ();
 void Predictor_adiab ();
 void Predictor_iso ();
 void DensFloor ();
+void DensFloorVelocityLimit ();
 void DustDensFloor ();
 Pair MinMax ();
 void GetEnergyRadFromLevel ();

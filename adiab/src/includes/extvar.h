@@ -80,6 +80,7 @@ extern	real	DUSTSOLIDRHO;
 extern	real	DUSTTOGAS;
 extern	real	DUSTDENSFLOOR;
 extern	long	DIFFMODE;
+extern	long	DUSTMETHOD;
 extern	boolean	DUSTDIFF;
 extern	boolean	BACKREACTION;
 extern	long	OUTPUTATREFINEMENT;
