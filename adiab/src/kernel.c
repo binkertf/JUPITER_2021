@@ -74,7 +74,7 @@ void HydroKernel (dt)
   }
   /* Apply source terms (potential gradient, centrifugal force) */
   if (KEPLERIAN && !NoStockholm){
-    //ApplyStockholmBoundaryConditions (dt);
+    ApplyStockholmBoundaryConditions (dt);
     //ApplyStockholmBoundaryConditionsDust (dt);
   }
   if (Stellar) {
