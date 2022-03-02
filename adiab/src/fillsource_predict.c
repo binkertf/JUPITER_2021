@@ -199,7 +199,6 @@ void FillSources_Predict_Dust ()
 	    			sv[l][m] = (e[smm]*rho[smm]-e[smp]*rho[smp])*sinvdx/rho[m];
 				}
 				if (diffmode == 1){
-					//sv[l][m] += (a2[smp]  - a2[smm] ) * sinvdx;
 					sv[l][m] += 1. / (rho_g[m] + rho[m]) * (a2[smp] * (rho_g[smp] + rho[smp]) - a2[smm] * (rho_g[smm] + rho[smm])) * sinvdx;
 				}
 				if (EXTERNALPOTENTIAL == YES) {// grav. acceleration
@@ -489,9 +488,6 @@ void FillSources_Dust (flag, loc)
 		  if (diffmode == 1){
 			sv[l][m] += 1. / rho_g[m] * (a2[smp] * rho_g[smp] - a2[smm] * rho_g[smm]) * sinvdx;
 		   }
-
-
-
 	      if (GridFriction[l] != 0.0)
 		sv[l][m] -= v[l][m]*GridFriction[l];
 	    }

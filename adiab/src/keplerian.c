@@ -209,26 +209,12 @@ inline real keplerian_dust_diffusion_init(component, radius, colatitude, sigma0,
   }
   switch (component) {
   case _density_: 
-    //init = 7.99888832e-03 * exp(-(radius - 9.94935677e-01 )*(radius - 9.94935677e-01 )/(2.*1.00258839e-01*1.00258839e-01));
-    //init = 0.01129793 * exp(-(radius - 0.997484195 )*(radius - 0.99748419 )/(2.*0.07080056*0.07080056));
-    
-    //init = 0.01785017 * exp(-(radius - 0.99899749 )*(radius - 0.99899749 )/(2.*0.04474387*0.04474387));
-    
-    //init = 0.01785017 * exp(-(radius - 0.99899749 )*(radius - 0.99899749 )/(2.*0.04474387*0.04474387));
     init = 0.01 * exp(-(radius - 1.0 )*(radius - 1.0 )/(2.*0.01*0.01));
-
-
     if(init < DUSTDENSFLOOR)
       init = DUSTDENSFLOOR;
     break;
 
   case _vazimuth_:		// Same in 2 and 3D
-    //init = pow(radius, -1.5);
-    //init = pow(radius, -1.5);// ;
-    //init = pow(radius, -1.5) * (1.0 - 0.9*0.1 * (radius-1.0))* 0.999 * sqrt(1.0-3.0/2.0*VISCOSITY/STOKESNUMBER*pow(radius, -0.25));
-    
-    //init = pow(radius, -1.5) * (1.0 - 0.9*0.1 * (radius-1.0))* 0.999 * sqrt(1.0-3.0/2.0*VISCOSITY/STOKESNUMBER*pow(radius, -0.25));
-    
     init = pow(radius, -1.5) * sqrt(1.0-3.0/2.0*VISCOSITY/STOKESNUMBER*pow(radius, -0.25));
 
     break;
@@ -237,8 +223,6 @@ inline real keplerian_dust_diffusion_init(component, radius, colatitude, sigma0,
     break;
   case _vrad_:			// Viscous drift
       init = 0.0; 
-      //init = 0.5*(radius-1.0);
-      //init = -(radius-1.0);
     break;
   case _vcolatitude_:
       init = 0.0;
@@ -291,13 +275,7 @@ inline real keplerian_gas_diffusion_init(component, radius, colatitude, sigma0, 
     break;
 
   case _vazimuth_:		// Same in 2 and 3D
-    //init = pow(radius, -1.5);
-    //if (radius<=1)
-    //  init = pow(radius, -1.5) * 0.9999 * sqrt(1.0-3.0/2.0*VISCOSITY/STOKESNUMBER*pow(radius, -0.25));
-    //else
-    // init = pow(radius, -1.5) * 1.0003 * sqrt(1.0-3.0/2.0*VISCOSITY/STOKESNUMBER*pow(radius, -0.25));
-    
-    init = pow(radius, -1.5)* sqrt(1.0-3.0/2.0*VISCOSITY/STOKESNUMBER*pow(radius, -0.25));
+  init = pow(radius, -1.5)* sqrt(1.0-3.0/2.0*VISCOSITY/STOKESNUMBER*pow(radius, -0.25));
     break;
   case _energy_:
       init =  VISCOSITY / STOKESNUMBER * omegakep;

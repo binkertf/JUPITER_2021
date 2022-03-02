@@ -219,29 +219,22 @@ Consider implementing Stokes drag or ignore this message at your own risk.\n");
             v[1][l][m] = (v2*(1.+d2*e)+v1*d1*e)*idenom; //gas velocity
           }
 
-
-
           // hard coupling limiter
           if (d1<=DUSTDENSFLOOR){  
             v[0][l][m]=v2;
             v[1][l][m]=v2;
           }
 
-
           // Here, I set the dust density to the dustfloor in the irradiated region
-          if (FALSE == TRUE){ //if (!Isothermal){
-            if((colat/M_PI*180.0) <= (90.-STELLDEG) || (colat/M_PI*180.0) >= (90.+STELLDEG)) {
-            d[0][m]=DUSTDENSFLOOR;
-            v[0][l][m]=v2;
-            v[1][l][m]=v2;
-  	        }
+          //if (FALSE == TRUE){ //if (!Isothermal){
+            //if((colat/M_PI*180.0) <= (90.-STELLDEG) || (colat/M_PI*180.0) >= (90.+STELLDEG)) {
+            //d[0][m]=DUSTDENSFLOOR;
+            //v[0][l][m]=v2;
+            //v[1][l][m]=v2;
+  	        //}
           }
 	      }
-
-
         if (diffmode != 1) cs[0][m] = 0.0; //sets dust "energy" to zero when there is no diffusion pressure
-
-
       }
     }
   }
@@ -301,7 +294,7 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
         if (Isothermal){//isothermal
           if (NDIM ==1){
             tau_s = STOKESNUMBER;
-            cs[0][m] = VISCOSITY / tau_s; //VISCOSITY / (tau_s + VISCOSITY/cs2);
+            cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/cs2);
           }
 
           if (NDIM ==2){
@@ -316,25 +309,14 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
             }
           }
 
-
           if (NDIM ==3){
             if(constSt==TRUE){//constant Stokes number
               delta = VISCOSITY/(sqrt(cs2)*ASPECTRATIO*radius);
               diff_f = delta/(delta+STOKESNUMBER);
-              //diff_f = delta / STOKESNUMBER;
               cs[0][m] = diff_f * cs2; //dust turbulent diffusion pressure
-              //remove the following line after testing:
-              //tau_s = STOKESNUMBER / omegakep;
-              //cs[0][m] = VISCOSITY / tau_s;
-              //until here
-              
-              //omegakep = 1.0/sqrt(radius*radius*radius);
-              //cs[0][m] = VISCOSITY * omegakep / STOKESNUMBER;
-
             }else{ //constant particle size
               tau_s = sqrt(M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(cs2) * d2);
               cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/cs2);
-              //cs[0][m] = VISCOSITY / tau_s;
             }
           }
         }else{//radiative
@@ -344,17 +326,12 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
           }else{ //constant particle size
             tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(acs2) * d2);
             cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/(acs2));
-            //cs[0][m] = VISCOSITY / tau_s;
-            //cs[0][m] = acs2; 
-            //printf("%.6f \n",sqrt(cs2));
           }
         }
       }
     }
   }
 }
-
-
 
 
 void MultifluidDustEnergyToZero (item, dt)	/* Turbulent diffusion pressure in dust fluids */

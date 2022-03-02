@@ -809,24 +809,15 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
     //}
 
 
-    //Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux
-    Pi = -D_d*sqrt((rhogL)*(rhogR))*(rhoR/(rhogR)-rhoL/(rhogL))/dx; //diffusion flux
+    Pi = -D_d*sqrt((rhoL+rhogL)*(rhoR+rhogR))*(rhoR/(rhogR+rhoR)-rhoL/(rhogL+rhoL))/dx; //diffusion flux
+    //Pi = -D_d*sqrt((rhogL)*(rhogR))*(rhoR/(rhogR)-rhoL/(rhogL))/dx; //diffusion flux
 
     // Diffusion flux limiter - the diffusion velocity must be smaller than the sound speed in gas
-    /*
     cs = 0.1 * sqrt(csL * csR);
     v_d = sqrt(Pi * Pi) / sqrt(rhoL * rhoR); //diffusion velocity
     if(v_d > cs){
       Pi = sgn(Pi) * cs * sqrt(rhoL * rhoR);
-    }*/
-
-    //diffusion time-scale limit 2 - the diffusion timescale must be larger than the stopping time
-    //v_d = sqrt(Pi * Pi) / sqrt(rhoL * rhoR); //diffusion velocity
-    //v_d_max = dx / t_stop; // diffusion velocity limit
-
-    //if(v_d > v_d_max){
-      //Pi = sgn(Pi) * v_d_max * sqrt(rhoL * rhoR);
-    //}
+    }
 
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) { //add geometrical correction
       Pi = Pi / beam->radius;

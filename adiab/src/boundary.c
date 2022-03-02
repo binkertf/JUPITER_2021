@@ -85,9 +85,9 @@ case 98: //Colatitude 3D, for high altitude regions, ISOTHERMAL, probably not co
       xi = SIGMASLOPE+1+FLARINGINDEX; //.+FLARINGINDEX;
       *rhog = rho*pow(xg/x,-xi); //rho;
       *eg   = e;
-      *ug   = u; //colatitude
+      *ug   = 0.0; //colatitude
       *vg   = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
-      *wg   = w;
+      *wg   = 0.0;
       }
       break;
     /* problem-specific conditions */
@@ -121,6 +121,19 @@ case 98: //Colatitude 3D, for high altitude regions, ISOTHERMAL, probably not co
       *ug = 0.0;
       *vg = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;//(v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
       *wg = 0.0; //w;
+    }
+    break;
+    case 31 : 
+    if (predictive) break;
+    {
+      real xi, beta;
+      xi = SIGMASLOPE+1.+FLARINGINDEX;
+      beta = .5-FLARINGINDEX;
+      *rhog = rho*pow(xg/x,-xi);
+      *eg = e*pow(xg/x,-2.*beta-xi);
+      *ug = u;
+      *vg = (v+OMEGAFRAME)*pow(x/xg,1.5)-OMEGAFRAME;
+      *wg = w; 
     }
     break;
   case 11 : // keplerian 2-3D : radius (valid for COORDPERMUT = 123 or 213 or 231)

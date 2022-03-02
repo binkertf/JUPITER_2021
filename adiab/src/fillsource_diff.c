@@ -54,9 +54,7 @@ void FillSources_diff_dust (flag, loc, dt)
 	          smm = m-stride[l];
 	          sinvdx = 1.0/(center[l][smp]-center[l][smm]);
 	          sinvdx *= metric_coef;
-	          
-            //sv[l][m] =  (a2[smp] - a2[smm]) * sinvdx;
-            
+	                      
             sv[l][m] = 1. / (rho_g[m] + rho[m]) * (a2[smp] * (rho_g[smp] + rho[smp]) - a2[smm] * (rho_g[smm] + rho[smm])) * sinvdx;
 
             //diffusion limiter
