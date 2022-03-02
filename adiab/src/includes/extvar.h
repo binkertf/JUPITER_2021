@@ -83,6 +83,7 @@ extern	long	DIFFMODE;
 extern	long	DUSTMETHOD;
 extern	boolean	DUSTDIFF;
 extern	boolean	BACKREACTION;
+extern	boolean	DUSTEVAP;
 extern	long	OUTPUTATREFINEMENT;
 extern	long	FinestLevel;
 extern	long	HIGHRESLEVEL;

@@ -384,7 +384,7 @@ void ExecCommDownFlux (lev)
   real *source[80];
   FluidPatch *fluid;
   com = ComListFlux;
-  nvar = 2+NDIM;		/* Density (or mass flux) + velocities (or momentum flux)*/
+  nvar = 2+NDIM;		/* Density (or mass flux) + velocities (or momentum flux) */
 				/* and interface pressure at the outer faces */
   if (!Isothermal) nvar+=2;	/* Energy of energy flux + same for total energy */
   while (com != NULL) {

@@ -83,6 +83,7 @@ long	DIFFMODE;
 long	DUSTMETHOD;
 boolean	DUSTDIFF;
 boolean	BACKREACTION;
+boolean	DUSTEVAP;
 long	OUTPUTATREFINEMENT;
 long	FinestLevel;
 long	HIGHRESLEVEL;

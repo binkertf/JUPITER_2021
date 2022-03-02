@@ -788,9 +788,8 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
       }
     }
 
-
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _RAD_)) { //account for epicycle oscillations in radial direction
-      if(!constSt==YES){
+      if(constSt==YES){
         St = STOKESNUMBER;
       }
       else{
