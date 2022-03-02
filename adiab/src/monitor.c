@@ -152,40 +152,128 @@ void MonitorTorqueZ () {// Output torqueZ.dat, containing torque density as a fu
   free(colatitudes);
 }
 
-void MonitorSublimatedDustMass(){
-  FILE *log;
+// void MonitorSublimatedDustMass(){
+//   FILE *log;
+//   char command[MAXLINELENGTH];
+//  if (!CPU_Rank) {
+//     if ( CurrentOutputNumber == 0 ) { // a new file is created for each simulation
+//       sprintf(command, "cd %s; mv -f dustSublmass.dat dustSublmass.dat.old", OUTPUTDIR);
+//       system (command);
+//       log = prs_open ("dustSublmass.dat");
+//     }
+//     else {
+//       log = prs_opena ("dustSublmass.dat");
+//     }
+//     fprintf (log, "%ld\t%.17g\t%.17g\n",\
+//        CurrentOutputNumber, GlobalDate, DustSublMass);
+//     fclose (log);
+//   }
+// }
+
+void ReadRemDustMass(NbRestart) 
+     long NbRestart;
+{
+  FILE *fp,*fp_re,*fp_renew;
+  FILE *fp_fresh;
   char command[MAXLINELENGTH];
- if (!CPU_Rank) {
-    if ( CurrentOutputNumber == 0 ) { // a new file is created for each simulation
-      sprintf(command, "cd %s; mv -f dustSublmass.dat dustSublmass.dat.old", OUTPUTDIR);
-      system (command);
-      log = prs_open ("dustSublmass.dat");
+  char command2[MAXLINELENGTH];
+  char fname[MAXLINELENGTH];
+  long int outNB,dum;
+  real date,readmass,remmass=0.;
+  if (!CPU_Rank){
+  sprintf(fname,"%sdustmassRemv.dat",OUTPUTDIR);
+    if (FileExists(fname)){
+      if ( CurrentOutputNumber == 0 ) {// a new file is created for each simulation
+        sprintf(command, "cd %s; mv -f dustmassRemv.dat dustmassRemv.dat.old", OUTPUTDIR);
+        system (command);
+        fp = prs_open("dustmassRemv.dat");
+        fclose(fp);
+      } else{
+        sprintf(command2, "cd %s; mv -f dustmassRemv.dat dustmassRemv.dat.restart", OUTPUTDIR);
+        system (command2);
+        fp_re = prs_openr("dustmassRemv.dat.restart");
+        fp_renew = prs_open("dustmassRemv.dat");
+        while (fscanf(fp_re,"%ld\t%lf\t%lf",&outNB,&date,&readmass)!=EOF){
+          if (outNB==NbRestart){
+              remmass = readmass;
+              break;
+          } else{
+            fprintf (fp_renew, "%ld\t%.17g\t%.17g\n",outNB, date, readmass);
+          }
+        }
+      fclose(fp_re);
+      fclose(fp_renew);
+      }
+    }else{
+     fp_fresh = prs_open("dustmassRemv.dat");
+     fclose(fp_fresh);
     }
-    else {
-      log = prs_opena ("dustSublmass.dat");
-    }
-    fprintf (log, "%ld\t%.17g\t%.17g\n",\
-       CurrentOutputNumber, GlobalDate, DustSublMass);
-    fclose (log);
   }
+if (remmass){
+  MPI_Bcast(&remmass,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+  DustAvgMass = remmass;
+ }
 }
 
+void ReadSublDustMass(NbRestart) 
+     long NbRestart;
+{
+  FILE *fp,*fp_re,*fp_renew;
+  FILE *fp_fresh;
+  char command[MAXLINELENGTH];
+  char command2[MAXLINELENGTH];
+  char fname[MAXLINELENGTH];
+  long int outNB,dum;
+  real date,readmass,sublmass=0.;
+  if (!CPU_Rank){
+  sprintf(fname,"%sdustSublmass.dat",OUTPUTDIR);
+    if (FileExists(fname)){
+      if ( CurrentOutputNumber == 0 ) {// a new file is created for each simulation
+        sprintf(command, "cd %s; mv -f dustSublmass.dat dustSublmass.dat.old", OUTPUTDIR);
+        system (command);
+        fp = prs_open("dustSublmass.dat");
+        fclose(fp);
+      } else{
+        sprintf(command2, "cd %s; mv -f dustSublmass.dat dustSublmass.dat.restart", OUTPUTDIR);
+        system (command2);
+        fp_re = prs_openr("dustSublmass.dat.restart");
+        fp_renew = prs_open("dustSublmass.dat");
+        while (fscanf(fp_re,"%ld\t%lf\t%lf",&outNB,&date,&readmass)!=EOF){
+          if (outNB==NbRestart){
+              sublmass = readmass;
+              break;
+          } else{
+            fprintf (fp_renew, "%ld\t%.17g\t%.17g\n",outNB, date, readmass);
+          }
+        }
+      fclose(fp_re);
+      fclose(fp_renew);
+      }
+    }else{
+     fp_fresh = prs_open("dustSublmass.dat");
+     fclose(fp_fresh);
+    }
+  }
+if (sublmass){
+  MPI_Bcast(&sublmass,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+  DustSublMass = sublmass;
+ }
+}
 
 void MonitorRemovedDustMass(){
   FILE *log;
-  char command[MAXLINELENGTH];
- if (!CPU_Rank) {
-    if ( CurrentOutputNumber == 0 ) { // a new file is created for each simulation
-      sprintf(command, "cd %s; mv -f dustmass_remv.dat dustmass_remv.dat.old", OUTPUTDIR);
-      system (command);
-      log = prs_open ("dustmass_remv.dat");
-    }
-    else {
-      log = prs_opena ("dustmass_remv.dat");
-    }
-    fprintf (log, "%ld\t%.17g\t%.17g\n",\
-       CurrentOutputNumber, GlobalDate, DustAvgMass);
+ if (!CPU_Rank) {    
+    log = prs_opena ("dustmassRemv.dat");
+    fprintf (log, "%ld\t%.17g\t%.17g\n",CurrentOutputNumber, GlobalDate, DustAvgMass);
     fclose (log);
   }
 }
 
+void MonitorSublimatedDustMass(){
+  FILE *log;
+ if (!CPU_Rank) {
+    log = prs_opena ("dustSublmass.dat");
+    fprintf (log, "%ld\t%.17g\t%.17g\n",CurrentOutputNumber, GlobalDate, DustSublMass);
+    fclose (log);
+  }
+}

@@ -90,7 +90,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
   getgridsize (fp->desc, gncell, stride);
 
   
-  if (fp->next==NULL && !DUSTUCAP==NO){
+  if ((fp->next==NULL) && ((!DUSTUCAP)==NO)){
     dustfluid = fp->prev;
     dustdens = dustfluid->Density->Field;
   }
@@ -213,7 +213,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
 	    temp1=temp1+temp[m];
 
      
-      if (fp->next==NULL && !DUSTUCAP==NO){
+      if ((fp->next==NULL) && ((!DUSTUCAP)==NO)){
           dmass=dmass+dustdens[m];
           }
 	     }
@@ -224,7 +224,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
 	    temp2=temp2+temp[m];
 	    
        
-      if (fp->next==NULL && !DUSTUCAP==NO){
+      if ((fp->next==NULL) && ((!DUSTUCAP)==NO)){
         dmass2=dmass2+dustdens[m];
         }
       }
@@ -233,7 +233,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
     }
   }
 
-  if (fp->next==NULL && !DUSTUCAP==NO){
+  if ((fp->next==NULL) && ((!DUSTUCAP)==NO)){
     MPI_Allreduce (&dmass, &dtmass, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce (&dmass2, &dtmass2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     if ((dtmass/4.0)>=DUSTUCAP){

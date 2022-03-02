@@ -22,8 +22,14 @@ int main (argc,argv)
     }
     //if (EneMon) 
     MonitorEnergy();
-    if (DUSTSUBL) MonitorSublimatedDustMass ();
-    if (!DUSTUCAP==NO) MonitorRemovedDustMass ();
+    if (DUSTSUBL){
+      if (i==NbRestart*NINTERM) ReadSublDustMass(NbRestart);
+      MonitorSublimatedDustMass ();
+    }
+    if ((!DUSTUCAP)==NO){
+      if (i==NbRestart*NINTERM) ReadRemDustMass(NbRestart);
+      MonitorRemovedDustMass ();
+    } 
     NextDate = GlobalDate + DT;
     if (i % NINTERM == 0) {
 //      CommAll ();
