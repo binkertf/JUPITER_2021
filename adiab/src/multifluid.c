@@ -232,7 +232,7 @@ Consider implementing Stokes drag or ignore this message at your own risk.\n");
             //v[0][l][m]=v2;
             //v[1][l][m]=v2;
   	        //}
-          }
+          //}
 	      }
         if (diffmode != 1) cs[0][m] = 0.0; //sets dust "energy" to zero when there is no diffusion pressure
       }
