@@ -347,3 +347,4 @@ void MonitorRemovedDustMass();
 void ReadRemDustMass();
 void ReadSublDustMass();
 boolean FileExists ();
+real GetGamma();
