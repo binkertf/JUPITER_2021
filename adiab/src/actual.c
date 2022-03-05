@@ -19,6 +19,7 @@ void ReserveForWorkPatch (ptr)
   }
 }
 
+
 void ReserveForSecondaryWorkPatch (ptr)
      real **ptr;
 {
