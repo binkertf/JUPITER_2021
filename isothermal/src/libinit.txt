@@ -38,7 +38,7 @@ W19_1_g:
 W19_1_d:
 		density = 1.0+0.001*cos(x*6.28318530718);
 		vx = 1.0;
-		energy = 0.0;
+		energy = CS*CS;
 
 W19_2_g:
 		density = 1.0;
@@ -48,7 +48,7 @@ W19_2_g:
 W19_2_d:
 		density = 1.0+6.451433001183836*0.001*sin(x*6.28318530718);
 		vx = 1.0+0.001*cos(x*6.28318530718);
-		energy = 0.0;
+		energy = CS*CS;
 
 
 sod1d:
@@ -142,6 +142,15 @@ keplerdust:
 	vrad      = 0.0;
 	v_azimuth = keplerian_dust_init(_vazimuth_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
 	v_colatitude= 0.0; //keplerian_dust_init(_vcolatitude_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+
+keplerdust_2:
+		density   = keplerian_dust_init(_density_,radius,colatitude, SIGMA0*DUSTTOGAS, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+		energy    = keplerian_dust_init(_energy_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+		vrad      = 0.0; //keplerian_init(_vrad_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+		v_azimuth = keplerian_dust_init(_vazimuth_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+		v_colatitude= 0.0; //keplerian_init(_vcolatitude_,radius,colatitude, SIGMA0, SIGMASLOPE, ASPECTRATIO, FLARINGINDEX);
+
+
 essai:
 	density   = SIGMA0;
 	vrad      = 0.0;

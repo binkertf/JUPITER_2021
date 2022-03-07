@@ -41,8 +41,15 @@ inline real keplerian_init(component, radius, colatitude, sigma0, a, h, f)
     init = pow(radius, -1.5)*DISKSPEEDFACTOR;
     init *= sqrt(isc2f - h2*w);
     init *= isc;
-    if (NDIM == 2) // Check different cases (iso. no iso)
-      init = DISKSPEEDFACTOR*pow(radius, -1.5)*sqrt(1.-2.*b*(GAMMA-1.0)/GAMMA*h2);
+    if (NDIM == 2){ // Check different cases (iso. no iso)
+      if (Isothermal){
+        init = DISKSPEEDFACTOR*pow(radius, -1.5);
+      }else{
+        init = DISKSPEEDFACTOR*pow(radius, -1.5)*sqrt(1.-2.*b*(GAMMA-1.0)/GAMMA*h2);
+      }
+      init *= sqrt(isc2f - h2*w);
+      init *= isc;
+    }
     break;
   case _energy_:
     init = h*h*pow(radius, -2.*b);
@@ -87,13 +94,17 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
 {
   real init=0.;
   real h2,  hm2, b, xi, w, isc=1., isc2f=1., rho;
-  real hg, hd, St_mid, dustsz, dustsolidrho, omegakep, alpha;
+  real hg, hd, hd_2, St_mid, dustsz, dustsolidrho, omegakep, alpha;
 
   dustsz = DUSTSIZE / R0; // diameter of dust grains in code units
   dustsolidrho = DUSTSOLIDRHO / RHO0; // solid density of dust grains in code units, typically 3 g/cm^3 in physical units
 
   hg = h*radius; //gas scale height
-  St_mid = M_PI/2.0*dustsz*dustsolidrho/(sigma0/DUSTTOGAS*pow(radius,-a)); // midplane Stokes number
+  if(constSt==YES){
+    St_mid = STOKESNUMBER;
+  }else{
+    St_mid = M_PI/2.0*dustsz*dustsolidrho/(sigma0/DUSTTOGAS*pow(radius,-a)); // midplane Stokes number
+  }
   omegakep = 1.0*sin(colatitude)/(sqrt(radius)*sqrt(radius)*sqrt(radius));
   alpha = VISCOSITY/(omegakep*hg*hg);//*(pow(radius,0.2))*1.8;
   hd = hg*sqrt(alpha/(alpha+St_mid));
@@ -114,21 +125,15 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
     if (NDIM ==2)
       init = sigma0*pow(radius,-a);
     else if (NDIM ==3) {
-      init = sigma0*pow(radius,-a)/sqrt(2.0*M_PI)/hd*exp(-St_mid/alpha*(exp(radius*cos(colatitude)*radius*cos(colatitude)/(2.*hg*hg))-1.0)-radius*cos(colatitude)*radius*cos(colatitude)/(2.*hg*hg)); //acc. to Fromang & Nelson 2009 Eq. (19)
-      //init = sigma0/sqrt(2.0*M_PI)/h*pow(radius,-xi) * pow(isc, w);
-
-      /*
-      if (fabs(f) < 1e-10)
-	     init *= pow(isc , -hm2); // flat case
-      else
-	     init *= exp(hm2 * (1. - isc2f)/2./f);// flaring case
-       */
+      if(constSt==TRUE){
+        init = sigma0*pow(radius,-a)/sqrt(2.0*M_PI)/hd*exp(-radius*cos(colatitude)*radius*cos(colatitude)/(2*hd*hd));
+      }else{
+        init = sigma0*pow(radius,-a)/sqrt(2.0*M_PI)/hd*exp(-St_mid/alpha*(exp(radius*cos(colatitude)*radius*cos(colatitude)/(2.*hg*hg))-1.0)-radius*cos(colatitude)*radius*cos(colatitude)/(2.*hg*hg)); //acc. to Fromang & Nelson 2009 Eq. (19)
+      }      
     }
     if(init < DUSTDENSFLOOR)
       init = DUSTDENSFLOOR;
     break;
-
-
 
   case _vazimuth_:		// Same in 2 and 3D
     init = pow(radius, -1.5)*DISKSPEEDFACTOR;
@@ -136,31 +141,26 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
     init *= isc;
     if (NDIM == 2) // Check different cases (iso. no iso)
       init = DISKSPEEDFACTOR*pow(radius, -1.5)*sqrt(1.-2.*b*(GAMMA-1.0)/GAMMA*h2);
+
+    if (diffmode == 1){
+      init = pow(radius, -1.5) * sqrt(1.0-3.0/2.0*VISCOSITY/St_mid*pow(radius, -0.25));
+    }else{
+      init = pow(radius, -1.5);
+    }
+    
     break;
   case _energy_:
-    init = h*h*pow(radius, -2.*b);
-    if (!Isothermal) {
-      if (NDIM == 3) {
-	// e is not defined the same way in adiabatic.
-	// But we want P to be the same in IsoT and adiabatic:
-	rho = sigma0/sqrt(2.0*M_PI)/h		\
-	  *pow(radius,-xi) * pow(isc, w);
-	if (fabs(f) < 1e-10) // flat case
-	  rho *= pow(isc , -hm2);
-	else		   // flaring case
-	  rho *= exp(hm2 * (1. - isc2f)/2./f);
-	init *= rho/(GAMMA-1.);
-      } else {
-	init *= sigma0*pow(radius,-a)/(GAMMA-1.0);
-      }
-    }
+      init = alpha / (alpha+St_mid) * h*h*pow(radius, -2.*b);
     break;
   case _vrad_:			// Viscous drift
     init = 3.0*VISCOSITY/radius*(xi-1.5);
     if (NDIM == 2)
       init = 3.0*VISCOSITY/radius*(a-.5);
+
+    init = 0.0; 
     break;
   case _vcolatitude_:
+  init = 0.0;
     break;
   default:
     prs_error ("Unknown component in %s at line %d", __FILE__, __LINE__);
@@ -171,7 +171,129 @@ inline real keplerian_dust_init(component, radius, colatitude, sigma0, a, h, f)
   return init;
 }
 
+//######################################################################################################
+//######################################################################################################
+// this is a 2D setup
+inline real keplerian_dust_diffusion_init(component, radius, colatitude, sigma0, a, h, f)
+     int component;
+     real radius, colatitude;
+     real sigma0, a, h, f; 	// sigma0, sigmaslope, aspect ratio and flaring index
+{
+  real init=0.;
+  real h2,  hm2, b, xi, w, isc=1., isc2f=1., rho;
+  real hg, hd, St_mid, dustsz, dustsolidrho, omegakep, alpha;
 
+  dustsz = DUSTSIZE / R0; // diameter of dust grains in code units
+  dustsolidrho = DUSTSOLIDRHO / RHO0; // solid density of dust grains in code units, typically 3 g/cm^3 in physical units
+
+  hg = h*radius; //gas scale height
+  if(constSt==YES){
+    St_mid = STOKESNUMBER;
+  }else{
+    St_mid = M_PI/2.0*dustsz*dustsolidrho/(sigma0/DUSTTOGAS*pow(radius,-a)); // midplane Stokes number
+  }
+  omegakep = 1.0*sin(colatitude)/(sqrt(radius)*sqrt(radius)*sqrt(radius));
+  alpha = VISCOSITY/(omegakep*hg*hg);//*(pow(radius,0.2))*1.8;
+  hd = hg; //*sqrt(alpha/(alpha+St_mid));
+
+  xi = a+1.+f;
+  b = .5-f;
+  // w scales with the pressure gradient
+  w = 2.*b+xi;
+  if (NDIM == 2) w= 2.*b+a;
+  h2 = h*h*pow(radius,2.*f);
+  hm2 = 1./h2;
+  if (NDIM == 3) {
+    isc = 1./sin(colatitude);
+    isc2f = pow (isc, 2.*f);
+  }
+  switch (component) {
+  case _density_: 
+    init = 0.01 * exp(-(radius - 1.0 )*(radius - 1.0 )/(2.*0.01*0.01));
+    if(init < DUSTDENSFLOOR)
+      init = DUSTDENSFLOOR;
+    break;
+
+  case _vazimuth_:		// Same in 2 and 3D
+    init = pow(radius, -1.5) * sqrt(1.0-3.0/2.0*VISCOSITY/STOKESNUMBER*pow(radius, -0.25));
+
+    break;
+  case _energy_:
+      init =  VISCOSITY / STOKESNUMBER * omegakep;
+    break;
+  case _vrad_:			// Viscous drift
+      init = 0.0; 
+    break;
+  case _vcolatitude_:
+      init = 0.0;
+    break;
+  default:
+    prs_error ("Unknown component in %s at line %d", __FILE__, __LINE__);
+  }
+  if (component==_vazimuth_) init -= OMEGAFRAME;
+
+
+  return init;
+}
+
+inline real keplerian_gas_diffusion_init(component, radius, colatitude, sigma0, a, h, f)
+     int component;
+     real radius, colatitude;
+     real sigma0, a, h, f; 	// sigma0, sigmaslope, aspect ratio and flaring index
+{
+  real init=0.;
+  real h2,  hm2, b, xi, w, isc=1., isc2f=1., rho;
+  real hg, hd, St_mid, dustsz, dustsolidrho, omegakep, alpha;
+
+  dustsz = DUSTSIZE / R0; // diameter of dust grains in code units
+  dustsolidrho = DUSTSOLIDRHO / RHO0; // solid density of dust grains in code units, typically 3 g/cm^3 in physical units
+
+  hg = h*radius; //gas scale height
+  if(constSt==YES){
+    St_mid = STOKESNUMBER;
+  }else{
+    St_mid = M_PI/2.0*dustsz*dustsolidrho/(sigma0/DUSTTOGAS*pow(radius,-a)); // midplane Stokes number
+  }
+  omegakep = 1.0*sin(colatitude)/(sqrt(radius)*sqrt(radius)*sqrt(radius));
+  alpha = VISCOSITY/(omegakep*hg*hg);//*(pow(radius,0.2))*1.8;
+  hd = hg; //*sqrt(alpha/(alpha+St_mid));
+
+  xi = a+1.+f;
+  b = .5-f;
+  // w scales with the pressure gradient
+  w = 2.*b+xi;
+  if (NDIM == 2) w= 2.*b+a;
+  h2 = h*h*pow(radius,2.*f);
+  hm2 = 1./h2;
+  if (NDIM == 3) {
+    isc = 1./sin(colatitude);
+    isc2f = pow (isc, 2.*f);
+  }
+  switch (component) {
+  case _density_: 
+    init = sigma0*pow(radius,-a);
+    break;
+
+  case _vazimuth_:		// Same in 2 and 3D
+  init = pow(radius, -1.5)* sqrt(1.0-3.0/2.0*VISCOSITY/STOKESNUMBER*pow(radius, -0.25));
+    break;
+  case _energy_:
+      init =  VISCOSITY / STOKESNUMBER * omegakep;
+    break;
+  case _vrad_:			// Viscous drift
+      init = 0.0; 
+    break;
+  case _vcolatitude_:
+      init = 0.0;
+    break;
+  default:
+    prs_error ("Unknown component in %s at line %d", __FILE__, __LINE__);
+  }
+  if (component==_vazimuth_) init -= OMEGAFRAME;
+
+
+  return init;
+}
 
 /*
   gravitational external potential

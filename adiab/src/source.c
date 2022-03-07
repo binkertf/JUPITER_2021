@@ -65,11 +65,11 @@ void DustDiffusion(dt)
   lev = CurrentFluidPatch->desc->level;
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
-  //FillSources (PREDICT, EVERYWHERE);
-  JUP_SAFE(FillSlopes ());
-  mMUSCL = NO;
+  FillSources (PREDICT, EVERYWHERE);
+  //JUP_SAFE(FillSlopes ());
+  //mMUSCL = NO;
   //JUP_SAFE(FillSources_Predict());
-  mMUSCL = YES;
+  //mMUSCL = YES;
   for (dim = 0; dim < NDIM; dim++) { /* For each dimension */
     ip1 = (dim == 0);
     ip2 = 2-(dim == 2);

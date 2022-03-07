@@ -200,6 +200,7 @@ void ReallocateSpaceForCurrentFluidPatch (fp)
   CurrentFluidPatch->Fluid = fp;
   CurrentFluidPatch->Fluid->next = fp->next;
   CurrentFluidPatch->next = fp->next;
+  CurrentFluidPatch->prev = fp->prev;
 }
 
 void ReallocateSpaceForSecondaryFluidPatch (fp)

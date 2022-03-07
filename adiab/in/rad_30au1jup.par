@@ -6,11 +6,11 @@ CoordType		Spherical
 CoordPermut        	213   # Azimuth, Radius and Colatitude
 
 #Size1	          	640
-Size1            	2
-Size2            	200   # Strangely, below 120 cells, it crashes
-Size3            	20
+Size1            	2     #number of azimuthal cells
+Size2            	200   #number of radial cells, strangely, below 120 cells, it crashes
+Size3            	20    #number of polar cells
 
-Range2Low      		0.4
+Range2Low      		0.4     #if you change anything here, don't forget to also change the GRIDINFO at the bottom of this file (and vice versa)
 Range2High        	2.4
 Range1Low      		-3.141592653
 Range1High        	3.141592653
@@ -30,8 +30,8 @@ SMRATIO			2.0
 XMSTAR		    	1.0
 STELLAR             	YES
 StellDeg            	7.
-Tstar               	5780.             temperature of the star in Kelvin
-Rstar               	1.0               star radius in unit of the Sun Radius
+Tstar               	5780.             #temperature of the star in Kelvin
+Rstar               	1.0               #star radius in unit of the Solar Radius
 ################################################################################
 # PLANET / GASDISK
 ################################################################################
@@ -40,31 +40,30 @@ PLANETMASS         	0.0
 #PLANETMASS          	1.0e-3
 MASSTAPER           	10
 ASPECTRATIO         	0.05
-Viscosity           	5.0e-6
+Viscosity           	1.0e-5
 SIGMA0              	1.479e-3
-SIGMASLOPE          	1.0
+SIGMASLOPE          	0.5
 GAMMA	              	1.43
 ADIABATIC           	YES
 Flaringindex        	0.28
 
 PotentialCode       	planet3d
-ExternalPotential   	True
-InitCode            	kepler3d
-RIEMANNSOLVER		2S
-METHOD			MUSCL
-
-OmegaFrame          	1.0004998750624609
+ExternalPotential   	True        #stellar potential
+InitCode            	kepler3d    #initial condition
+RIEMANNSOLVER		    2S
+METHOD			        MUSCL       #numerical reconstruction scheme (GFO / PLM / MUSCL)
 
 FLUIDS			gas
 ################################################################################
 # NUMERICS
 ################################################################################
-OUTPUTDIR           	~
-DT                  	0.628318530718
-NINTERM             	10
-NTOT                	1000
+OUTPUTDIR           		~
+DT                  		6.28318530718   #output timestep (not computational timestep), one planet orbit is equal to 2*pi
+NINTERM             		1               #one output after NINTERM output timsteps (DT)
+NTOT                		100             #nomber of total output timesteps. The total nuber of outputs is NTOT/NINTERM
 
-NODAMPING           	NO
+OmegaFrame          	1.0004998750624609
+NODAMPING           	YES      #wave damping at the radial boundaries
 HighResLevel        	1
 VISCUTOFFLEVEL      	100
 ################################################################################
