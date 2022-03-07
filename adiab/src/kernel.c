@@ -88,7 +88,8 @@ void HydroKernel (dt)
 
 //######################################################################
 // DUSTKERNEL
-// this kernel treats dust as a pressureless fluid in the absence of turbulent diffusion
+// this kernel treats dust in the absence (DUSTDIFF=NO) or presence 
+// (DUSTDIFF=YES) of turbulent diffusion
 //######################################################################
 
 void DustKernel (dt)
