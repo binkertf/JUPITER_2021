@@ -66,7 +66,7 @@ inline boolean boundary (rho,e,u,v,w,rhog,eg,ug,vg,wg,x,xg,yg,zg,condition,line,
     *wg = w; //Radial
     *ug = u; //Colat
     temp1 = (v+OMEGAFRAME)*(v+OMEGAFRAME)*zg*zg*cos(.5*(x+xg))/sin(.5*(x+xg));
-    temp2 = (GAMMA-1.0)*e/rho;
+    temp2 = (GetGamma()-1.0)*e/rho;
     *rhog = exp(log(rho)+(xg-x)*temp1/temp2);
     *eg = *rhog*e/rho;
     break;
@@ -141,8 +141,8 @@ case 98: //Colatitude 3D, for high altitude regions, ISOTHERMAL, probably not co
     *rhog = rho*pow(xg,-SIGMASLOPE);//keplerian_boundary(11,_density_,rho,x,xg,yg,zg);
     *eg = ASPECTRATIO*ASPECTRATIO*pow(xg,-1.+2.*FLARINGINDEX);//keplerian_boundary(11,_energy_,e,x,xg,yg,zg);
     if (!Isothermal) {
-      entropy = e/pow(rho,GAMMA);
-      *eg = entropy*pow(*rhog,GAMMA);
+      entropy = e/pow(rho,GetGamma());
+      *eg = entropy*pow(*rhog,GetGamma());
     }
     *ug = 0.0;//keplerian_boundary(11,_vrad_,u,x,xg,yg,zg);
     *vg = (v+x*OMEGAFRAME)*pow(x/xg,0.5)-xg*OMEGAFRAME; // Beware : v is LINEAR, not ANGULAR !

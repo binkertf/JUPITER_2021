@@ -185,9 +185,9 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
             prs_error ("ERROR: Constant Stokes number not implemented in radiative setup. Use constant particle size instead -> CONSTSTOKES FALSE \n");
           }else{ //constant dust particle size
             omegakep = 1.0*sin(colat)/(sqrt(radius)*sqrt(radius)*sqrt(radius));
-            acs = sqrt(cs2/d2*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
+            acs = sqrt(cs2/d2*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
             C=1.334*acs/(dustsz*dustsolidrho);
-            tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / acs / d2;
+            tau_s = sqrt(GetGamma() * M_PI / 8.0) * dustsz * dustsolidrho / acs / d2;
             C=C*(1.0+pow((DUSTDENSFLOOR*100/d1),5)); //smooth coupling limiter
           }
         }
@@ -320,11 +320,11 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
             }
           }
         }else{//radiative
-          acs2 = cs2/d2*(GAMMA-1.0); //adiabatic sound speed squared
+          acs2 = cs2/d2*(GetGamma()-1.0); //adiabatic sound speed squared
           if(constSt==TRUE){
             prs_error ("ERROR: Constant Stokes number not implemented in radiative setup. Use constant particle size instead. \n");
           }else{ //constant particle size
-            tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(acs2) * d2);
+            tau_s = sqrt(GetGamma() * M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(acs2) * d2);
             cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/(acs2));
           }
         }

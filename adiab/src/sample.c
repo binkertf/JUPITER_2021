@@ -160,10 +160,10 @@ void Compute_Fluxes_Adi (beam, dt)
     }
     rhoL = beam->rhoL[i];
     rhoR = beam->rhoR[i];
-    pL = beam->eL[i]*(GAMMA-1);
-    pR = beam->eR[i]*(GAMMA-1);
-    aR = sqrt(GAMMA*pR/rhoR);
-    aL = sqrt(GAMMA*pL/rhoL);
+    pL = beam->eL[i]*(GetGamma()-1);
+    pR = beam->eR[i]*(GetGamma()-1);
+    aR = sqrt(GetGamma()*pR/rhoR);
+    aL = sqrt(GetGamma()*pL/rhoL);
     // Call the Riemann solver
     VacuumCreated =   GetStar_AdiabaticSolver (rhoL, rhoR, uL, uR, aL, aR, &us, &ps);
     if (VacuumCreated) {
@@ -184,10 +184,10 @@ void Compute_Fluxes_Adi (beam, dt)
 	  a_i = aL;
 	} else {  // Left fan
 	  wratio = GMOGPO*uL/aL;
-	  u_i = TOGPO * (aL + uL*(GAMMA-1.)*0.5);
+	  u_i = TOGPO * (aL + uL*(GetGamma()-1.)*0.5);
 	  rho_i = rhoL * pow(TOGPO + wratio, TOGMO);
-	  p_i = pL * pow(TOGPO + wratio, GAMMA*TOGMO);
-	  a_i = sqrt(GAMMA*p_i/rho_i);
+	  p_i = pL * pow(TOGPO + wratio, GetGamma()*TOGMO);
+	  a_i = sqrt(GetGamma()*p_i/rho_i);
 	}
       }
       if (SRStar < 0.0) { //We are in the right region or right fan:
@@ -201,10 +201,10 @@ void Compute_Fluxes_Adi (beam, dt)
 	  a_i = aR;
 	} else { // Right fan
 	  wratio = GMOGPO*uR/aR;
-	  u_i = TOGPO * (-aR + uR*(GAMMA-1.)*0.5);
+	  u_i = TOGPO * (-aR + uR*(GetGamma()-1.)*0.5);
 	  rho_i = rhoR * pow(TOGPO - wratio, TOGMO);
-	  p_i = pR * pow(TOGPO - wratio, GAMMA*TOGMO);
-	  a_i = sqrt(GAMMA*p_i/rho_i);
+	  p_i = pR * pow(TOGPO - wratio, GetGamma()*TOGMO);
+	  a_i = sqrt(GetGamma()*p_i/rho_i);
 	}
       }
       if ((SLStar <= 0.0) && (SRStar >= 0.0)) {// Vacuum is on the interface.
@@ -226,7 +226,7 @@ void Compute_Fluxes_Adi (beam, dt)
 	  wratio = ps/pL;
 	  rhoS = rhoL * (wratio + GMOGPO)  // rhoS(on shock side)
 	    /(wratio * GMOGPO + 1.);
-	  aS = sqrt(GAMMA*ps/rhoS);
+	  aS = sqrt(GetGamma()*ps/rhoS);
 	  if (0.0 < S_shock) {    // We are at the left of the left shock: ISD
 	    u_i = uL;
 	    rho_i = rhoL;
@@ -238,7 +238,7 @@ void Compute_Fluxes_Adi (beam, dt)
 	  }
 	} else {                    // There is a left rarefaction
 	  rhoS = rhoL * pow(ps/pL,OOG); // rhoS(on rarefaction side)
-	  aS = sqrt(GAMMA*ps/rhoS);
+	  aS = sqrt(GetGamma()*ps/rhoS);
 	  if (0.0 < uL-aL) {      // We are in the left region: IFD
 	    u_i = uL;
 	    rho_i = rhoL;
@@ -250,10 +250,10 @@ void Compute_Fluxes_Adi (beam, dt)
 	      a_i = aS;
 	    } else {            // We are in the fan: FIFD
 	      wratio = GMOGPO*uL/aL;
-	      u_i = TOGPO * (aL + uL*(GAMMA-1.)*0.5);
+	      u_i = TOGPO * (aL + uL*(GetGamma()-1.)*0.5);
 	      rho_i = rhoL * pow(TOGPO + wratio, TOGMO);
-	      p_i = pL * pow(TOGPO + wratio, GAMMA*TOGMO);
-	      a_i = sqrt(GAMMA*p_i/rho_i);
+	      p_i = pL * pow(TOGPO + wratio, GetGamma()*TOGMO);
+	      a_i = sqrt(GetGamma()*p_i/rho_i);
 	    }
 	  }
 	}
@@ -265,7 +265,7 @@ void Compute_Fluxes_Adi (beam, dt)
 	  wratio = ps/pR;
 	  rhoS = rhoR * (wratio + GMOGPO) //rhoS (on shock side)
 	    /(wratio * GMOGPO + 1.);
-	  aS = sqrt(GAMMA*ps/rhoS);
+	  aS = sqrt(GetGamma()*ps/rhoS);
 	  if (0.0 > S_shock) {    // we are at the right of the right shock: DSI
 	    u_i = uR;
 	    rho_i = rhoR;
@@ -277,7 +277,7 @@ void Compute_Fluxes_Adi (beam, dt)
 	  }
 	} else {                    // There is a right rarefaction
 	  rhoS = rhoR * pow(ps/pR,OOG); //rhoS(on rarefaction side)
-	  aS = sqrt(GAMMA*ps/rhoS);
+	  aS = sqrt(GetGamma()*ps/rhoS);
 	  if (0.0 > uR+aR) {      // we are in the right part: DFI
 	    u_i = uR;
 	    rho_i = rhoR;
@@ -289,10 +289,10 @@ void Compute_Fluxes_Adi (beam, dt)
 	      a_i = aS;
 	    } else {            // we are in the fan: DFIF
 	      wratio = GMOGPO*uR/aR;
-	      u_i = TOGPO * (-aR + uR*(GAMMA-1.)*0.5);
+	      u_i = TOGPO * (-aR + uR*(GetGamma()-1.)*0.5);
 	      rho_i = rhoR * pow(TOGPO - wratio, TOGMO);
-	      p_i = pR * pow(TOGPO - wratio, GAMMA*TOGMO);
-	      a_i = sqrt(GAMMA*p_i/rho_i);
+	      p_i = pR * pow(TOGPO - wratio, GetGamma()*TOGMO);
+	      a_i = sqrt(GetGamma()*p_i/rho_i);
 	    }
 	  }
 	}
@@ -775,10 +775,10 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
     D_d = VISCOSITY;
 
     if (!Isothermal){
-      csL = sqrt(beam2->cs[i-1]/rhogL*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
-      csR = sqrt(beam2->cs[i]/rhogR*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
+      csL = sqrt(beam2->cs[i-1]/rhogL*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
+      csR = sqrt(beam2->cs[i]/rhogR*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
       if(!constSt==YES){
-        t_stop = sqrt(M_PI*GAMMA/8.0)*dustsolidrho*dustsz/(sqrt(rhogL*rhogR)*sqrt(csL*csR));; //local stopping time
+        t_stop = sqrt(M_PI*GetGamma()/8.0)*dustsolidrho*dustsz/(sqrt(rhogL*rhogR)*sqrt(csL*csR));; //local stopping time
       }
     }else{
       csL = beam2->cs[i-1];

@@ -236,11 +236,11 @@ void SetGlobalVariables () {
   if (strncasecmp(ADIABATIC, "Y", 1) == 0) {
     Isothermal = NO;
     pInfo ("System is adiabatic\n");
-    TOGPO = 2.0/(GAMMA+1.0);
-    TOGMO = 2.0/(GAMMA-1.0);
-    GMOGPO = (GAMMA-1.0)/(GAMMA+1.0);
-    OOG = 1.0/GAMMA;
-    OOGMO = 1.0/(GAMMA-1.0);
+    TOGPO = 2.0/(GetGamma()+1.0);
+    TOGMO = 2.0/(GetGamma()-1.0);
+    GMOGPO = (GetGamma()-1.0)/(GetGamma()+1.0);
+    OOG = 1.0/GetGamma();
+    OOGMO = 1.0/(GetGamma()-1.0);
   }else{
     Isothermal = YES;
     pInfo ("System is (locally) isothermal\n");
