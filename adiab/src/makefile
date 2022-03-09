@@ -87,7 +87,7 @@ PARACC_SPARC = mpicc
 #
 SHELL	     =  /bin/sh
 
-MAINOBJ      =  main.o out.o in.o low.o var.o switch.o create.o iter.o\
+MAINOBJ      =  main.o out.o calc_gamma.o in.o low.o var.o switch.o create.o iter.o\
 		create_fluid.o actual.o diagnostics.o split.o desc.o\
 		Output.o Init.o ExtPot.o flux.o diskdrift.o source.o slope.o\
 		faces.o riemann.o plm.o correct.o beam.o gfo.o dumppot.o\
