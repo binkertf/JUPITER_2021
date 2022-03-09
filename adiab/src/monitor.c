@@ -192,7 +192,7 @@ void ReadRemDustMass(NbRestart)
      fclose(fp_fresh);
     }
   }
-if(FileExists(fname) && (CurrentOutputNumber!=0)){
+if (FileExists(fname) && (CurrentOutputNumber!=0)){
   MPI_Bcast(&remmass,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
   DustAvgMass = remmass;
  }
