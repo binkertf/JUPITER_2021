@@ -55,7 +55,7 @@ void FillSources_Predict ()
 	  			/* Pressure gradient below */
 				  if (mMUSCL) {
 	    			if (!Isothermal){
-	    				sv[l][m] = -se[l][m]*(GAMMA-1.0)/rho[m];
+	    				sv[l][m] = -se[l][m]*(GetGamma()-1.0)/rho[m];
 					}else{
 						sv[l][m] = (e[smm]*rho[smm]-e[smp]*rho[smp])*sinvdx/rho[m];
 					}

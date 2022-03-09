@@ -102,7 +102,7 @@ boolean GetStar_ADI_SS (rhoL, rhoR, uL, uR, aL, aR, us, ps)
      real *us, *ps;
 {
   real AL, AR, BL, BR;
-  real pL=rhoL*aL*aL/GAMMA, pR=rhoR*aR*aR/GAMMA;
+  real pL=rhoL*aL*aL/GetGamma(), pR=rhoR*aR*aR/GetGamma();
   real df, deltau, a, prs, prs0;
   int count=0;
   deltau = uL - uR;
@@ -154,17 +154,17 @@ boolean GetStar_ADI_SR (rhoL, rhoR, uL, uR, aL, aR, us, ps)
   AL = TOGPO/rhoL;
   BL = GMOGPO * pL;
   deltau = uL - uR;
-  df = (prs-pL)*sqrt(AL/(prs+BL)) + TOGMO*aR*(pow(prs/pR,.5*(GAMMA-1.)*OOG)-1.);
+  df = (prs-pL)*sqrt(AL/(prs+BL)) + TOGMO*aR*(pow(prs/pR,.5*(GetGamma()-1.)*OOG)-1.);
   while (fabs(df-deltau)>=1.e-10){
-    a = sqrt(AL/(prs+BL))*(1.-0.5*(prs-pL)/(prs+BL)) + aR/(GAMMA*pR)*pow(prs/pR,-.5*(GAMMA+1.)*OOG);
+    a = sqrt(AL/(prs+BL))*(1.-0.5*(prs-pL)/(prs+BL)) + aR/(GetGamma()*pR)*pow(prs/pR,-.5*(GetGamma()+1.)*OOG);
     prs += -(df-deltau)/a;
     if (prs < 0.0) prs = rhoL*aL*aL*OOG; // Overshoot with initial guess: we adopt the smallest pressure (here, left side) as a new initial guess
-    df = (prs-pL)*sqrt(AL/(prs+BL)) + TOGMO*aR*(pow(prs/pR,.5*(GAMMA-1.)*OOG)-1.);
+    df = (prs-pL)*sqrt(AL/(prs+BL)) + TOGMO*aR*(pow(prs/pR,.5*(GetGamma()-1.)*OOG)-1.);
   }
   CHECK_CONVERGENCE;
   *ps = prs;
   *us = 0.5*( uL + uR )							\
-    + 0.5*(TOGMO*aR*(pow(prs/pR,.5*(GAMMA-1.)*OOG)-1.) - (prs-pL)*sqrt(AL/(prs+BL)));
+    + 0.5*(TOGMO*aR*(pow(prs/pR,.5*(GetGamma()-1.)*OOG)-1.) - (prs-pL)*sqrt(AL/(prs+BL)));
   return NO;
 }
 
@@ -179,17 +179,17 @@ boolean GetStar_ADI_RS (rhoL, rhoR, uL, uR, aL, aR, us, ps)
   AR = TOGPO/rhoR;
   BR = GMOGPO * pR;
   deltau = uL - uR;
-  df = (prs-pR)*sqrt(AR/(prs+BR)) + TOGMO*aL*(pow(prs/pL,.5*OOG*(GAMMA-1.))-1.);
+  df = (prs-pR)*sqrt(AR/(prs+BR)) + TOGMO*aL*(pow(prs/pL,.5*OOG*(GetGamma()-1.))-1.);
   while (fabs(df-deltau)>=1.e-10){
-    a = sqrt(AR/(prs+BR)) * (1.-0.5*(prs-pR)/(prs+BR)) + aL/(GAMMA*pL)*pow(prs/pL,-.5*OOG*(GAMMA+1.));
+    a = sqrt(AR/(prs+BR)) * (1.-0.5*(prs-pR)/(prs+BR)) + aL/(GetGamma()*pL)*pow(prs/pL,-.5*OOG*(GetGamma()+1.));
     prs += -(df-deltau)/a;
     if (prs < 0.0) prs = rhoR*aR*aR*OOG; // Overshoot with initial guess: we adopt the smallest pressure (here, right side) as a new initial guess
-    df = (prs-pR)*sqrt(AR/(prs+BR)) + TOGMO*aL*(pow(prs/pL,.5*OOG*(GAMMA-1.))-1.);
+    df = (prs-pR)*sqrt(AR/(prs+BR)) + TOGMO*aL*(pow(prs/pL,.5*OOG*(GetGamma()-1.))-1.);
   }
   CHECK_CONVERGENCE;
   *ps = prs;
   *us = 0.5*( uL + uR )							\
-    + 0.5*(-TOGMO*aL*(pow(prs/pL,.5*OOG*(GAMMA-1.))-1.) + (prs-pR)*sqrt(AR/(prs+BR)));
+    + 0.5*(-TOGMO*aL*(pow(prs/pL,.5*OOG*(GetGamma()-1.))-1.) + (prs-pR)*sqrt(AR/(prs+BR)));
   return NO;
 }
 
@@ -220,12 +220,12 @@ real *us, *ps;
  
   /// Staying on the 2-rarefaction (RR) solver below
 
-  prs = ( deltau*0.5 * (GAMMA-1.) + aL+aR );
+  prs = ( deltau*0.5 * (GetGamma()-1.) + aL+aR );
   if (prs < 0.0) // <== in that case vacuum is generated
     return YES;
-  eg = (GAMMA-1.)/(2.*GAMMA);
+  eg = (GetGamma()-1.)/(2.*GetGamma());
   prs = prs / ( pow(pL,-eg)*aL + pow(pR,-eg)*aR);
-  prs = pow(prs, TOGMO * GAMMA);
+  prs = pow(prs, TOGMO * GetGamma());
   CHECK_CONVERGENCE;
   ust = (uL+uR)*0.5 + (aR*(pow(prs/pR,eg)-1.) - aL*(pow(prs/pL,eg)-1.)) * OOGMO;
   *ps = prs;

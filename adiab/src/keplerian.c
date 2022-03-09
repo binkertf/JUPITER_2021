@@ -45,7 +45,7 @@ inline real keplerian_init(component, radius, colatitude, sigma0, a, h, f)
       if (Isothermal){
         init = DISKSPEEDFACTOR*pow(radius, -1.5);
       }else{
-        init = DISKSPEEDFACTOR*pow(radius, -1.5)*sqrt(1.-2.*b*(GAMMA-1.0)/GAMMA*h2);
+        init = DISKSPEEDFACTOR*pow(radius, -1.5)*sqrt(1.-2.*b*(GetGamma()-1.0)/GetGamma()*h2);
       }
       init *= sqrt(isc2f - h2*w);
       init *= isc;
@@ -63,9 +63,9 @@ inline real keplerian_init(component, radius, colatitude, sigma0, a, h, f)
 	  rho *= pow(isc , -hm2);
 	else		   // flaring case
 	  rho *= exp(hm2 * (1. - isc2f)/2./f);
-	init *= rho/(GAMMA-1.);
+	init *= rho/(GetGamma()-1.);
       } else {
-	init *= sigma0*pow(radius,-a)/(GAMMA-1.0);
+	init *= sigma0*pow(radius,-a)/(GetGamma()-1.0);
       }
     }
     break;

@@ -90,9 +90,9 @@ void Predictor_adiab (dt)
 	    vel *= metric[n][0][ind[ip1]]*metric[n][1][ind[ip2]]; // converted to linear
 	    slope_vel = slope_v[n][n][m]; //linear (v)-linear (dx)
 	    var -= vel        * slope_e[n][m];
-	    var -= GAMMA*e[m] * slope_vel;
+	    var -= GetGamma()*e[m] * slope_vel;
 	  }
-	  var -= GAMMA*source_div[m]*e[m];  //Source sign OK: evaluated as LHS.
+	  var -= GetGamma()*source_div[m]*e[m];  //Source sign OK: evaluated as LHS.
 	  ep[m] = e[m] + .5*dt*var;
 
 #ifdef TEMPFLOOR

@@ -69,7 +69,7 @@ real CourantLimit (fp)
 	  	if (Isothermal || (strncasecmp(fp->Name, "dust", 4) == 0))
 	    	cs = sqrt(cs2[m]); //isothermal sound speed
 	  else
-	    	cs = sqrt(cs2[m]/rho[m]*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
+	    	cs = sqrt(cs2[m]/rho[m]*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
 	  dxmon[dim] = dx;
 	  uxmon[dim] = u;
 	  cs_mon = cs;
@@ -192,8 +192,8 @@ real StoppingTimeLimit (fp)
 
 				}
 			}else{//radiative
-	    		cs = sqrt(cs2[m]/rho[m]*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
-				tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / (cs * rho[m]);
+	    		cs = sqrt(cs2[m]/rho[m]*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
+				tau_s = sqrt(GetGamma() * M_PI / 8.0) * dustsz * dustsolidrho / (cs * rho[m]);
 			}
 	  	if (tau_s < tau_s_min){
 		  tau_s_min = tau_s;

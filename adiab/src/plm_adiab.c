@@ -39,7 +39,7 @@ void plm_adiab (beam, dt)
     u0   = u[i];
     e0   = e[i];      // Volumic internal energy
     rho0 = rho[i];
-    a    = sqrt(GAMMA*(GAMMA-1.0)*e0/rho0); // Adiabatic sound speed
+    a    = sqrt(GetGamma()*(GetGamma()-1.0)*e0/rho0); // Adiabatic sound speed
     aor  = a/rho0;
     roa  = rho0/a;
     eL   = eR   = e0;    //
@@ -52,7 +52,7 @@ void plm_adiab (beam, dt)
     for (k = 0; k < NDIM-1; k++) {
       cont_transv += vperp[k][i]*dxrho[k+1][i] + rho0*dxv[k+1][k+1][i];
       euler_transv += vperp[k][i]*dxv[k+1][0][i];
-      energ_transv += vperp[k][i]*dxe[k+1][i] + e0*GAMMA*dxv[k+1][k+1][i];
+      energ_transv += vperp[k][i]*dxe[k+1][i] + e0*GetGamma()*dxv[k+1][k+1][i];
     }
 
     uL   = uR   = u0;    //   L : left state on zone right interface
@@ -71,36 +71,36 @@ void plm_adiab (beam, dt)
     uL   += .5*dt*beam->source[i];
     uR   += .5*dt*beam->source[i];
 
-    sa1  = dxe[0][i]+(GAMMA*e0/a)*dxv[0][0][i];  // Slopes homogeneous
-    sa2  = dxe[0][i]-(GAMMA*e0/a)*dxv[0][0][i];  // to that of the energy
+    sa1  = dxe[0][i]+(GetGamma()*e0/a)*dxv[0][0][i];  // Slopes homogeneous
+    sa2  = dxe[0][i]-(GetGamma()*e0/a)*dxv[0][0][i];  // to that of the energy
     da1p = .25*(dxp-(u0+a)*dt)*sa1;
     da2p = .25*(dxp-(u0-a)*dt)*sa2;
     da1m = .25*(-dxm-(u0+a)*dt)*sa1;
     da2m = .25*(-dxm-(u0-a)*dt)*sa2;
 
-    s_ent= dxrho[0][i]-rho0/(GAMMA*e0)*dxe[0][i]; // All these quantities are
+    s_ent= dxrho[0][i]-rho0/(GetGamma()*e0)*dxe[0][i]; // All these quantities are
     dentp= .5*(dxp-u0*dt)*s_ent;                    // homogeneous to density derivatives
     dentm= .5*(-dxm-u0*dt)*s_ent;                   // despite of their names
 
     if ((u0+a) >= 0.0) {               /* These tests have to be written like that */
       eL   += da1p;                    /* In order to enforce left/right symmetry */
-      rhoL += da1p*rho0/(GAMMA*e0);
-      uL   += da1p*a/(GAMMA*e0);
+      rhoL += da1p*rho0/(GetGamma()*e0);
+      uL   += da1p*a/(GetGamma()*e0);
     }
     if ((u0+a) <= 0.0) {
       eR   += da1m;
-      rhoR += da1m*rho0/(GAMMA*e0);
-      uR   += da1m*a/(GAMMA*e0);
+      rhoR += da1m*rho0/(GetGamma()*e0);
+      uR   += da1m*a/(GetGamma()*e0);
     }
     if ((u0-a) >= 0.0) {
       eL   += da2p;
-      rhoL += da2p*rho0/(GAMMA*e0);
-      uL   += -da2p*a/(GAMMA*e0);
+      rhoL += da2p*rho0/(GetGamma()*e0);
+      uL   += -da2p*a/(GetGamma()*e0);
     }
     if ((u0-a) <= 0.0) {
       eR   += da2m;
-      rhoR += da2m*rho0/(GAMMA*e0);
-      uR   += -da2m*a/(GAMMA*e0);
+      rhoR += da2m*rho0/(GetGamma()*e0);
+      uR   += -da2m*a/(GetGamma()*e0);
     }
     if (u0 >= 0.0) {
       rhoL += dentp;
@@ -123,8 +123,8 @@ void plm_adiab (beam, dt)
 	 velocities, as this term is no longer calculated in
 	 fillsource_predict.c (if method is PLM) */
       if (beam->dim[k+1] != _COLAT_) {
-	vperpL[k] += (source_vperp[k]-(GAMMA-1.0)*dxe[k+1][i]/rho0)*.5*dt;
-	vperpR[k] += (source_vperp[k]-(GAMMA-1.0)*dxe[k+1][i]/rho0)*.5*dt;
+	vperpL[k] += (source_vperp[k]-(GetGamma()-1.0)*dxe[k+1][i]/rho0)*.5*dt;
+	vperpR[k] += (source_vperp[k]-(GetGamma()-1.0)*dxe[k+1][i]/rho0)*.5*dt;
       }
       beam->v_perp_L[k][i+1] = vperpL[k];
       beam->v_perp_R[k][i]   = vperpR[k];
@@ -137,22 +137,22 @@ void plm_adiab (beam, dt)
 
     if (rhoL <= min_rho) {
       rhoL = min_rho;
-      eL = a*a*rhoL/(GAMMA*(GAMMA-1.0));
+      eL = a*a*rhoL/(GetGamma()*(GetGamma()-1.0));
     }
 
     if (eL <= 0.0) {
       eL = min_e;
-      rhoL = eL*GAMMA*(GAMMA-1.0)/(a*a);
+      rhoL = eL*GetGamma()*(GetGamma()-1.0)/(a*a);
     }
 
     if (rhoR <= min_rho) {
       rhoR = min_rho;
-      eR = a*a*rhoR/(GAMMA*(GAMMA-1.0));
+      eR = a*a*rhoR/(GetGamma()*(GetGamma()-1.0));
     }
 
     if (eR <= 0.0) {
       eR = min_e;
-      rhoR = eR*GAMMA*(GAMMA-1.0)/(a*a);
+      rhoR = eR*GetGamma()*(GetGamma()-1.0)/(a*a);
     }
 
     beam->eL[i+1] = eL;
