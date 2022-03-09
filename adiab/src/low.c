@@ -346,3 +346,8 @@ void swapl (a, b)
   *b = *a;
   *a = c;
 }
+
+boolean FileExists (char *filename) {
+  struct stat   buffer;   
+  return (stat (filename, &buffer) == 0);
+}

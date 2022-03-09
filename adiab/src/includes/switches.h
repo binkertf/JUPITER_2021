@@ -68,6 +68,8 @@ real GlobalDateInit;
 boolean EmbeddedGridFile = NO;
 char EmbeddedGridFileName[MAXLINELENGTH];
 long MaxLevel=100L;
+real DustSublMass=0.0;
+real DustAvgMass=0.0;
 long NDimHydroStat;		/* Number of dimensions along which
 				   hydrostatic equilibrium is
 				   enforced */

@@ -342,3 +342,8 @@ void GetEnergyRadFromLevel ();
 void RT_main ();
 void PredictNewRadEnergy ();
 void GetRadEnergyDifference ();
+void MonitorSublimatedDustMass();
+void MonitorRemovedDustMass();
+void ReadRemDustMass();
+void ReadSublDustMass();
+boolean FileExists ();
