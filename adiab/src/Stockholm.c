@@ -87,12 +87,12 @@ real dt;
 
 	  lambda = 30.0*ramp*ramp/Tau*dt;
 
-	  entropy = ene[m]/pow(dens[m],GAMMA);
-	  entropy0= ene0/pow(rho0,GAMMA);
+	  entropy = ene[m]/pow(dens[m],GetGamma());
+	  entropy0= ene0/pow(rho0,GetGamma());
 	  entropy = (entropy+lambda*entropy0)/(1.+lambda);
 	  dens[m] = (dens[m]+lambda*rho0)/(1.+lambda);
 	  if (!Isothermal){
-	    //ene[m] = entropy*pow(dens[m],GAMMA);
+	    //ene[m] = entropy*pow(dens[m],GetGamma());
 	    ene[m] = (ene[m]+lambda*ene0)/(1.+lambda);
 	  }
 	  vel[_RAD_][m] = (vel[_RAD_][m]+lambda*vrad0)/(1.+lambda);

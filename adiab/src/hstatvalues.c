@@ -81,7 +81,7 @@ real MomentumFluxInertial (point)
 				+IC_Energy(point));
   else
     return IC_Density(point)*r*(r*r*(IC_Vazimuth(point)+OMEGAFRAME)*(IC_Vazimuth(point)+OMEGAFRAME) \
-				+IC_Energy(point)*(GAMMA-1.0)/IC_Density(point));
+				+IC_Energy(point)*(GetGamma()-1.0)/IC_Density(point));
 }
 
 real MomentumFluxSolidRotation (point)
@@ -227,7 +227,7 @@ real IC_Pressure (point)
   if(Isothermal)
     return IC_Density(point)*IC_Energy(point);
   else
-    return IC_Energy(point)*(GAMMA-1.);
+    return IC_Energy(point)*(GetGamma()-1.);
 }
 
 real IC_PressureByRad (point)
@@ -238,7 +238,7 @@ real IC_PressureByRad (point)
   if(Isothermal)
     return IC_Density(point)*IC_Energy(point)*radius;
   else
-    return IC_Energy(point)*(GAMMA-1.)*radius;
+    return IC_Energy(point)*(GetGamma()-1.)*radius;
 }
 
 real IC_Density (point)
