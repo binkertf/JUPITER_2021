@@ -149,7 +149,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
 
 //    if (fp->desc->level ==5)  SMOOTHING=SMOOTHING*2.;
   //  if (fp->desc->level ==6)  SMOOTHING=SMOOTHING*4.;
-    //pInfo ("Smoothing at %g on lev %d: %g\n", GlobalDate, fp->desc->level, SMOOTHING);
+    pInfo ("Smoothing at %g on lev %d: %g\n", GlobalDate, fp->desc->level, SMOOTHING);
 
 
 // ============================ till here ============================
