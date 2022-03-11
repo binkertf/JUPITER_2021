@@ -120,14 +120,14 @@ void ScanGridFile (filename)
   if (!CPU_Rank) {
     switch (NDIM) {
     case 1: 
- //     fprintf (output, "# %s_min %s_max level BC_%s_min BC_%s_max\n\n",\
+ /*     fprintf (output, "# %s_min %s_max level BC_%s_min BC_%s_max\n\n",\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
-	       SCoordNames[CoordType*3+InvCoordNb[0]]);
+	       SCoordNames[CoordType*3+InvCoordNb[0]]); */
       break;
     case 2: 
-//      fprintf (output, "# %s_min %s_min %s_max %s_max level BC_%s_min BC_%s_min BC_%s_max BC_%s_max\n\n",\
+/*      fprintf (output, "# %s_min %s_min %s_max %s_max level BC_%s_min BC_%s_min BC_%s_max BC_%s_max\n\n",\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
 	       SCoordNames[CoordType*3+InvCoordNb[1]],\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
@@ -135,10 +135,10 @@ void ScanGridFile (filename)
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
 	       SCoordNames[CoordType*3+InvCoordNb[1]],\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
-	       SCoordNames[CoordType*3+InvCoordNb[1]]);
+	       SCoordNames[CoordType*3+InvCoordNb[1]]); */
       break;
     case 3: 
-  //    fprintf (output, "# %s_min %s_min %s_min %s_max %s_max %s_max level BC_%s_min BC_%s_min BC_%s_min BC_%s_max BC_%s_max BC_%s_max\n\n",\
+  /*    fprintf (output, "# %s_min %s_min %s_min %s_max %s_max %s_max level BC_%s_min BC_%s_min BC_%s_min BC_%s_max BC_%s_max BC_%s_max\n\n",\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
 	       SCoordNames[CoordType*3+InvCoordNb[1]],\
 	       SCoordNames[CoordType*3+InvCoordNb[2]],\
@@ -150,7 +150,7 @@ void ScanGridFile (filename)
 	       SCoordNames[CoordType*3+InvCoordNb[2]],\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
 	       SCoordNames[CoordType*3+InvCoordNb[1]],\
-	       SCoordNames[CoordType*3+InvCoordNb[2]]);
+	       SCoordNames[CoordType*3+InvCoordNb[2]]); */
       break;
     }
   }
