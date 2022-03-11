@@ -163,8 +163,8 @@ void ReadRemDustMass(NbRestart)
   char fname[MAXLINELENGTH];
   long int outNB,dum;
   real date,readmass,remmass=0.;
-  if (!CPU_Rank){
   sprintf(fname,"%sdustmassRemv.dat",OUTPUTDIR);
+  if (!CPU_Rank){
     if (FileExists(fname)){
       if ( CurrentOutputNumber == 0 ) {// a new file is created for each simulation
         sprintf(command, "cd %s; mv -f dustmassRemv.dat dustmassRemv.dat.old", OUTPUTDIR);
@@ -192,7 +192,7 @@ void ReadRemDustMass(NbRestart)
      fclose(fp_fresh);
     }
   }
-if (remmass){
+if (FileExists(fname) && (CurrentOutputNumber!=0)){
   MPI_Bcast(&remmass,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
   DustAvgMass = remmass;
  }
@@ -208,8 +208,8 @@ void ReadSublDustMass(NbRestart)
   char fname[MAXLINELENGTH];
   long int outNB,dum;
   real date,readmass,sublmass=0.;
-  if (!CPU_Rank){
   sprintf(fname,"%sdustSublmass.dat",OUTPUTDIR);
+  if (!CPU_Rank){
     if (FileExists(fname)){
       if ( CurrentOutputNumber == 0 ) {// a new file is created for each simulation
         sprintf(command, "cd %s; mv -f dustSublmass.dat dustSublmass.dat.old", OUTPUTDIR);
@@ -237,7 +237,7 @@ void ReadSublDustMass(NbRestart)
      fclose(fp_fresh);
     }
   }
-if (sublmass){
+if (FileExists(fname) && (CurrentOutputNumber!=0)){
   MPI_Bcast(&sublmass,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
   DustSublMass = sublmass;
  }

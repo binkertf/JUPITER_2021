@@ -342,6 +342,13 @@ void ComputeOpacity() {
 	l = j+i*stride[1]+h*stride[2];
 	//	multiplication by a factor 100 of DUSTTOGAS as opacity is
 	//      already calculated for a dust to gas ratio of 0.01
+        if(OPACALC==0){
+        if ((temper[l]*TEMP0)>1500.0){
+          opacity =  DUSTTOGAS*100.*kappa(temper[l],dens[l]);
+        }else{
+          opacity =  kappa(temper[l],0.01*dens[l]+0.99*(100.*dustdens[l]));
+        }
+      }else if (OPACALC==1){
         temp_SI = temper[l]*TEMP0;
         if (temp_SI<1500.0){
           opacity =  kappa(temper[l],0.01*dens[l]+0.99*(100.*dustdens[l]));
@@ -350,7 +357,11 @@ void ComputeOpacity() {
           opacity =  kappa(temper[l],(0.01+0.99*(1-smoother))*dens[l]+(0.99-0.99*(1-smoother))*(100.*dustdens[l]));
         }else{
           opacity =  DUSTTOGAS*100.*kappa(temper[l],dens[l]);
-        }      
+        }
+      }else{
+        prs_error("Opacity not computed correctly, check RT_accessories.c\n");
+      }
+
 
   opas[l] = DUSTTOGAS*100.*3.5*RHO0*R0;
 	opar[l] = opacity; //Rosseland mean opacity (for radiative cooling)

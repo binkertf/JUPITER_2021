@@ -82,6 +82,7 @@ void InitVariables ()
   var("BACKREACTION", &BACKREACTION, BOOL, NO, "YES");
   var("DUSTSUBL", &DUSTSUBL, BOOL, NO, "NO");
   var("DUSTUCAP", &DUSTUCAP, REAL, NO, "0.0");
+  var("OPACALC", &OPACALC, INT, NO, "0");
   var("OUTPUTATREFINEMENT", &OUTPUTATREFINEMENT, INT, NO, "0");
   var("FINESTLEVEL", &FinestLevel, INT, NO, "0");
   var("HIGHRESLEVEL", &HIGHRESLEVEL, INT, NO, "100");
