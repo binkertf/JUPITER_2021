@@ -4,7 +4,7 @@
 //  For the gas opacities (~> 3000 K the Bell and Lin's gas opacities are used and smoothed together
 //  with the dust opacities.)
 
-static inline real opjudit(real temp,real rho) {
+inline real opjudit(real temp,real rho) {
   real power1,power2,power3;
   real t234,t456,t678;
   real ak1,ak2,ak3,bk1,bk2,bk3_2,bk3_3;
