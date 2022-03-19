@@ -1,6 +1,9 @@
 #include "jupiter.h"
 #include "calc_gamma.h"
 
+#define COOLING !Isothermal
+
+
 real GetGamma(){
     if(Isothermal) {
         return GAMMA;
@@ -11,12 +14,6 @@ real GetGamma(){
 }
 
 
-
-/*
- * need input: v (primitive variables) = (rho, pressure, velocity, temperature?)
- * need functions: GetPV_Temperature, GetMu, MeanMolecularWeight, InternalEnergy, GetHFracs
- * !!! code units
- */
 
 
 
@@ -92,25 +89,84 @@ void GetMu(double T, double rho, double *mu)
 }
 
 
+/* ***************************************************************** */
+double InternalEnergyFunc(double T, double rho)
+/*!
+ *  Compute the gas internal energy as a function of temperature
+ *  and fractions (or density)
+ *
+ *  \param [in]   T   Gas temperature
+ *  \param [in]   rho   Density
+ *
+ *  \return The gas internal energy (\c rhoe) in code units.
+ ******************************************************************* */
+{
+    double eH, eHe, eHpH, eHplus, eH2, rhoe, eHeplus, eHeplusplus;
+    double func_zetaR;
+    double f[4];
 
+    GetSahaHFracs(T, rho, f);
+
+    func_zetaR = 1.5;   /*   to recover ideal EoS  */
+    /*   GetFuncDum(T, &func_zetaR); */
+    /* = (1.5 + e(rot) + e(vib)), need to implement */
+
+/* -- Estimate contributions to Egas -- */
+
+    eH   = 1.5*H_MASS_FRAC*(1.0 + f[DEG_x])*f[DEG_y];
+    eHe  = 3.0*He_MASS_FRAC/8.0;
+    eH2  = 0.5*H_MASS_FRAC*(1.0 - f[DEG_y])*func_zetaR;
+
+/* -- constant terms -- */
+
+#if COOLING == NO
+    eHpH   = 4.48*CONST_eV*H_MASS_FRAC*f[DEG_y]/(2.0*BOLTZ*T);
+    eHplus = 13.60*CONST_eV*H_MASS_FRAC*f[DEG_x]*f[DEG_y]/(BOLTZ*T);
+
+#if HELIUM_IONIZATION == YES
+    eHeplus = 24.59*CONST_eV*He_MASS_FRAC*f[DEG_z1]*(1.0 - f[DEG_z2])/(4.0*CONST_kB*T);
+    eHeplusplus = 54.42*CONST_eV*He_MASS_FRAC*f[DEG_z1]*f[DEG_z2]/(4.0*CONST_kB*T);
+#else
+    eHeplus = eHeplusplus = 0.0;
+#endif
+
+#else
+    eHpH = eHplus = eHeplus = eHeplusplus = 0.0;
+#endif
+
+/* ----------------------------------------------------------------
+    Compute rhoe in cgs except for density which is left in
+    code units (to avoid extra multiplication and division later)
+   ---------------------------------------------------------------- */
+
+    rhoe = (eH2 + eH + eHe + eHpH + eHplus + eHeplus + eHeplusplus)*(BOLTZ*T*rho/XMH);
+
+    return rhoe/(V0*V0);  /* convert to code units */
+}
+
+
+/*
+ * need input: v (primitive variables) = (temperature, rho)
+ */
 /* ********************************************************************* */
 
 double Gamma1(double *v)
 {
-    double gmm1, T;
+    double gmm1, pressure;
+    double T;
     double cv, mu, chirho = 1.0, chiT = 1.0, rho, rhoe;
     double ep, em, delta = 1.e-2;
     double Tp, Tm, mup, mum, rhop, rhom;
     double dmu_dT, dmu_drho, de_dT;
+
 /* ---------------------------------------------
-    Obtain temperature and fractions.
+    Obtain pressure and fractions.
    --------------------------------------------- */
+    T = v[TEMP]; /* temperature*/
+    rho = v[RHO]; /* density*/
+
     GetMu(T, v[RHO], &mu);
-    /*
-     * want to calculate temperature, either:
-     *     GetPV_Temperature(v, &T); (lookup table)
-     *     T   = v[PRS]/v[RHO]*KELVIN*mu; (direct)
-     */
+    pressure = T*v[RHO]/(KELVIN*mu);
 
 
 /* ---------------------------------------------------
@@ -122,13 +178,12 @@ double Gamma1(double *v)
 
     Tp = T*(1.0 + delta);
     Tm = T*(1.0 - delta);
-    em = InternalEnergy(v, Tm)/v[RHO]; /* in code units */
-    ep = InternalEnergy(v, Tp)/v[RHO]; /* in code units */
+    em = InternalEnergyFunc(Tm, rho)/v[RHO]; /* in code units */
+    ep = InternalEnergyFunc(Tp, rho)/v[RHO]; /* in code units */
 
     de_dT = (ep - em)/(2.0*delta*T);
     cv    = de_dT;  /* this is code units. */
 
-    rho = v[RHO];
 
     GetMu(Tp, rho, &mup);
     GetMu(Tm, rho, &mum);
@@ -145,7 +200,8 @@ double Gamma1(double *v)
 /* --------------------------------------------
     Compute first adiabatic index
    -------------------------------------------- */
-    gmm1   = v[PRS]/(cv*T*v[RHO])*chiT*chiT  + chirho;
+    gmm1   = pressure/(cv*T*v[RHO])*chiT*chiT  + chirho;
 
     return gmm1;
 }
+
