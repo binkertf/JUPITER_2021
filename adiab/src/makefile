@@ -54,8 +54,10 @@ PARACC_MACOSX = mpicc
 # which has 'cc' in the path
 # These are used if you leave JUPITER_ARCH undefined
 CC_  = cc
-#OPT_ = -g 
+#OPT_ = -g
+#normal mode
 OPT_ = -O3
+#OPT_ = -O0 -g #debug mode
 OPTSEQ_ = 
 PARAOPT_ =
 PARACC_ = mpicc
@@ -87,7 +89,7 @@ PARACC_SPARC = mpicc
 #
 SHELL	     =  /bin/sh
 
-MAINOBJ      =  main.o out.o calc_gamma.o in.o low.o var.o switch.o create.o iter.o\
+MAINOBJ      =  main.o out.o calc_gamma.o testingGamma.o in.o low.o var.o switch.o create.o iter.o\
 		create_fluid.o actual.o diagnostics.o split.o desc.o\
 		Output.o Init.o ExtPot.o flux.o diskdrift.o source.o slope.o\
 		faces.o riemann.o plm.o correct.o beam.o gfo.o dumppot.o\
