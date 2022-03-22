@@ -348,3 +348,6 @@ void ReadRemDustMass();
 void ReadSublDustMass();
 boolean FileExists ();
 real GetGamma();
+void TestGammaSingleCell();
+void TestGammaFluidPatch();
+

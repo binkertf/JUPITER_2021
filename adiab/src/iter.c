@@ -33,6 +33,8 @@ void ItereLevel (dt, level)
       SetFluidProperties (Fluid);
       while (Fluid != NULL) {
         SendToCurrent (Fluid);
+        TestGammaSingleCell();
+        /* TestGammaFluidPatch(); */
         if (Fluid->next==NULL){ //gas
           HydroKernel (dt);
         }else{ //dust
