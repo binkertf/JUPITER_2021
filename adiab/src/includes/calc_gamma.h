@@ -24,4 +24,5 @@
 #define TEMP      0  /* temperature */
 #define RHO      1  /* density */
 
-double Gamma1(double *v);
+double Gamma1(double temperature, double pressure);
+
