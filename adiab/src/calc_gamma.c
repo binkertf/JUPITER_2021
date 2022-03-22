@@ -15,8 +15,6 @@ real GetGamma(){
 
 
 
-
-
 /* ********************************************************************* */
 void GetSahaHFracs(double T, double rho, double *fdeg)
 /*!
@@ -29,8 +27,8 @@ void GetSahaHFracs(double T, double rho, double *fdeg)
  * \param [out]  fdeg  array of ionization/dissociation degrees.
  *********************************************************************** */
 {
-    double rhs1, rhs2, rhs3;
-    double b,c, scrh;
+    double rhs1=0.0, rhs2=0.0, rhs3=0.0;
+    double b=0.0,c=0.0, scrh=0.0;
     double kT   = BOLTZ*T;
     double hbar = CONST_h/(2.0*PI);
 
@@ -76,7 +74,7 @@ void GetMu(double T, double rho, double *mu)
  *  \param [out]  mu   Mean molecular weight
  *********************************************************************** */
 {
-    double f[4];
+    double f[4]={};
 
     GetSahaHFracs(T, rho, f);
 #if HELIUM_IONIZATION == YES
@@ -101,9 +99,9 @@ double InternalEnergyFunc(double T, double rho)
  *  \return The gas internal energy (\c rhoe) in code units.
  ******************************************************************* */
 {
-    double eH, eHe, eHpH, eHplus, eH2, rhoe, eHeplus, eHeplusplus;
-    double func_zetaR;
-    double f[4];
+    double eH=0.0, eHe=0.0, eHpH=0.0, eHplus=0.0, eH2=0.0, rhoe=0.0, eHeplus=0.0, eHeplusplus=0.0;
+    double func_zetaR=0.0;
+    double f[4]={};
 
     GetSahaHFracs(T, rho, f);
 
@@ -150,23 +148,23 @@ double InternalEnergyFunc(double T, double rho)
  */
 /* ********************************************************************* */
 
-double Gamma1(double *v)
+double Gamma1(double temperature, double density)
 {
-    double gmm1, pressure;
-    double T;
-    double cv, mu, chirho = 1.0, chiT = 1.0, rho, rhoe;
-    double ep, em, delta = 1.e-2;
-    double Tp, Tm, mup, mum, rhop, rhom;
-    double dmu_dT, dmu_drho, de_dT;
+    double gmm1=0.0, pressure=0.0;
+    double T=0.0;
+    double cv=0.0, mu=0.0, chirho = 1.0, chiT = 1.0, rho=0.0, rhoe=0.0;
+    double ep=0.0, em=0.0, delta = 1.e-2;
+    double Tp=0.0, Tm=0.0, mup=0.0, mum=0.0, rhop=0.0, rhom=0.0;
+    double dmu_dT=0.0, dmu_drho=0.0, de_dT=0.0;
 
 /* ---------------------------------------------
     Obtain pressure and fractions.
    --------------------------------------------- */
-    T = v[TEMP]; /* temperature*/
-    rho = v[RHO]; /* density*/
+    T = temperature; /* temperature*/
+    rho = density; /* density*/
 
-    GetMu(T, v[RHO], &mu);
-    pressure = T*v[RHO]/(KELVIN*mu);
+    GetMu(T, rho, &mu);
+    pressure = T*rho/(KELVIN*mu);
 
 
 /* ---------------------------------------------------
@@ -178,8 +176,8 @@ double Gamma1(double *v)
 
     Tp = T*(1.0 + delta);
     Tm = T*(1.0 - delta);
-    em = InternalEnergyFunc(Tm, rho)/v[RHO]; /* in code units */
-    ep = InternalEnergyFunc(Tp, rho)/v[RHO]; /* in code units */
+    em = InternalEnergyFunc(Tm, rho)/rho; /* in code units */
+    ep = InternalEnergyFunc(Tp, rho)/rho; /* in code units */
 
     de_dT = (ep - em)/(2.0*delta*T);
     cv    = de_dT;  /* this is code units. */
@@ -200,7 +198,7 @@ double Gamma1(double *v)
 /* --------------------------------------------
     Compute first adiabatic index
    -------------------------------------------- */
-    gmm1   = pressure/(cv*T*v[RHO])*chiT*chiT  + chirho;
+    gmm1   = pressure/(cv*T*rho)*chiT*chiT  + chirho;
 
     return gmm1;
 }
