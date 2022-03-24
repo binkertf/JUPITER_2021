@@ -14,9 +14,9 @@ void HydroKernel (dt)
   lev = CurrentFluidPatch->desc->level;
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
-  if (Stellar) 
+  if (Stellar)
     ComputeQplus(); // viscous heating computation
-  if (mPLM){ 
+  if (mPLM){
     JUP_SAFE(FillSlopes ());
     JUP_SAFE(FillSources (PREDICT, EVERYWHERE));
   }
@@ -41,7 +41,7 @@ void HydroKernel (dt)
 	      /* Scan a beam of the active mesh */
         JUP_SAFE(__Prepare_Riemann_States (&beam, dt));
 	      /* which is used to prepare the Riemann States */
-	      JUP_SAFE(__Compute_Fluxes (&beam, dt)); 
+	      JUP_SAFE(__Compute_Fluxes (&beam, dt));
 	      /* The Riemann solver is then called and the fluxes evaluated */
 	      JUP_SAFE(FillFluxes (dim, j+Nghost[ip1], k+Nghost[ip2], &beam));
 	      /* and fluxes are stored for that dim */
@@ -99,15 +99,15 @@ void DustKernel (dt)
   lev = CurrentFluidPatch->desc->level;
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
-  if (mPLM){ 
+  if (mPLM){
     JUP_SAFE(FillSlopes ());
     JUP_SAFE(FillSources_Dust (PREDICT, EVERYWHERE));
   }
   if (mMUSCL) {
     JUP_SAFE(FillSlopes ());
-    JUP_SAFE(FillSources_Predict_Dust());
+    JUP_SAFE(FillSources_Predict_Dust(dt));
     JUP_SAFE(Predictor_iso (dt));
-  } 
+  }
   if(Stellar)Isothermal = FALSE;
   for (dim = 0; dim < NDIM; dim++) { /* For each dimension */
     ip1 = (dim == 0);
@@ -156,8 +156,8 @@ void DustKernel (dt)
 
 //######################################################################
 // DUSTDIFFKERNEL
-// this kernel treats dust as a pressurless fluid with tubulent diffusion 
-// modelled as a souce term in the mass equation. 
+// this kernel treats dust as a pressurless fluid with tubulent diffusion
+// modelled as a souce term in the mass equation.
 //######################################################################
 
 void DustDiffKernel (dt)
@@ -168,7 +168,7 @@ void DustDiffKernel (dt)
   lev = CurrentFluidPatch->desc->level;
   for (i = 0; i < 3; i++)
     size[i] = CurrentFluidPatch->desc->ncell[i];
-  if (mPLM){ 
+  if (mPLM){
     JUP_SAFE(FillSlopes ());
     JUP_SAFE(FillSources_Dust (PREDICT, EVERYWHERE));
   }
@@ -176,7 +176,7 @@ void DustDiffKernel (dt)
     JUP_SAFE(FillSlopes ());
     JUP_SAFE(FillSources_Predict_Dust());
     JUP_SAFE(Predictor_iso (dt));
-  } 
+  }
   if(Stellar)Isothermal = FALSE;
   for (dim = 0; dim < NDIM; dim++) { /* For each dimension */
     ip1 = (dim == 0);
@@ -223,5 +223,5 @@ void DustDiffKernel (dt)
   if (KEPLERIAN && !NoStockholm) {
     ApplyStockholmBoundaryConditionsDust (dt);
   }
-  
+
 }

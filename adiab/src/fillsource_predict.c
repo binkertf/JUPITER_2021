@@ -1,6 +1,6 @@
 #include "jupiter.h"
 
-void FillSources_Predict () 
+void FillSources_Predict ()
 {
   long i, j, k, l, m, mp[3], mm[3], smp, smm, Size;
   FluidWork *fw;
@@ -68,9 +68,9 @@ void FillSources_Predict ()
 			}
 		}
     }
-    
+
   }
-  
+
   for (k = ngh[2]; k < gncell[2]-ngh[2]; k++) {
     ind[2] = k;
     for (j = ngh[1]; j < gncell[1]-ngh[1]; j++) {
@@ -93,7 +93,7 @@ void FillSources_Predict ()
 	  Vphi = vphi*Rad;
 	  Vphitot = (vphi+OMEGAFRAME)*Rad;
 	  Vtheta = vtheta*rad;
-	  cot = (inter[_COLAT_][mp[_COLAT_]]-inter[_COLAT_][m])*invvol[m]*rad;	
+	  cot = (inter[_COLAT_][mp[_COLAT_]]-inter[_COLAT_][m])*invvol[m]*rad;
 	  sv[_RAD_][m] += (Vphitot*Vphitot+Vtheta*Vtheta)/rad;
 	  sv[_AZIM_][m] += -vphi*(Vrad+Vtheta*cot)*sine-2.*OMEGAFRAME*sine*Vrad- \
 				2.*OMEGAFRAME*cot*sine*Vtheta;
@@ -111,7 +111,7 @@ void FillSources_Predict ()
       }
     }
   }
-  for (i = 0; i < Size; i++) 
+  for (i = 0; i < Size; i++)
     srcdiv[i] = 0.0;
   if (!__CARTESIAN) {
     for (l = 0; l < NDIM; l++) {
@@ -137,7 +137,8 @@ void FillSources_Predict ()
 
 // ################################################################
 
-void FillSources_Predict_Dust () 
+void FillSources_Predict_Dust (dt)
+     real dt;
 {
   long i, j, k, l, m, mp[3], mm[3], smp, smm, Size;
   FluidWork *fw;
@@ -147,6 +148,7 @@ void FillSources_Predict_Dust ()
   real metric_coef=1.0;
   real sinvdx, vphi, vtheta, vrad, rad, cot, sine, *invm[3][2];
   real Rad;			    /* Cylindrical radius */
+  real sv_temp;
   real Vrad, Vtheta, Vphi, Vphitot;	/* Linear velocities */
   real *srcdiv, dsurf, *sinecol;
   real *se[3];
@@ -199,7 +201,16 @@ void FillSources_Predict_Dust ()
 	    			sv[l][m] = (e[smm]*rho[smm]-e[smp]*rho[smp])*sinvdx/rho[m];
 				}
 				if (diffmode == 1){
-					sv[l][m] += 1. / (rho_g[m] + rho[m]) * (a2[smp] * (rho_g[smp] + rho[smp]) - a2[smm] * (rho_g[smm] + rho[smm])) * sinvdx;
+          sv_temp = 1. / (rho_g[m] + rho[m]) * (a2[smp] * (rho_g[smp] + rho[smp]) - a2[smm] * (rho_g[smm] + rho[smm])) * sinvdx;
+
+          //diffusion limiter
+          if ((sv_temp*dt)>CFLSECURITY*sqrt(a2[m])){
+            sv_temp = CFLSECURITY*sqrt(a2[m]) / dt;
+          }
+          if ((sv_temp*dt)<-CFLSECURITY*sqrt(a2[m])){
+            sv_temp = -CFLSECURITY*sqrt(a2[m]) / dt;
+          }
+					sv[l][m] += sv_temp;
 				}
 				if (EXTERNALPOTENTIAL == YES) {// grav. acceleration
 	    			sv[l][m] += -(pot[smp]-pot[smm])*sinvdx;
@@ -209,9 +220,9 @@ void FillSources_Predict_Dust ()
 			}
 		}
     }
-    
+
   }
-  
+
   for (k = ngh[2]; k < gncell[2]-ngh[2]; k++) {
     ind[2] = k;
     for (j = ngh[1]; j < gncell[1]-ngh[1]; j++) {
@@ -234,7 +245,7 @@ void FillSources_Predict_Dust ()
 	  Vphi = vphi*Rad;
 	  Vphitot = (vphi+OMEGAFRAME)*Rad;
 	  Vtheta = vtheta*rad;
-	  cot = (inter[_COLAT_][mp[_COLAT_]]-inter[_COLAT_][m])*invvol[m]*rad;	
+	  cot = (inter[_COLAT_][mp[_COLAT_]]-inter[_COLAT_][m])*invvol[m]*rad;
 	  sv[_RAD_][m] += (Vphitot*Vphitot+Vtheta*Vtheta)/rad;
 	  sv[_AZIM_][m] += -vphi*(Vrad+Vtheta*cot)*sine-2.*OMEGAFRAME*sine*Vrad- \
 				2.*OMEGAFRAME*cot*sine*Vtheta;
@@ -252,7 +263,7 @@ void FillSources_Predict_Dust ()
       }
     }
   }
-  for (i = 0; i < Size; i++) 
+  for (i = 0; i < Size; i++)
     srcdiv[i] = 0.0;
   if (!__CARTESIAN) {
     for (l = 0; l < NDIM; l++) {
@@ -278,7 +289,7 @@ void FillSources_Predict_Dust ()
 
 // ################################################################
 
-void FillSources (flag, loc) 
+void FillSources (flag, loc)
      long flag, loc;
 {
   long i, j, k, l, m, mp[3], mm[3], smp, smm, Size;
@@ -376,7 +387,7 @@ void FillSources (flag, loc)
 	      if (_RAD_ < NDIM)
 		sv[_RAD_][m] += rad*(vphi*vphi+vtheta*vtheta);
 	      if (_COLAT_ < NDIM) {
-		cot = (inter[_COLAT_][mp[_COLAT_]]-inter[_COLAT_][m])*invvol[m]*rad;	
+		cot = (inter[_COLAT_][mp[_COLAT_]]-inter[_COLAT_][m])*invvol[m]*rad;
 		sv[_COLAT_][m] += rad*vphi*vphi*cot; //geom source COLAT
 	      }
 	    } else {
@@ -389,7 +400,7 @@ void FillSources (flag, loc)
     }
   }
   if (flag == PREDICT) {
-    for (i = 0; i < Size; i++) 
+    for (i = 0; i < Size; i++)
       srcrho[i] = 0.0;
     for (l = 0; l < NDIM; l++) {
       ip1 = (l == 0);
@@ -413,7 +424,7 @@ void FillSources (flag, loc)
 	}
       }
     }
-    for (i = 0; i < Size; i++) 
+    for (i = 0; i < Size; i++)
       srcrho[i] *= rho[i]*invvol[i];
   }
 }
@@ -421,7 +432,7 @@ void FillSources (flag, loc)
 
 // ################################################################
 
-void FillSources_Dust (flag, loc) 
+void FillSources_Dust (flag, loc)
      long flag, loc;
 {
   long i, j, k, l, m, mp[3], mm[3], smp, smm, Size;
@@ -528,7 +539,7 @@ void FillSources_Dust (flag, loc)
 	      if (_RAD_ < NDIM)
 		sv[_RAD_][m] += rad*(vphi*vphi+vtheta*vtheta);
 	      if (_COLAT_ < NDIM) {
-		cot = (inter[_COLAT_][mp[_COLAT_]]-inter[_COLAT_][m])*invvol[m]*rad;	
+		cot = (inter[_COLAT_][mp[_COLAT_]]-inter[_COLAT_][m])*invvol[m]*rad;
 		sv[_COLAT_][m] += rad*vphi*vphi*cot; //geom source COLAT
 	      }
 	    } else {
@@ -541,7 +552,7 @@ void FillSources_Dust (flag, loc)
     }
   }
   if (flag == PREDICT) {
-    for (i = 0; i < Size; i++) 
+    for (i = 0; i < Size; i++)
       srcrho[i] = 0.0;
     for (l = 0; l < NDIM; l++) {
       ip1 = (l == 0);
@@ -565,7 +576,7 @@ void FillSources_Dust (flag, loc)
 	}
       }
     }
-    for (i = 0; i < Size; i++) 
+    for (i = 0; i < Size; i++)
       srcrho[i] *= rho[i]*invvol[i];
   }
 }
