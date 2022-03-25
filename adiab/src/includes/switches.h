@@ -91,3 +91,6 @@ long InitCode_Eq;		/* Initial conditions code of
 				   hydrostatic equilibrium */
 long PotCode_Eq;		/* Potential code of
 				   hydrostatic equilibrium */
+
+FILE *fpt;
+
