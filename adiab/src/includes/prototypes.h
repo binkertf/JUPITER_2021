@@ -350,4 +350,5 @@ boolean FileExists ();
 real GetGamma();
 void TestGammaSingleCell();
 void TestGammaFluidPatch();
+void WriteToFile();
 
