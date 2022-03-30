@@ -5,12 +5,14 @@
 
 
 real GetGamma(){
-    if(Isothermal) {
-        return GAMMA;
-    }
-    else {
-        return GAMMA;
-    }
+#if(RECALCULATE_GAMMA & !Isothermal)
+    return GAMMA;
+
+
+#else
+    return GAMMA;
+
+#endif
 }
 
 
@@ -49,12 +51,12 @@ void GetSahaHFracs(double T, double rho, double *fdeg)
     fdeg[DEG_x] = 2.0/(1.0 + sqrt(1.0 + 4.0/b)); /* solution of quadratic equation */
 
 #if HELIUM_IONIZATION == YES
-    rhs3  = 4.0*CONST_mH/rho*rhs2*sqrt(rhs2)*exp(-24.59*CONST_eV/kT);
+    rhs3  = 4.0*XMH /rho*rhs2*sqrt(rhs2)*exp(-24.59*CONST_eV/kT);
     b     = 4.0/He_MASS_FRAC*(H_MASS_FRAC + rhs3);
     c     = -rhs3*4.0/He_MASS_FRAC;
     fdeg[DEG_z1] = -2.0*c/(b + sqrt(b*b - 4.0*c));
 
-    rhs3  = CONST_mH/rho*rhs2*sqrt(rhs2)*exp(-54.42*CONST_eV/kT);
+    rhs3  = XMH /rho*rhs2*sqrt(rhs2)*exp(-54.42*CONST_eV/kT);
     b     = 4.0/He_MASS_FRAC*(H_MASS_FRAC + 0.25*He_MASS_FRAC + rhs3);
     c     = -rhs3*4.0/He_MASS_FRAC;
     fdeg[DEG_z2] = -2.0*c/(b + sqrt(b*b - 4.0*c));
@@ -143,9 +145,7 @@ double InternalEnergyFunc(double T, double rho)
 }
 
 
-/*
- * need input: v (primitive variables) = (temperature, rho)
- */
+
 /* ********************************************************************* */
 
 double Gamma1(double temperature, double density)

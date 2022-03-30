@@ -12,7 +12,14 @@ int main (argc,argv)
   MPI_Comm_size (MPI_COMM_WORLD, &CPU_Number);
   NbRestart = GlobalInit (argc, argv);
   ResetChronometer (2);
-  if (SmoothTaper == YES) GlobalDateInit=GlobalDate;
+
+  char filename[1024];
+  sprintf (filename, "%s/%s", OUTPUTDIR, "/GammaValues.txt");
+
+  fpt = fopen(filename, "w+");
+  /* fprintf(fpt, "TEST\n"); */
+
+    if (SmoothTaper == YES) GlobalDateInit=GlobalDate;
   for (i = NbRestart*NINTERM; i <= NTOT; i++) {
     ResetChronometer (1);
     if (MonitorCons) MonitorConservative ();
@@ -60,8 +67,10 @@ int main (argc,argv)
 	fflush (stdout);
       }
       ResetChronometer (0);
+
       GlobalDate += RecursiveIteration (NextDate-GlobalDate, 0L);
-      ReadChronometer (0, "one full hydro time step");
+
+        ReadChronometer (0, "one full hydro time step");
     }
     prs_msg ("[100.0%%] of DT #%ld.                                          \n", i+1);
     fflush (stdout);
@@ -69,5 +78,8 @@ int main (argc,argv)
   }
   ReadChronometer (2, "full run (initialization phase excepted)");
   MPI_Finalize ();
-  return 0;
+
+  fclose(fpt);
+
+    return 0;
 }

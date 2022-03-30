@@ -9,6 +9,7 @@ void ItereLevel (dt, level)
      real dt;
      long level;
 {
+    long printingCounter=0;
   tGrid_CPU *item;
   FluidPatch *Fluid;
   item = Grid_CPU_list;
@@ -27,14 +28,25 @@ void ItereLevel (dt, level)
     GetOpticalDepthFromLevel (level-1);
     GetEnergyRadFromLevel (level-1);
   }
+
+
   while (item != NULL) {
     if ((level == item->level) && (item->cpu == CPU_Rank)) {
       Fluid = item->Fluid;
       SetFluidProperties (Fluid);
       while (Fluid != NULL) {
         SendToCurrent (Fluid);
-        TestGammaSingleCell();
-        /* TestGammaFluidPatch(); */
+
+        if(fmod(GlobalDate, DT)==0 & printingCounter==0) {
+            /* prints only NTOT times, so once for every course timestep DT */
+            /* TestGammaSingleCell();
+            TestGammaFluidPatch();
+            */
+            WriteToFile();
+            printingCounter++;
+        }
+
+
         if (Fluid->next==NULL){ //gas
           HydroKernel (dt);
         }else{ //dust
@@ -54,7 +66,7 @@ void ItereLevel (dt, level)
     /* This must be done after the individual steps on each fluid */
     item = item->next;
   }
-  LevelHasChangedSinceCFL[level] = YES;
+    LevelHasChangedSinceCFL[level] = YES;
   ExecCommDownMean (level+1);
 }
 
@@ -64,7 +76,7 @@ real RecursiveIteration (dt, level)
 {
   real time_var, dt_cfl_loc, dt_cfl;
   long i;
-  if (level == 0) {		/* We begin a global timestep */
+    if (level == 0) {		/* We begin a global timestep */
     for (i = 0; i <= LevMax; i++) {
       LevelHasChangedSinceCFL[i] = YES;
     }
@@ -74,12 +86,12 @@ real RecursiveIteration (dt, level)
     ResetFaceFluxesLevel (level+1);
     ExecCommDownMean (level+1);
     RecursiveIteration (dt/(real)TimeStepRatio[level], level+1);
-    if (TimeStepRatio[level] > 1)
+      if (TimeStepRatio[level] > 1)
       RecursiveIteration (dt/(real)TimeStepRatio[level], level+1);
     ExecCommDownFlux (level+1);
     time_var = LevelDate[level+1]-LevelDate[level];
     ItereLevel (time_var, level);
-    LevelDate[level] = LevelDate[level+1];
+      LevelDate[level] = LevelDate[level+1];
     return time_var;
   } else {			/* Finest level */
     dt_cfl_loc = CourantLimitGlobal () / (real)BaseStepRatio[level];
