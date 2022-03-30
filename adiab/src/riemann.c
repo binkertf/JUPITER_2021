@@ -148,7 +148,7 @@ boolean GetStar_ADI_SR (rhoL, rhoR, uL, uR, aL, aR, us, ps)
      real *us, *ps;
 {	/* Left shock, right rarefaction */
   real AL, BL;
-  real pL=rhoL*aL*aL*OOG, pR=rhoR*aR*aR*OOG;
+  real pL=rhoL*aL*aL*OOG, pR=rhoR*aR*aR*OOG; // OOG = 1/GetGamma()
   real df, deltau, a, prs;
   prs = *ps;  // The initial guess (PVRS) is evaluated in the calling function
   AL = TOGPO/rhoL;

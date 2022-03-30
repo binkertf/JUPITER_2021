@@ -160,14 +160,14 @@ void Compute_Fluxes_Adi (beam, dt)
     }
     rhoL = beam->rhoL[i];
     rhoR = beam->rhoR[i];
-    pL = beam->eL[i]*(GetGamma()-1);
-    pR = beam->eR[i]*(GetGamma()-1);
-    aR = sqrt(GetGamma()*pR/rhoR);
-    aL = sqrt(GetGamma()*pL/rhoL);
+    pL = beam->eL[i]*(GetGamma()-1); // pressure
+    pR = beam->eR[i]*(GetGamma()-1); // pressure
+    aR = sqrt(GetGamma()*pR/rhoR); // sound speed
+    aL = sqrt(GetGamma()*pL/rhoL); // sound speed
     // Call the Riemann solver
     VacuumCreated =   GetStar_AdiabaticSolver (rhoL, rhoR, uL, uR, aL, aR, &us, &ps);
     if (VacuumCreated) {
-      SRStar = uR - aR * TOGMO;
+      SRStar = uR - aR * TOGMO; // TOGMO = 2.0/(GetGamma()-1.0);
       SLStar = uL + aL * TOGMO;
       // Since vacuum is created, we know that SRStar > SLStar. Vacuum
       // resides in between these two characteristics. On each side,
