@@ -17,6 +17,10 @@ int main (argc,argv)
   sprintf (filename, "%s/%s", OUTPUTDIR, "/GammaValues.txt");
 
   fpt = fopen(filename, "w+");
+  if(Isothermal){
+      printf("Isothermal");
+      fprintf(fpt, "Isothermal case - GAMMA is constant and equal to %g", GAMMA);
+  }
   /* fprintf(fpt, "TEST\n"); */
 
     if (SmoothTaper == YES) GlobalDateInit=GlobalDate;
