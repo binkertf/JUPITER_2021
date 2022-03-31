@@ -80,7 +80,7 @@ void FindAllCellCenters(FILE *filehandle){
                     y = center[_AZIM_][m];
                     z = center[_COLAT_][m];
 
-                    fprintf(filehandle,"%g, %g, %g\n", x,y, z);
+                    fprintf(filehandle,"%g,%g,%g\n", x,y,z);
 
 
                     /* pInfo("(x,y,z), %g, %g, %g\n", x, y, z); */
