@@ -167,8 +167,8 @@ void Compute_Fluxes_Adi (beam, dt)
     // Call the Riemann solver
     VacuumCreated =   GetStar_AdiabaticSolver (rhoL, rhoR, uL, uR, aL, aR, &us, &ps);
     if (VacuumCreated) {
-      SRStar = uR - aR * TOGMO; // TOGMO = 2.0/(GetGamma()-1.0);
-      SLStar = uL + aL * TOGMO;
+      SRStar = uR - aR * 2.0/(GetGamma()-1.0); 
+      SLStar = uL + aL * 2.0/(GetGamma()-1.0);
       // Since vacuum is created, we know that SRStar > SLStar. Vacuum
       // resides in between these two characteristics. On each side,
       // we have rarefaction waves.  See Toro, p.142, fig. 4.17 and
@@ -183,10 +183,10 @@ void Compute_Fluxes_Adi (beam, dt)
 	  rho_i = rhoL;
 	  a_i = aL;
 	} else {  // Left fan
-	  wratio = GMOGPO*uL/aL;
-	  u_i = TOGPO * (aL + uL*(GetGamma()-1.)*0.5);
-	  rho_i = rhoL * pow(TOGPO + wratio, TOGMO);
-	  p_i = pL * pow(TOGPO + wratio, GetGamma()*TOGMO);
+	  wratio = (GetGamma()-1.0)/(GetGamma()+1.0)*uL/aL;
+	  u_i = 2.0/(GetGamma()+1.0) * (aL + uL*(GetGamma()-1.)*0.5);
+	  rho_i = rhoL * pow(2.0/(GetGamma()+1.0)  + wratio, 2.0/(GetGamma()-1.0));
+	  p_i = pL * pow(2.0/(GetGamma()+1.0) + wratio, GetGamma()*2.0/(GetGamma()-1.0));
 	  a_i = sqrt(GetGamma()*p_i/rho_i);
 	}
       }
@@ -200,10 +200,10 @@ void Compute_Fluxes_Adi (beam, dt)
 	  rho_i = rhoR;
 	  a_i = aR;
 	} else { // Right fan
-	  wratio = GMOGPO*uR/aR;
-	  u_i = TOGPO * (-aR + uR*(GetGamma()-1.)*0.5);
-	  rho_i = rhoR * pow(TOGPO - wratio, TOGMO);
-	  p_i = pR * pow(TOGPO - wratio, GetGamma()*TOGMO);
+	  wratio = (GetGamma()-1.0)/(GetGamma()+1.0)*uR/aR;
+	  u_i = 2.0/(GetGamma()+1.0) * (-aR + uR*(GetGamma()-1.)*0.5);
+	  rho_i = rhoR * pow(2.0/(GetGamma()+1.0) - wratio, 2.0/(GetGamma()-1.0));
+	  p_i = pR * pow(2.0/(GetGamma()+1.0) - wratio, GetGamma()*2.0/(GetGamma()-1.0));
 	  a_i = sqrt(GetGamma()*p_i/rho_i);
 	}
       }
@@ -224,8 +224,8 @@ void Compute_Fluxes_Adi (beam, dt)
 	if (ps > pL) {            // There is a left shock
 	  S_shock = uL + (pL - ps)/((uL - us)*rhoL);
 	  wratio = ps/pL;
-	  rhoS = rhoL * (wratio + GMOGPO)  // rhoS(on shock side)
-	    /(wratio * GMOGPO + 1.);
+	  rhoS = rhoL * (wratio + (GetGamma()-1.0)/(GetGamma()+1.0))  // rhoS(on shock side)
+	    /(wratio * (GetGamma()-1.0)/(GetGamma()+1.0) + 1.);
 	  aS = sqrt(GetGamma()*ps/rhoS);
 	  if (0.0 < S_shock) {    // We are at the left of the left shock: ISD
 	    u_i = uL;
@@ -237,7 +237,7 @@ void Compute_Fluxes_Adi (beam, dt)
 	    a_i = aS;
 	  }
 	} else {                    // There is a left rarefaction
-	  rhoS = rhoL * pow(ps/pL,OOG); // rhoS(on rarefaction side)
+	  rhoS = rhoL * pow(ps/pL, 1.0/GetGamma()); // rhoS(on rarefaction side)
 	  aS = sqrt(GetGamma()*ps/rhoS);
 	  if (0.0 < uL-aL) {      // We are in the left region: IFD
 	    u_i = uL;
@@ -249,10 +249,10 @@ void Compute_Fluxes_Adi (beam, dt)
 	      rho_i = rhoS;
 	      a_i = aS;
 	    } else {            // We are in the fan: FIFD
-	      wratio = GMOGPO*uL/aL;
-	      u_i = TOGPO * (aL + uL*(GetGamma()-1.)*0.5);
-	      rho_i = rhoL * pow(TOGPO + wratio, TOGMO);
-	      p_i = pL * pow(TOGPO + wratio, GetGamma()*TOGMO);
+	      wratio = (GetGamma()-1.0)/(GetGamma()+1.0)*uL/aL;
+	      u_i = 2.0/(GetGamma()+1.0) * (aL + uL*(GetGamma()-1.)*0.5);
+	      rho_i = rhoL * pow(2.0/(GetGamma()+1.0) + wratio, 2.0/(GetGamma()-1.0));
+	      p_i = pL * pow(2.0/(GetGamma()+1.0) + wratio, GetGamma()*2.0/(GetGamma()-1.0));
 	      a_i = sqrt(GetGamma()*p_i/rho_i);
 	    }
 	  }
@@ -263,8 +263,8 @@ void Compute_Fluxes_Adi (beam, dt)
 	if (ps > pR) {            // There is a right shock
 	  S_shock = uR + (pR - ps)/(uR - us)/rhoR;
 	  wratio = ps/pR;
-	  rhoS = rhoR * (wratio + GMOGPO) //rhoS (on shock side)
-	    /(wratio * GMOGPO + 1.);
+	  rhoS = rhoR * (wratio + (GetGamma()-1.0)/(GetGamma()+1.0)) //rhoS (on shock side)
+	    /(wratio * (GetGamma()-1.0)/(GetGamma()+1.0) + 1.);
 	  aS = sqrt(GetGamma()*ps/rhoS);
 	  if (0.0 > S_shock) {    // we are at the right of the right shock: DSI
 	    u_i = uR;
@@ -276,7 +276,7 @@ void Compute_Fluxes_Adi (beam, dt)
 	    a_i = aS;
 	  }
 	} else {                    // There is a right rarefaction
-	  rhoS = rhoR * pow(ps/pR,OOG); //rhoS(on rarefaction side)
+	  rhoS = rhoR * pow(ps/pR,1.0/GetGamma()); //rhoS(on rarefaction side)
 	  aS = sqrt(GetGamma()*ps/rhoS);
 	  if (0.0 > uR+aR) {      // we are in the right part: DFI
 	    u_i = uR;
@@ -288,10 +288,10 @@ void Compute_Fluxes_Adi (beam, dt)
 	      rho_i = rhoS;
 	      a_i = aS;
 	    } else {            // we are in the fan: DFIF
-	      wratio = GMOGPO*uR/aR;
-	      u_i = TOGPO * (-aR + uR*(GetGamma()-1.)*0.5);
-	      rho_i = rhoR * pow(TOGPO - wratio, TOGMO);
-	      p_i = pR * pow(TOGPO - wratio, GetGamma()*TOGMO);
+	      wratio = (GetGamma()-1.0)/(GetGamma()+1.0)*uR/aR;
+	      u_i = 2.0/(GetGamma()+1.0) * (-aR + uR*(GetGamma()-1.)*0.5);
+	      rho_i = rhoR * pow(2.0/(GetGamma()+1.0) - wratio, 2.0/(GetGamma()-1.0));
+	      p_i = pR * pow(2.0/(GetGamma()+1.0) - wratio, GetGamma()*2.0/(GetGamma()-1.0));
 	      a_i = sqrt(GetGamma()*p_i/rho_i);
 	    }
 	  }
@@ -318,14 +318,14 @@ void Compute_Fluxes_Adi (beam, dt)
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) {
       uf = u_i+v0;
       mass_flux = rho_i * (uf*C_mass_1 - v0*C_mass_2);
-      pu_flux   = (a_i*a_i*OOG+uf*uf)*C_mom_1 - v0*uf*C_mom_2;
+      pu_flux   = (a_i*a_i/GetGamma() + uf*uf)*C_mom_1 - v0*uf*C_mom_2;
       pu_flux  *= radius * rho_i;     // angular momentum in inertial frame...
-      ene_flux = uf*rho_i * (a_i*a_i*OOGMO + ekp)* C_ene_1-	\
-	v0*rho_i * (a_i*a_i*OOGMO + ekp)*C_ene_2;
+      ene_flux = uf*rho_i * (a_i*a_i/(GetGamma()-1.0) + ekp)* C_ene_1-	\
+	v0*rho_i * (a_i*a_i/(GetGamma()-1.0) + ekp)*C_ene_2;
     } else {
       mass_flux = rho_i * u_i;
-      pu_flux   = rho_i * (a_i*a_i*OOG + u_i*u_i);
-      ene_flux  = u_i*rho_i * (a_i*a_i*OOGMO + ekp);
+      pu_flux   = rho_i * (a_i*a_i/GetGamma() + u_i*u_i);
+      ene_flux  = u_i*rho_i * (a_i*a_i/(GetGamma()-1.0) + ekp);
     }
 
     surfdt = beam->intersurface[i] * dt;
@@ -340,7 +340,7 @@ void Compute_Fluxes_Adi (beam, dt)
     for (k = 0; k < NDIM-1; k++)    // will be corrected in FillFluxes
       beam->momentum_flux[k+1][i] = rho_i*vp_i[k]*u_i * surfdt;
     beam->tot_energy_flux[i] = ene_flux * surfdt;
-    beam->pressure_godunov[i] = a_i*a_i*rho_i*OOG;
+    beam->pressure_godunov[i] = a_i*a_i*rho_i*GetGamma();
   }
 }
 
