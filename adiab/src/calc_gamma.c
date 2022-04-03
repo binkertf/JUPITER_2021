@@ -166,7 +166,6 @@ double Gamma1(double temperature, double density)
     GetMu(T, rho, &mu);
     pressure = T*rho/(KELVIN*mu);
 
-
 /* ---------------------------------------------------
     Compute cV (Specific heat capacity for constant
     volume) using centered derivative.

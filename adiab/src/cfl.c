@@ -24,7 +24,7 @@ real CourantLimit (fp)
   long i_mon_crit[] = {0, 0, 0};
   long i_mon_visc[] = {0, 0, 0};
   boolean ViscosityLimited = NO;
-  real *vel[3], *cs2, cs, *rho, dt_min=1e20, dt, sum;
+  real *vel[3], *cs2, cs, *rho, *temp, *gamma, dt_min=1e20, dt, sum;
   real dt_visc_min = 1e20, dt_visc = 1e20;
   real *edges[3], radius=0.0;
   real dx, u;
@@ -35,6 +35,8 @@ real CourantLimit (fp)
   }
   cs2 = fp->Energy->Field;
   rho = fp->Density->Field;
+  temp = fp->Temperature->Field;
+  //gamma = fp->Gamma->Field;
   for (i[2] = Nghost[2]; i[2] < gncell[2]-Nghost[2]; i[2]++) {
     /* We do not scan the ghosts */
     for (i[1] = Nghost[1]; i[1] < gncell[1]-Nghost[1]; i[1]++) {
@@ -68,8 +70,10 @@ real CourantLimit (fp)
 	  	}
 	  	if (Isothermal || (strncasecmp(fp->Name, "dust", 4) == 0))
 	    	cs = sqrt(cs2[m]); //isothermal sound speed
-	  else
-	    	cs = sqrt(cs2[m]/rho[m]*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
+	  	else{
+			// Gamma = Gamma1(double temp, double rho) -> temp[m], rho[m] are both of type real 
+			cs = sqrt(cs2[m]/rho[m]*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
+	  	}
 	  dxmon[dim] = dx;
 	  uxmon[dim] = u;
 	  cs_mon = cs;
@@ -192,6 +196,7 @@ real StoppingTimeLimit (fp)
 
 				}
 			}else{//radiative
+				// Gamma = Gamma1(double temp, double rho) -> temp[m], rho[m] are both of type real
 	    		cs = sqrt(cs2[m]/rho[m]*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
 				tau_s = sqrt(GetGamma() * M_PI / 8.0) * dustsz * dustsolidrho / (cs * rho[m]);
 			}
