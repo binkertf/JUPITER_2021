@@ -213,6 +213,7 @@ struct fluidpatch {
   ScalarField *StellarHeating;  /**< Pointer to something obvious */
   ScalarField *EradDeriv;       /**< Time derivative of radiative energy */
   ScalarField *Temperature;       /**< Temperature */
+  ScalarField *Gamma;           /**< Gamma */
   ScalarField *Opacity;       /**< Opacity */
   ScalarField *TauCell;       /**< Optical Depth value in a given cell */
   ScalarField *Diffcoeff;        /**< DiffCoefficients */
@@ -282,6 +283,7 @@ struct fluidwork {
   real *Flux_mom[3][3];		/* right index: dim for face, left index: comp of mom */
   real *InterfacePressure[3];		/* Pressure at interfaces */
   real *Temperature;                /* From now on list arrays which are used in Radiative Transfer */
+  real *Gamma;
   real *Qplus;                              /* Qplus: viscous heating */
   real *Diffcoeff;                          /* Aar...Rhs are coefficents of the matrix of the Eq. B.6*/
   real *Aarmatrix;                          /*in Kley et al. 2009, Appendix */
