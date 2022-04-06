@@ -31,7 +31,6 @@ void  ComputeStellarHeating()
   deltar     = radint[1]-radint[0];
 
   ComputeOpticalDepth(); // here we call the computation of optical depth (tau)
-  ComputeGammaField();
 
   ExecCommSameOneField (fw->desc->level, tau);
 

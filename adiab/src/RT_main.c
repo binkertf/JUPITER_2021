@@ -8,6 +8,7 @@ void RT_main (real dt) {
     ComputeOpacityInit ();
   }
   ComputeStellarHeating();
+  ComputeGammaField();
   ComputeRadiativeEnergy (dt);
   ComputeDiffusionCoefficients ();
   ComputeMatrixElements (dt);
