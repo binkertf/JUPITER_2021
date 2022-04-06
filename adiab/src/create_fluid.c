@@ -147,7 +147,7 @@ FluidPatch *CreateFluidPatch (desc, name, initcode, initcodeeq)
   long dim, i, size[3], Size;
   long MeridianSize;
   ScalarField *Density, *Energy, *TotalEnergy, *Potential, *OpticalDepth, *EnergyRad;
-  ScalarField *StellarHeating, *EradDeriv, *Temperature, *Opacity, *TauCell;
+  ScalarField *StellarHeating, *EradDeriv, *Temperature, *Opacity, *TauCell, *Gamma;
   VectorField *Velocity;
   InterfaceFlux *MassFlux, *MomentumFlux[3], *EnergyFlux, *TotalEnergyFlux, *DiffFlux;
   PressureFaces *Pressure;
@@ -181,6 +181,7 @@ FluidPatch *CreateFluidPatch (desc, name, initcode, initcodeeq)
     Temperature    = CreateScalarField (desc, "temperature", StartField+(8+NDIM)*Size);
     Opacity        = CreateScalarField (desc, "opacity", StartField+(9+NDIM)*Size);
     TauCell        = CreateScalarField (desc, "taucell", StartField+(10+NDIM)*Size);
+    Gamma          = CreateScalarField (desc, "gamma", StartField+(11+NDIM)*Size);
   }
   patch->Ptr[_Tot_Energy_] = TotalEnergy->Field;
   patch->Ptr[_Potential_] = Potential->Field;
@@ -194,6 +195,7 @@ FluidPatch *CreateFluidPatch (desc, name, initcode, initcodeeq)
     patch->Ptr[_Temperature_] = Temperature->Field;
     patch->Ptr[_Opacity_] = Opacity->Field;
     patch->Ptr[_TauCell_] = TauCell->Field;
+    patch->Ptr[_Gamma_] = Gamma->Field; 
   }
   MassFlux = CreateInterfaceFlux (desc);
   EnergyFlux = CreateInterfaceFlux (desc);
@@ -226,6 +228,7 @@ FluidPatch *CreateFluidPatch (desc, name, initcode, initcodeeq)
     patch->Temperature = Temperature;
     patch->Opacity = Opacity;
     patch->TauCell = TauCell;
+    patch->Gamma = Gamma;
   }
   patch->MassFlux = MassFlux;
   patch->DiffFlux = DiffFlux;
@@ -257,6 +260,7 @@ void FreeFluidPatch (patch)
     FreeScalarField (patch->Temperature);
     FreeScalarField (patch->Opacity);
     FreeScalarField (patch->TauCell);
+    FreeScalarField (patch->Gamma);
   }
   FreeInterfaceFlux (patch->MassFlux);
   FreeInterfaceFlux (patch->DiffFlux);

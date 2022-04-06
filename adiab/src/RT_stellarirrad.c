@@ -1,4 +1,5 @@
 #include "jupiter.h"
+#include "calc_gamma.h"
 
 #define MAXLEVELIRRAD 100
 static MPI_Comm RadialCPUBeam[MAXLEVELIRRAD];
@@ -30,6 +31,7 @@ void  ComputeStellarHeating()
   deltar     = radint[1]-radint[0];
 
   ComputeOpticalDepth(); // here we call the computation of optical depth (tau)
+  ComputeGammaField();
 
   ExecCommSameOneField (fw->desc->level, tau);
 
@@ -57,6 +59,38 @@ void  ComputeStellarHeating()
     }
   }
  ExecCommSameOneField (fw->desc->level, stellarrad);
+}
+
+
+
+void ComputeGammaField() {
+  
+  long i,j,h,l,nr,ns,ni;
+  real *dens, *temp,*gamma_out;
+  long stride[3],gncell[3];
+  FluidWork *fw;
+  fw = CurrentFluidPatch;
+  getgridsize (fw->desc, gncell, stride);
+
+  nr = gncell[1];
+  ns = gncell[0];
+  ni = gncell[2];
+
+  dens = fw->Density;
+  temp = fw->Temperature;
+  gamma_out = fw->Gamma;
+
+  for( h = 0; h < ni; h++) {
+    for ( i = 0; i < nr; i++ ) {
+      for ( j = 0; j < ns; j++ ) {
+	      l = j+i*stride[1]+h*stride[2];
+        gamma_out[l] = Gamma1(temp[l], dens[l]);
+        //printf("gamma: %f", gamma_out[l]);
+  
+      }
+    }
+  }
+  
 }
 
 
@@ -103,6 +137,7 @@ void ComputeOpticalDepth()
   dens = fw->Density;
   opas = fw->OpaS;
   tau_out = fw->TauCell;
+
 
   // Average the densities azimuthally to avoid perturbations:
  i=Nghost[1]-1;

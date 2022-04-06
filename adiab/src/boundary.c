@@ -172,12 +172,12 @@ case 98: //Colatitude 3D, for high altitude regions, ISOTHERMAL, probably not co
   return Sym;
 }
 
-void TrueBC_fp (fluid)
+void TrueBC_fp (fluid) // this function gets called twice for each DT
      FluidPatch *fluid;
 {
   long gncell[3], stride[3], dim, side, dim1, dim2;
   long i_in, i_gh, j, k, m_in, m_gh, bc, offside;
-  real *dens, *vel[3], *energy, *center[3];
+  real *dens, *vel[3], *energy, *center[3], *gamma;
   real foo1=0.0, foo2=0.0, foo3=0.0;
   real vp=0.0, *vpg, vt1=0.0, *vtg1, vt2=0.0, *vtg2;
   /* The above initializations are necessary, otherwise when
@@ -191,6 +191,8 @@ void TrueBC_fp (fluid)
   cpug = fluid->desc;
   dens = fluid->Density->Field;
   energy = fluid->Energy->Field;
+  // gamma = fluid->Gamma->Field; // gamma has no adress yet (04.04.22)
+
   vtg1 = &foo1;
   vtg2 = &foo2;
   for (j = 0; j < 3; j++) {
@@ -240,6 +242,7 @@ void TrueBC_fp (fluid)
           bc = 19;
         }
         // til here
+        //printf("Gamma %f", gamma[m_in]); 
 	      boundary (dens[m_in],energy[m_in],vp,vt1,vt2,&dens[m_gh],\
 			&energy[m_gh],vpg,vtg1,vtg2,x,xg,yg,zg, \
 			bc,cpug->Parent->linenumber, FALSE);

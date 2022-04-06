@@ -58,14 +58,19 @@ void ReadField (fp, NbRestart)
         strcpy (varname, fp->StellarHeating->Name);
         ndim = 1;
         break;
-     case 6:
+      case 6:
         field = fp->Temperature->Field;
         strcpy (varname, fp->Temperature->Name);
         ndim = 1;
         break;
-     case 7:
+      case 7:
         field = fp->Opacity->Field;
         strcpy (varname, fp->Opacity->Name);
+        ndim = 1;
+        break;
+      case 8:                               // for completeness only
+        field = fp->Gamma->Field;
+        strcpy (varname, fp->Gamma->Name);
         ndim = 1;
         break;
       }

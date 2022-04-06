@@ -42,6 +42,6 @@ typedef struct radixstruct RadixStruct;
 enum {_density_, _energy_, _vrad_, _vazimuth_, _vcolatitude_, _tot_energy_, _other_, _tau_, _erad_,_temperature_,_opacity_,_taucell_};
 
 enum {_Density_, _Energy_, _Tot_Energy_, _Velocity_, _vx2_, _vx3_,	\
-      _Potential_, _Tau_, _Erad_, _EradDeriv_,_Temperature_,_Opacity_,_TauCell_};
+      _Potential_, _Tau_, _Erad_, _EradDeriv_,_Temperature_,_Opacity_,_TauCell_, _Gamma_};
 /* Note: if you add additional fields in the above enum, check straight away that 
 the Ptr[] array of FluidPatch is large enough (see gridtypes.h) */

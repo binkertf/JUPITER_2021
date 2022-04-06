@@ -99,6 +99,7 @@ void MakeCurrentFluidPatch ()
   ReserveForWorkPatch (&(CurrentFluidPatch->Temperature));
   ReserveForWorkPatch (&(CurrentFluidPatch->TemperNew));
   ReserveForWorkPatch (&(CurrentFluidPatch->TemperOld));
+  ReserveForWorkPatch (&(CurrentFluidPatch->Gamma));
   ReserveForWorkPatch (&(CurrentFluidPatch->EnergyNew));
   ReserveForWorkPatch (&(CurrentFluidPatch->DiffTemp));
   ReserveForWorkPatch (&(CurrentFluidPatch->Qplus));
@@ -196,6 +197,7 @@ void MakeSecondaryFluidPatch ()
   ReserveForSecondaryWorkPatch (&(SecondaryFluidPatch->Temperature));
   ReserveForSecondaryWorkPatch (&(SecondaryFluidPatch->TemperNew));
   ReserveForSecondaryWorkPatch (&(SecondaryFluidPatch->TemperOld));
+  // ReserveForSecondaryWorkPatch (&(SecondaryFluidPatch->Gamma)); // maybe not relevant
   ReserveForSecondaryWorkPatch (&(SecondaryFluidPatch->EnergyNew));
   ReserveForSecondaryWorkPatch (&(SecondaryFluidPatch->DiffTemp));
   ReserveForSecondaryWorkPatch (&(SecondaryFluidPatch->Qplus));
@@ -318,6 +320,7 @@ void SendToCurrent (fp)
       memcpy (CurrentFluidPatch->Temperature, fp->Temperature->Field, (size_t)size);
       memcpy (CurrentFluidPatch->OpaP, fp->Opacity->Field, (size_t)size);
       memcpy (CurrentFluidPatch->TauCell, fp->TauCell->Field, (size_t)size);
+      // memcpy (CurrentFluidPatch->Gamma, fp->Gamma->Field, (size_t)size); // crashes for some reason
     }
   }
   for (dm = 0; dm < NDIM; dm++) {
@@ -356,6 +359,7 @@ void SendToSecondary (fp)
       memcpy (SecondaryFluidPatch->StellarRad, fp->StellarHeating->Field, (size_t)size);
       memcpy (SecondaryFluidPatch->DiffEnrad, fp->EradDeriv->Field, (size_t)size);
       memcpy (SecondaryFluidPatch->Temperature, fp->Temperature->Field, (size_t)size);
+      //memcpy (SecondaryFluidPatch->Gamma, fp->Gamma->Field, (size_t)size); // maybe irrelevant
       memcpy (SecondaryFluidPatch->OpaP, fp->Opacity->Field, (size_t)size);
       memcpy (SecondaryFluidPatch->TauCell, fp->TauCell->Field, (size_t)size);
     }
@@ -390,6 +394,7 @@ void CurrentToPatch (fp)
       memcpy (fp->StellarHeating->Field, CurrentFluidPatch->StellarRad, (size_t)size);
       memcpy (fp->EradDeriv->Field, CurrentFluidPatch->DiffEnrad, (size_t)size);
       memcpy (fp->Temperature->Field, CurrentFluidPatch->Temperature, (size_t)size);
+      //memcpy (fp->Gamma->Field, CurrentFluidPatch->Gamma, (size_t)size); //crashes for some reason
       memcpy (fp->Opacity->Field, CurrentFluidPatch->OpaP, (size_t)size);
       memcpy (fp->TauCell->Field, CurrentFluidPatch->TauCell, (size_t)size);
     }

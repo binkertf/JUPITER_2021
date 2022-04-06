@@ -260,6 +260,10 @@ void WriteFluid (patch, number)
       vf = patch->Velocity;
       WriteScalar = FALSE;
       break;
+    case 10:               // for completeness only
+      sf = patch->Gamma;
+      WriteScalar = TRUE;
+      break;
     }
     if (WriteScalar) {
       sprintf (filename, "%s%s%ld_%ld_%ld.dat",\
