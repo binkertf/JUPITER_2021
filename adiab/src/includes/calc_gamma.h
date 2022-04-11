@@ -20,5 +20,22 @@
 #define HELIUM_IONIZATION   YES
 #define RECALCULATE_GAMMA NO
 
+/* Vibrational and Rotational Temperatures for molecular hydrogen  */
+#define THETA_V  6140.0
+#define THETA_R    85.5
+
+#define T_CUT_RHOE  10.0
+
+#define NONZERO_INITIALIZE YES /* Fill arrays to nonsense values to catch
+                                  uninitialized values later in the code */
+char     *Array1D (int, size_t);
+#define ARRAY_1D(nx,type)          (type    *)Array1D(nx,sizeof(type))
+
+/* Switch to choose the molecular hydrogen spin states.
+ * 0 : Only Para hydrogen ,
+ * 1 : Equilibrium (DEFAULT),
+ * 2 : Ortho to para ratio of 3:1.                                 */
+#define ORTHO_PARA_MODE 1
+
 double Gamma1(double temperature, double pressure);
 
