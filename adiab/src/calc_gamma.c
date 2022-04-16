@@ -8,6 +8,14 @@ real GetGamma(){
 #if(RECALCULATE_GAMMA & !Isothermal)
     return GAMMA;
 
+    /*
+    FluidWork *fw; /* the current fluid patch (aka fluid work) we consider */
+    fw = CurrentFluidPatch; /* access current fluid patch (global variable) */
+    density_ptr = fw->Density; /*read in density (1D array) */
+    temperature_ptr = fw->Temperature; /*read in temperature (1D array) */
+    real *density_ptr, *temperature_ptr; /*we want to read out the density and temperature of the fluid work */
+    return  Gamma1(temperature, density)
+     */
 
 #else
     return GAMMA;
@@ -16,8 +24,39 @@ real GetGamma(){
 }
 
 
+/* ********************************************************************* */
+
+char *Array1D (int nx, size_t dsize)
+/*!
+ * Allocate memory for a 1-D array of any basic data type starting
+ * at 0.
+ *
+ * \param [in] nx    number of elements to be allocated
+ * \param [in] dsize data-type of the array to be allocated
+ *
+ * \return A pointer of type (char *) to the allocated memory area.
+ *********************************************************************** */
+{
+    char *v;
+    v = (char *) malloc (nx*dsize);
+    if(!v){
+        prs_exit (EXIT_FAILURE);
+    }
+
+
+#if NONZERO_INITIALIZE == YES
+    if (dsize==sizeof(double)){
+        int i;
+        double *q;
+        q = (double *) v;
+        for (i = nx; i--; ) q[i] =sqrt(-1.0);
+    }
+#endif
+    return v;
+}
 
 /* ********************************************************************* */
+
 void GetSahaHFracs(double T, double rho, double *fdeg)
 /*!
  * Compute degree of ionization and dissociation using Saha Equations.
@@ -62,7 +101,143 @@ void GetSahaHFracs(double T, double rho, double *fdeg)
     fdeg[DEG_z2] = -2.0*c/(b + sqrt(b*b - 4.0*c));
 #endif
 }
+/* ********************************************************************* */
 
+
+
+void MakeZetaTables(double *lnT, double *funcdum, int nsteps)
+/****************************************************************************
+ *  \param [in]  lnT    Array of Logarithmic values of Gas
+ *                      temperatures from 0.01 K to 10^12 K.
+ *  \param [in] nsteps  Number of equal spacings in T.
+ *  \param [out] funcdum The function of zetaR that goes into EH2.
+ *
+ *  \return This function has no return value
+ *********************************************************************** */
+{
+    int    i,j;
+    double Temp0 = 0.01*T_CUT_RHOE;
+    double Tmax  = 1.0e12;
+    double dy = log(Tmax/Temp0)*(1./nsteps);
+    double dT = Temp0*exp(dy);
+    double T =0., a=0., b=0., b1=0., scrh=0., inv_T2=0.;
+    double zetaP=0., dzetaP=0., zetaO=0., dzetaO=0., zetaR=0., dzetaR=0.;
+    double dum1=0., dum2=0., dum3=0.;
+    double alpha=0., beta=0., gamma=0.;
+    double dzO_zO_m=0., db=0., sum1=0., sum2=0.;
+
+
+    if (ORTHO_PARA_MODE == 0){
+        alpha = 1.0; beta = 0.0; gamma = 0.0;
+    }else if(ORTHO_PARA_MODE == 2){
+        alpha = 0.25; beta = 0.75; gamma = 0.0;
+    }else{
+        alpha = 1.0; beta = 0.0; gamma = 1.0;
+    }
+
+    b1 = 2.0*THETA_R;
+    for(j = 0; j < nsteps; j++){
+        T = Temp0*exp(j*dy);
+        inv_T2 = 1.0/(T*T);
+        zetaO = zetaP = dzetaP = dzetaO = 0.0;
+        dzO_zO_m = sum1 = sum2 = 0.0;
+        for(i = 0; i <= 10000; i++){
+            a = 2*i + 1;
+            b = i*(i + 1)*THETA_R;
+            if (i%2 == 0){
+                scrh    = a*exp(-b/T);
+                zetaP  += scrh;
+                dzetaP += scrh*b;
+            }else{
+                db    = b - b1;
+                scrh  = a*exp(-db/T);
+                sum1 += scrh;
+                sum2 += scrh*db;
+            }
+        }
+        dzetaP *= inv_T2;
+
+        zetaO  = exp(-b1/T)*sum1;
+        dzetaO = exp(-b1/T)*(b1*sum1 + sum2)*inv_T2;
+
+        dzO_zO_m = sum2/sum1*inv_T2; /* = zeta'(O)/zeta(O) - 2*theta/T^2 */
+
+        lnT[j]  = log(T);
+
+        /* -----------------------------------------
+            Compute table
+           ----------------------------------------- */
+
+        scrh   = zetaO*exp(2.0*THETA_R/T);
+
+        zetaR  = pow(zetaP,alpha)*pow(scrh,beta) + 3.0*gamma*zetaO;
+        dzetaR = (zetaR - 3.0*gamma*zetaO)*(alpha*(dzetaP/zetaP) +
+                                            beta*dzO_zO_m)  + 3.0*gamma*dzetaO;
+        dum1  = THETA_V/T;
+        dum2  = dum1*exp(-dum1)/(1.0 - exp(-dum1));
+        dum3  = (T/zetaR)*dzetaR;
+        funcdum[j] = 1.5 + dum2 + dum3;
+    }
+}
+
+
+/* ********************************************************************* */
+
+void GetFuncDum(double T, double *funcdum_val)
+/*!
+ *  Interpolate the value of a function of \c zetaR from the table
+ *  that is used to estimate the value of EH2.
+ *
+ * \param [in]   T             Value of temperature in kelvin.
+ * \param [out] *funcdum_val   Pointer to the value of function of zetaR
+ *
+ * \return This function has no return value.
+ *
+ * \b  Reference:\n
+ *     D'Angelo, G. et al, ApJ 778 2013.
+ *********************************************************************** */
+{
+    int    klo, khi, kmid;
+    int nsteps = 5000;
+    double mu=0., Tmid=0., dT=0.;
+    static double *lnT, *funcdum;
+    double y=0., dy=0.;
+    int indx;
+
+/* -------------------------------------------
+    Make table on first call
+   ------------------------------------------- */
+
+    if (lnT == NULL){
+        lnT    = ARRAY_1D(nsteps, double);
+        funcdum = ARRAY_1D(nsteps, double);
+        MakeZetaTables(lnT, funcdum, nsteps);
+    }
+    y = log(T);
+
+/* -------------------------------------------------
+    Since the table has regular spacing in log T,
+    we divide by the increment to find the nearest
+    node in the table.
+   ------------------------------------------------- */
+
+    if (y > lnT[nsteps-2]) {
+        *funcdum_val = funcdum[nsteps-2];
+    } else if (y < lnT[0]) {
+        *funcdum_val = funcdum[0];
+    } else{
+        dy   = lnT[1] - lnT[0];
+        indx = floor((y - lnT[0])/dy);
+
+        if (indx >= nsteps || indx < 0){
+            printf("! GetFuncDum: indx out of range, indx = %d\n",indx);
+            printf("! T = %12.6e\n",T);
+            prs_exit (EXIT_FAILURE);
+        }
+        *funcdum_val = (funcdum[indx]*(lnT[indx+1] - y)
+                        + funcdum[indx+1]*(y - lnT[indx]))/dy;
+    }
+}
 
 
 /* ********************************************************************* */
@@ -107,9 +282,9 @@ double InternalEnergyFunc(double T, double rho)
 
     GetSahaHFracs(T, rho, f);
 
-    func_zetaR = 1.5;   /*   to recover ideal EoS  */
-    /*   GetFuncDum(T, &func_zetaR); */
-    /* = (1.5 + e(rot) + e(vib)), need to implement */
+    /* func_zetaR = 1.5;   to recover ideal EoS  */
+    GetFuncDum(T, &func_zetaR);
+    /* = (1.5 + e(rot) + e(vib)) */
 
 /* -- Estimate contributions to Egas -- */
 
