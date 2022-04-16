@@ -15,7 +15,7 @@ void ReadField (fp, NbRestart)
   real *field=NULL, *buffer;
   size_t sz, exp_sz, size_ratio;
   nvar = 3;
-  if (Stellar) nvar=8;
+  if (Stellar) nvar=9;
   getgridsize (fp->desc, gncell, stride);
   for (i = 0; i < 3; i++) {
     pcmin[i] = fp->desc->pcorner_min[i];
@@ -68,7 +68,7 @@ void ReadField (fp, NbRestart)
         strcpy (varname, fp->Opacity->Name);
         ndim = 1;
         break;
-      case 8:                               // for completeness only
+      case 8:
         field = fp->Gamma->Field;
         strcpy (varname, fp->Gamma->Name);
         ndim = 1;

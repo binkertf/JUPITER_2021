@@ -204,6 +204,7 @@ void InitWholeHierarchy (NbRestart)
 
 	  SendToCurrent (Fluid);
 	  ComputeTemperatureField ();
+	  ComputeGammaField ();
 	  ComputeOpacityInit ();
 	  ComputeQplus ();
 	  ComputeStellarHeating ();

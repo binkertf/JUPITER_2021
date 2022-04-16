@@ -242,7 +242,6 @@ void TrueBC_fp (fluid) // this function gets called twice for each DT
           bc = 19;
         }
         // til here
-        //printf("Gamma %f", gamma[m_in]); 
 	      boundary (dens[m_in],energy[m_in],vp,vt1,vt2,&dens[m_gh],\
 			&energy[m_gh],vpg,vtg1,vtg2,x,xg,yg,zg, \
 			bc,cpug->Parent->linenumber, FALSE);

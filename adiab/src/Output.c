@@ -149,6 +149,7 @@ void WriteScalarField (Field, filename)
   Size = (gncell[0]-2*ex[0])*(gncell[1]-2*ex[1])*(gncell[2]-2*ex[2]);
   m = 0;
   buffer = prs_malloc (Size*sizeof(real));
+  
   for (k = ex[2]; k < gncell[2]-ex[2]; k++) {
     for (j = ex[1]; j < gncell[1]-ex[1]; j++) {
       for (i = ex[0]; i < gncell[0]-ex[0]; i++) {
@@ -216,11 +217,11 @@ void WriteFluid (patch, number)
     patch->desc->number, patch->desc->level);
     WriteCommDest (patch->Density, filename); 
   */
-  for (i = 0; i < 4+6*(Stellar == YES ? 1:0); i++) { //Set to 6 temporarily to output the
+  for (i = 0; i < 4+7*(Stellar == YES ? 1:0); i++) { //Set to 6 temporarily to output the
 			    //optical depth and energy rad... can be skipped in
 			    //production runs
     switch (i) {
-    case 0: 
+    case 0:
       sf = patch->Density;
       WriteScalar = TRUE;
       break;
@@ -260,7 +261,7 @@ void WriteFluid (patch, number)
       vf = patch->Velocity;
       WriteScalar = FALSE;
       break;
-    case 10:               // for completeness only
+    case 10:
       sf = patch->Gamma;
       WriteScalar = TRUE;
       break;

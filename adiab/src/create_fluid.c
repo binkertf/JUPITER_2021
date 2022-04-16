@@ -162,7 +162,7 @@ FluidPatch *CreateFluidPatch (desc, name, initcode, initcodeeq)
   for (i = 0; i < 3; i++)
     size[i] = desc->gncell[i];
   Size = size[0] * size[1] * size[2];
-  StartField = prs_malloc (sizeof(real)*Size*(1+1+NDIM+1+1+7*(Stellar == YES ? 1 : 0)));
+  StartField = prs_malloc (sizeof(real)*Size*(1+1+NDIM+1+1+8*(Stellar == YES ? 1 : 0))); // number of fields below
   /* Global contiguous allocation */
   patch->StartField = StartField;
   Density = CreateScalarField (desc, "density", StartField);
@@ -281,7 +281,7 @@ void ResetPatch (patch)
   long nb;
   nb=2+NDIM;
   if (!Isothermal) nb = 3+NDIM;
-  if (Stellar) nb+=6;
+  if (Stellar) nb+=7;
   for (i = 0; i < 3; i++)
     Size *= patch->desc->gncell[i];
   SetToZero (patch->Density->Field, nb*Size);

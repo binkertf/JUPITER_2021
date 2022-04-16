@@ -108,6 +108,8 @@ void merge (number)
 		merge_field (field_name,   number, ncpu, Number, ParentPos, size, level, cpugridnb, 1L);
 		sprintf (field_name, "%s%s", FluidName[k], "taucell");
 		merge_field (field_name,   number, ncpu, Number, ParentPos, size, level, cpugridnb, 1L);
+    sprintf (field_name, "%s%s", FluidName[k], "gamma");
+		merge_field (field_name,   number, ncpu, Number, ParentPos, size, level, cpugridnb, 1L);
       	}
         if (k==0){ //only write out these lines once to the descriptor file
           fprintf (out, "%ld %ld %ld %d %ld\n", size[0], size[1], size[2], 0, cpugridnb);

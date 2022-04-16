@@ -1,6 +1,7 @@
 #include "jupiter.h"
 
 void refine () {
+  
   long output, nbgrid, ng, gtr=0, i, j, k;	/* ng : number of grids */
   long resol[3], levelmax=0;
 	double round(double);
@@ -145,6 +146,8 @@ void refine () {
       sprintf (field_name, "%s%s", FluidName[k], "opacity");
       refine_field (field_name,  output, nbgrid, grids, gtr, ng, 1L, descsp, descp);
       sprintf (field_name, "%s%s", FluidName[k], "temperature");
+      refine_field (field_name,  output, nbgrid, grids, gtr, ng, 1L, descsp, descp);
+      sprintf (field_name, "%s%s", FluidName[k], "gamma");
       refine_field (field_name,  output, nbgrid, grids, gtr, ng, 1L, descsp, descp);
     }
   }

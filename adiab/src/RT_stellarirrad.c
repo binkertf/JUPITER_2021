@@ -84,7 +84,6 @@ void ComputeGammaField() {
       for ( j = 0; j < ns; j++ ) {
 	      l = j+i*stride[1]+h*stride[2];
         gamma_out[l] = Gamma1(temp[l], dens[l]);
-        //printf("gamma: %f", gamma_out[l]);
   
       }
     }
