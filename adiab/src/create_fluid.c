@@ -152,6 +152,8 @@ FluidPatch *CreateFluidPatch (desc, name, initcode, initcodeeq)
   InterfaceFlux *MassFlux, *MomentumFlux[3], *EnergyFlux, *TotalEnergyFlux, *DiffFlux;
   PressureFaces *Pressure;
   FluidPatch *patch;
+  int n_stellar; // number of additional properties that are called if Stellar == True
+
   patch = prs_malloc (sizeof(FluidPatch));
   patch->desc = desc;
   if (strlen(name) > MAXNAMELENGTH)
@@ -162,7 +164,8 @@ FluidPatch *CreateFluidPatch (desc, name, initcode, initcodeeq)
   for (i = 0; i < 3; i++)
     size[i] = desc->gncell[i];
   Size = size[0] * size[1] * size[2];
-  StartField = prs_malloc (sizeof(real)*Size*(1+1+NDIM+1+1+8*(Stellar == YES ? 1 : 0))); // number of fields below
+  n_stellar = 8;   
+  StartField = prs_malloc (sizeof(real)*Size*(1+1+NDIM+1+1+n_stellar*(Stellar == YES ? 1 : 0))); // number of fields below
   /* Global contiguous allocation */
   patch->StartField = StartField;
   Density = CreateScalarField (desc, "density", StartField);
