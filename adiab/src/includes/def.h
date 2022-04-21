@@ -101,6 +101,36 @@
 #define    	BoundEcode       (pow((BOUNDTEMP/TEMP0),4.0)*A0)
 
 
+// Definitions for calculating GAMMA
+#define CONST_h       6.62606876e-27     /**< Planck Constant.           */
+#define CONST_eV      1.602176463158e-12 /**< Electron Volt in erg.      */
+#define CONST_me      9.1093826e-28      /**< Electron mass.             */
+#define CONST_amu     1.66053886e-24     /**< Atomic mass unit.          */
+#define CONST_mp 1.67262171e-24 /**< Proton mass. */
+#define H_MASS_FRAC       0.7110
+#define  He_MASS_FRAC  (1 - H_MASS_FRAC) /* Effective Y and not 0.2741*/
+/* Vibrational and Rotational Temperatures for molecular hydrogen  */
+#define THETA_V  6140.0
+#define THETA_R    85.5
+#define T_CUT_RHOE  10.0
+#define DEG_x      0  /* hydrogen ionization degree */
+#define DEG_y      1  /* molecular hydrogen dissociation degree */
+#define DEG_z1     2  /* helium single ionization degree */
+#define DEG_z2     3  /* helium double ionization degree */
+#define HELIUM_IONIZATION   NO
+
+/*! Define the conversion constant between dimensionless
+    temperature prs/rho and physical temperature in Kelvin,
+    T = (prs/rho)*KELVIN*mu
+*/
+#define KELVIN (V0*V0*CONST_amu/BOLTZ)
+/* Switch to choose the molecular hydrogen spin states.
+ * 0 : Only Para hydrogen ,
+ * 1 : Equilibrium,
+ * 2 : Ortho to para ratio of 3:1.                                 */
+#define ORTHO_PARA_MODE 2
+
+
 //#define ROTFRAME sqrt(1.0-2./7.*0.05*0.05)
 #define ROTFRAME 0.0
 
