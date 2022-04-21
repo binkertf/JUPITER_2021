@@ -1,32 +1,20 @@
 #include "jupiter.h"
-#include "calc_gamma.h"
 
-#define COOLING !Isothermal
+
+#define NONZERO_INITIALIZE YES /* Fill arrays to nonsense values to catch
+                                  uninitialized values later in the code */
+char     *Array1D (int, int);
+#define ARRAY_1D(nx,type)          (type    *)Array1D(nx,sizeof(type))
 
 
 real GetGamma(){
-#if(RECALCULATE_GAMMA & !Isothermal)
     return GAMMA;
-
-    /*
-    FluidWork *fw; /* the current fluid patch (aka fluid work) we consider */
-    fw = CurrentFluidPatch; /* access current fluid patch (global variable) */
-    density_ptr = fw->Density; /*read in density (1D array) */
-    temperature_ptr = fw->Temperature; /*read in temperature (1D array) */
-    real *density_ptr, *temperature_ptr; /*we want to read out the density and temperature of the fluid work */
-    return  Gamma1(temperature, density)
-     */
-
-#else
-    return GAMMA;
-
-#endif
 }
 
 
 /* ********************************************************************* */
 
-char *Array1D (int nx, size_t dsize)
+char *Array1D (int nx, int dsize)
 /*!
  * Allocate memory for a 1-D array of any basic data type starting
  * at 0.
@@ -254,13 +242,13 @@ void GetMu(double T, double rho, double *mu)
     double f[4]={};
 
     GetSahaHFracs(T, rho, f);
-#if HELIUM_IONIZATION == YES
-    *mu = 4.0/(  2.*H_MASS_FRAC*(1.0 + f[DEG_y] + 2.0*f[DEG_x]*f[DEG_y])
+    #if HELIUM_IONIZATION == YES
+        *mu = 4.0/(  2.*H_MASS_FRAC*(1.0 + f[DEG_y] + 2.0*f[DEG_x]*f[DEG_y])
                  + He_MASS_FRAC*(1.0 + f[DEG_z1]*(1.0 + f[DEG_z2])));
-#else
-    *mu = 4.0/(2.*H_MASS_FRAC*(1.0 + f[DEG_y] + 2.0*f[DEG_x]*f[DEG_y])
+    #else
+        *mu = 4.0/(2.*H_MASS_FRAC*(1.0 + f[DEG_y] + 2.0*f[DEG_x]*f[DEG_y])
              + He_MASS_FRAC);
-#endif
+    #endif
 }
 
 
@@ -287,27 +275,22 @@ double InternalEnergyFunc(double T, double rho)
     /* = (1.5 + e(rot) + e(vib)) */
 
 /* -- Estimate contributions to Egas -- */
-
     eH   = 1.5*H_MASS_FRAC*(1.0 + f[DEG_x])*f[DEG_y];
     eHe  = 3.0*He_MASS_FRAC/8.0;
     eH2  = 0.5*H_MASS_FRAC*(1.0 - f[DEG_y])*func_zetaR;
 
 /* -- constant terms -- */
 
-#if COOLING == NO
     eHpH   = 4.48*CONST_eV*H_MASS_FRAC*f[DEG_y]/(2.0*BOLTZ*T);
     eHplus = 13.60*CONST_eV*H_MASS_FRAC*f[DEG_x]*f[DEG_y]/(BOLTZ*T);
 
 #if HELIUM_IONIZATION == YES
-    eHeplus = 24.59*CONST_eV*He_MASS_FRAC*f[DEG_z1]*(1.0 - f[DEG_z2])/(4.0*CONST_kB*T);
-    eHeplusplus = 54.42*CONST_eV*He_MASS_FRAC*f[DEG_z1]*f[DEG_z2]/(4.0*CONST_kB*T);
+    eHeplus = 24.59*CONST_eV*He_MASS_FRAC*f[DEG_z1]*(1.0 - f[DEG_z2])/(4.0*BOLTZ*T);
+    eHeplusplus = 54.42*CONST_eV*He_MASS_FRAC*f[DEG_z1]*f[DEG_z2]/(4.0*BOLTZ*T);
 #else
     eHeplus = eHeplusplus = 0.0;
 #endif
 
-#else
-    eHpH = eHplus = eHeplus = eHeplusplus = 0.0;
-#endif
 
 /* ----------------------------------------------------------------
     Compute rhoe in cgs except for density which is left in
@@ -336,10 +319,11 @@ double Gamma1(double temperature, double density)
     Obtain pressure and fractions.
    --------------------------------------------- */
     T = temperature; /* temperature*/
-    rho = density; /* density*/
+    rho = density/RHO0; /* density, needs to be normalized */
 
     GetMu(T, rho, &mu);
-    pressure = T*rho/(KELVIN*mu);
+    /* printf("%g %g\n", T, mu); */
+    pressure = (T*rho)/(KELVIN*mu);
 
 /* ---------------------------------------------------
     Compute cV (Specific heat capacity for constant
@@ -350,8 +334,9 @@ double Gamma1(double temperature, double density)
 
     Tp = T*(1.0 + delta);
     Tm = T*(1.0 - delta);
-    em = InternalEnergyFunc(Tm, rho)/rho; /* in code units */
-    ep = InternalEnergyFunc(Tp, rho)/rho; /* in code units */
+    /* printf("%g %g\n", T, InternalEnergyFunc(T, rho)*XMH/(rho*RHO0)); */
+    em = InternalEnergyFunc(Tm, rho)/(rho); /* in code units */
+    ep = InternalEnergyFunc(Tp, rho)/(rho); /* in code units */
 
     de_dT = (ep - em)/(2.0*delta*T);
     cv    = de_dT;  /* this is code units. */
@@ -373,6 +358,7 @@ double Gamma1(double temperature, double density)
     Compute first adiabatic index
    -------------------------------------------- */
     gmm1   = pressure/(cv*T*rho)*chiT*chiT  + chirho;
+    /* printf("%g %g\n", T, cv);*/
 
     return gmm1;
 }
