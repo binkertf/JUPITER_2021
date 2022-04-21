@@ -350,5 +350,8 @@ boolean FileExists ();
 real GetGamma();
 void TestGammaSingleCell();
 void TestGammaFluidPatch();
+void TestGammaValue();
 void WriteToFile();
+double Gamma1(double temperature, double density);
+
 
