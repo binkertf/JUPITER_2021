@@ -1,18 +1,37 @@
 #include "jupiter.h"
-#include "calc_gamma.h"
 
 
 
 /** calculates Gamma for cell at [0,0,0] for all times during simulation*/
-void TestGammaSingleCell() {
-    /*
+void TestGammaValue() {
+
     printf("KELVIN %g\n", KELVIN);
     printf("RHO0 %g\n", RHO0);
-     */
 
-    real temp_test = 0.008437691;
-    real pressure_test = 1.17056e-15;
+    /*
+    real density_input = 1e-12;
+    real density = density_input/RHO0;
+    printf("density_input %g\n", density_input);
+    printf("density %g\n", density);
+    printf("%g", Gamma1(temp, density));
+    */
+    /* real temp = 10.; */
+    real gamma = 0.;
+    real density = 1e-12;
+    real temp = 1500;
 
+    while (temp< (1e6)){
+        gamma = Gamma1(temp, density);
+        /* temp, gamma */
+        printf("%g %g\n", temp, gamma);
+        temp = temp + 500.;
+    }
+
+}
+
+
+/** calculates Gamma for cell at [0,0,0] for all times during simulation*/
+void TestGammaSingleCell() {
     FluidWork *fw; /* the current fluid patch (aka fluid work) we consider */
     real *density_ptr, *temperature_ptr; /*we want to read out the density and temperature of the fluid work */
     fw = CurrentFluidPatch; /* access current fluid patch (global variable) */
@@ -22,13 +41,16 @@ void TestGammaSingleCell() {
 
     /* look at gamma value just for first cell
     use to calculate gamma, then print to log file*/
+
+
     printf("temp %g\n", *(temperature_ptr+0));
     printf("density %g\n", *(density_ptr+0));
     test_gamma = Gamma1(*(temperature_ptr+0), *(density_ptr+0)); /* automatically points to first index*/
+
     /* printf("Timestep %g\n ", DT); */
     /* pInfo ("### Value of gamma %g, at position (0,0,0) at date %.15g\n", test_gamma, GlobalDate); */
-    printf("GlobalDate %g, DT %g, mod %g\n", GlobalDate, DT, fmod(GlobalDate, DT));
-    printf("GAMMA %g\n", Gamma1(temp_test, pressure_test));
+    /* printf("GlobalDate %g, DT %g, mod %g\n", GlobalDate, DT, fmod(GlobalDate, DT));
+    printf("GAMMA %g\n", Gamma1(temp_test, pressure_test)); */
     /* printf ("Value of gamma %.15g, at position (0,0,0) at date %.15g\n", test_gamma, GlobalDate); */
 
 }
