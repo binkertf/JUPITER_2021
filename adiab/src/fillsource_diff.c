@@ -1,6 +1,6 @@
 #include "jupiter.h"
 
-void FillSources_diff_dust (flag, loc, dt) 
+void FillSources_diff_dust (flag, loc, dt)
      long flag, loc;
      real dt;
 {
@@ -54,15 +54,15 @@ void FillSources_diff_dust (flag, loc, dt)
 	          smm = m-stride[l];
 	          sinvdx = 1.0/(center[l][smp]-center[l][smm]);
 	          sinvdx *= metric_coef;
-	                      
+
             sv[l][m] = 1. / (rho_g[m] + rho[m]) * (a2[smp] * (rho_g[smp] + rho[smp]) - a2[smm] * (rho_g[smm] + rho[smm])) * sinvdx;
 
             //diffusion limiter
-            if ((sv[l][m]*dt)>a2[m]){
-              sv[l][m] = a2[m] / dt; 
-            } 
-            if ((sv[l][m]*dt)<-a2[m]){
-              sv[l][m] = -a2[m] / dt; 
+            if ((sv[l][m]*dt)>CFLSECURITY*sqrt(a2[m])){
+              sv[l][m] = CFLSECURITY*sqrt(a2[m]) / dt;
+            }
+            if ((sv[l][m]*dt)<-CFLSECURITY*sqrt(a2[m])){
+              sv[l][m] = -CFLSECURITY*sqrt(a2[m]) / dt;
             }
 	        }
 	      }

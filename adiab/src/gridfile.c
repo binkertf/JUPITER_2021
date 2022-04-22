@@ -118,17 +118,16 @@ void ScanGridFile (filename)
   input = FindGridFile (filename);
   if (!(shortname = strrchr (filename, '/'))) shortname = filename-1;
   if (!CPU_Rank) {
-    output = prs_open (++shortname);
     switch (NDIM) {
     case 1: 
-      fprintf (output, "# %s_min %s_max level BC_%s_min BC_%s_max\n\n",\
+ /*     fprintf (output, "# %s_min %s_max level BC_%s_min BC_%s_max\n\n",\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
-	       SCoordNames[CoordType*3+InvCoordNb[0]]);
+	       SCoordNames[CoordType*3+InvCoordNb[0]]); */
       break;
     case 2: 
-      fprintf (output, "# %s_min %s_min %s_max %s_max level BC_%s_min BC_%s_min BC_%s_max BC_%s_max\n\n",\
+/*      fprintf (output, "# %s_min %s_min %s_max %s_max level BC_%s_min BC_%s_min BC_%s_max BC_%s_max\n\n",\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
 	       SCoordNames[CoordType*3+InvCoordNb[1]],\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
@@ -136,10 +135,10 @@ void ScanGridFile (filename)
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
 	       SCoordNames[CoordType*3+InvCoordNb[1]],\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
-	       SCoordNames[CoordType*3+InvCoordNb[1]]);
+	       SCoordNames[CoordType*3+InvCoordNb[1]]); */
       break;
     case 3: 
-      fprintf (output, "# %s_min %s_min %s_min %s_max %s_max %s_max level BC_%s_min BC_%s_min BC_%s_min BC_%s_max BC_%s_max BC_%s_max\n\n",\
+  /*    fprintf (output, "# %s_min %s_min %s_min %s_max %s_max %s_max level BC_%s_min BC_%s_min BC_%s_min BC_%s_max BC_%s_max BC_%s_max\n\n",\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
 	       SCoordNames[CoordType*3+InvCoordNb[1]],\
 	       SCoordNames[CoordType*3+InvCoordNb[2]],\
@@ -151,7 +150,7 @@ void ScanGridFile (filename)
 	       SCoordNames[CoordType*3+InvCoordNb[2]],\
 	       SCoordNames[CoordType*3+InvCoordNb[0]],\
 	       SCoordNames[CoordType*3+InvCoordNb[1]],\
-	       SCoordNames[CoordType*3+InvCoordNb[2]]);
+	       SCoordNames[CoordType*3+InvCoordNb[2]]); */
       break;
     }
   }
@@ -188,7 +187,11 @@ void ScanGridFile (filename)
 	  pInfo ("Discarding line %d in gridfile since its level (%d) is higher than %d\n",\
 		 linenumber, level, MaxLevel);
 	} else {
-	  if (!CPU_Rank) fputs (string,  output);
+	  if (!CPU_Rank){
+             output = prs_open (++shortname);
+             fputs (string,  output);
+             fclose (output);
+          }
 	  grids[line].number = number++;
 	  grids[line].linenumber = linenumber;
 	  for (i = 0; i < 3; i++)	{ /* 3, not NDIM */
@@ -212,7 +215,6 @@ void ScanGridFile (filename)
     }
   }
   fclose (input);
-  if (!CPU_Rank) fclose (output);
   GridAbs (grids);
   GridPos (grids);
   GridBuild (grids);
