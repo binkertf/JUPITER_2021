@@ -64,7 +64,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
 {
   long gncell[3], i, j, k, m, stride[3];
   real *center[3];
-  real SMOOTHORIG;
+  real SMOOTHORIG,completion;
   real limit, jup_2rad;
   real  cut_dens,mass=0.0,cellvolume, tmass=0.0,cut_dens2,mass2=0.0, tmass2=0.0;
   real temp1=0.0,ttemp1=0.0,temp2=0.0,ttemp2=0.0;
@@ -139,9 +139,21 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
     if (SmoothTaper == YES && fp->desc->level == LevMax){
       if(GlobalDate<1*3.14159+GlobalDateInit){
 	// smooth-taper for half orbit of the planet
+         completion = ((GlobalDate-GlobalDateInit)/(3.14159))*100.;
+        pInfo("Smoothing on lev %d started at %.15g and is  %g%% completed at %.15g\n",fp->desc->level,GlobalDateInit,completion,GlobalDate);      
 	SMOOTHING = (2.*SMOOTHORIG-limit) * pow(cos((GlobalDate-GlobalDateInit)/2.),2)+limit; 
       }
     }
+    
+    if (SmoothTaper == YES && fp->desc->level == LevMax && SmoothTaperCont == YES){
+      if(GlobalDate<1*3.14159+hTaperStart){
+  // smooth-taper for half orbit of the planet
+        completion = ((GlobalDate-hTaperStart)/(3.14159))*100.;
+        pInfo("Smoothing on lev %d started at %.15g and is %g%% completed at %.15g\n",fp->desc->level,hTaperStart,completion,GlobalDate);
+  SMOOTHING = (2.*SMOOTHORIG-limit) * pow(cos((GlobalDate-hTaperStart)/2.),2)+limit; 
+      }
+    }
+
     if(SMOOTHING < limit) SMOOTHING=limit;
 
  //   if (fp->desc->level == 1)  SMOOTHING=SMOOTHING*2.;

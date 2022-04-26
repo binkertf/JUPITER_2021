@@ -78,6 +78,10 @@ long switches (argc, argv, parameter_file)
 	SuperImpose = YES;
       if (strchr (argv[i], 'h'))
 	SmoothTaper = YES;
+      if (strchr (argv[i], 'y')){
+  SmoothTaperCont = YES;
+  hTaperStart = atof(argv[i+1]);      
+      }
       if (strchr (argv[i], 'c')) {
 	CFLMonitor = YES;
 	CoarseRayTracing = YES;

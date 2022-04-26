@@ -65,6 +65,7 @@ boolean MomentumCorrection[3][3];
 real GridFriction[3];
 real DatePotentialConstant;
 real GlobalDateInit;
+real hTaperStart;
 boolean EmbeddedGridFile = NO;
 char EmbeddedGridFileName[MAXLINELENGTH];
 long MaxLevel=100L;
@@ -91,3 +92,4 @@ long InitCode_Eq;		/* Initial conditions code of
 				   hydrostatic equilibrium */
 long PotCode_Eq;		/* Potential code of
 				   hydrostatic equilibrium */
+boolean SmoothTaperCont = NO;
