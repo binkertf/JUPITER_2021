@@ -1,5 +1,4 @@
 #include "jupiter.h"
-#include "calc_gamma.h"
 
 
 
