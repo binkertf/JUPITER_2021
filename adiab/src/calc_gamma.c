@@ -3,12 +3,20 @@
 
 #define NONZERO_INITIALIZE YES /* Fill arrays to nonsense values to catch
                                   uninitialized values later in the code */
+
+/* Switch to choose the molecular hydrogen spin states.
+* 0 : Only Para hydrogen ,
+* 1 : Equilibrium,
+* 2 : Ortho to para ratio of 3:1.
+*/
+int ORTHO_PARA_MODE = 0;
+
 char     *Array1D (int, int);
 #define ARRAY_1D(nx,type)          (type    *)Array1D(nx,sizeof(type))
 
 
 real GetGamma(){
-    return GAMMA;
+return GAMMA;
 }
 
 
@@ -318,6 +326,15 @@ double Gamma1(double temperature, double density)
 /* ---------------------------------------------
     Obtain pressure and fractions.
    --------------------------------------------- */
+    if(density>1e-7){
+        /* matches d'Angelo et al. paper */
+        ORTHO_PARA_MODE = 2;
+    }
+    else{
+        /* matches B. Vaidya et al. paper */
+        ORTHO_PARA_MODE = 1;
+    }
+
     T = temperature; /* temperature*/
     rho = density/RHO0; /* density, needs to be normalized */
 

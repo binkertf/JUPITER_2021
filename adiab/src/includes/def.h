@@ -72,7 +72,7 @@
 #define       	AU      	  1.496e+13  // Astronomical Unit in cm 
 #define       	BOLTZ   	  1.38e-16  // Boltzmann Constant
 #define       	CLIGHT		  2.99792458e+10  // Light speed
-#define       	GRAVC   	  6.67e-08  // Gravitation Constant
+#define       	GRAVC   	  6.67e-8  // Gravitation Constant
 #define       	ARC        	  7.56e-15  // Radiation Constant
 #define       	RGAS    	  8.314e+07  // Gas Constant
 #define      	RSUN    	  (6.96e+10) /* Sun Radius in cm */  
@@ -124,11 +124,6 @@
     T = (prs/rho)*KELVIN*mu
 */
 #define KELVIN (V0*V0*CONST_amu/BOLTZ)
-/* Switch to choose the molecular hydrogen spin states.
- * 0 : Only Para hydrogen ,
- * 1 : Equilibrium,
- * 2 : Ortho to para ratio of 3:1.                                 */
-#define ORTHO_PARA_MODE 2
 
 
 //#define ROTFRAME sqrt(1.0-2./7.*0.05*0.05)
@@ -139,10 +134,10 @@
 #define INSPECT_INT( var) {printf ("%s = %d\n", #var, var);}
 
 #define CHECK( m) {real temp; \
-  temp = CurrentFluidPatch->Velocity[1][m];\
-  printf ("Rad velocity in zone %d: %g at file %s and line %d\n", m, temp, __FILE__, __LINE__);\
-  if (fabs(temp) > 1e-12) exit(1);\
-  }
+temp = CurrentFluidPatch->Velocity[1][m];\
+printf ("Rad velocity in zone %d: %g at file %s and line %d\n", m, temp, __FILE__, __LINE__);\
+if (fabs(temp) > 1e-12) exit(1);\
+}
 
 #define JUP_SAFE( statement)  statement;
 
@@ -154,30 +149,30 @@ long allj;
 long currentoutnb;
 
 #define JUP_SAFE( statement)  {		\
-  statement;	\
-  printf ("Now at %d, executing %s\n", currentoutnb, #statement);			\
-  for (mmm = 0 ; mmm < (CurrentFluidPatch->desc->gncell[0])*(CurrentFluidPatch->desc->gncell[1])*(CurrentFluidPatch->desc->gncell[2]);mmm++) {\
+statement;	\
+printf ("Now at %d, executing %s\n", currentoutnb, #statement);			\
+for (mmm = 0 ; mmm < (CurrentFluidPatch->desc->gncell[0])*(CurrentFluidPatch->desc->gncell[1])*(CurrentFluidPatch->desc->gncell[2]);mmm++) {\
 if (isnan(CurrentFluidPatch->Density[mmm])) {\
-    printf ("Density is Nan at m=%ld after call to %s in file %s at line %d\n", mmm, #statement, __FILE__, __LINE__); \
-    allj=1;\
-    }\
+printf ("Density is Nan at m=%ld after call to %s in file %s at line %d\n", mmm, #statement, __FILE__, __LINE__); \
+allj=1;\
+}\
 if (isnan(CurrentFluidPatch->Energy[mmm])) {\
-    printf ("Energy is Nan at m=%ld after call to %s in file %s at line %d\n", mmm, #statement, __FILE__, __LINE__); \
-    allj=1;\
-    }\
+printf ("Energy is Nan at m=%ld after call to %s in file %s at line %d\n", mmm, #statement, __FILE__, __LINE__); \
+allj=1;\
+}\
 if (isnan(CurrentFluidPatch->Velocity[0][mmm])) {\
-    printf ("Vel0 is Nan at m=%ld after call to %s in file %s at line %d\n", mmm, #statement, __FILE__, __LINE__); \
-    allj=1;\
-    }\
+printf ("Vel0 is Nan at m=%ld after call to %s in file %s at line %d\n", mmm, #statement, __FILE__, __LINE__); \
+allj=1;\
+}\
 if (isnan(CurrentFluidPatch->Velocity[1][mmm])) {\
-    printf ("Vel1 is Nan at m=%ld after call to %s in file %s at line %d\n", mmm, #statement, __FILE__, __LINE__); \
-    allj=1;\
-    }\
+printf ("Vel1 is Nan at m=%ld after call to %s in file %s at line %d\n", mmm, #statement, __FILE__, __LINE__); \
+allj=1;\
+}\
 if (isnan(CurrentFluidPatch->Velocity[2][mmm])) {\
-    printf ("Vel2 is Nan at m=%ld after call to %s in file %s at line %d\n", mmm, #statement, __FILE__, __LINE__); \
-    allj=1;\
-    }\
- if (allj ==1) exit (1);\
+printf ("Vel2 is Nan at m=%ld after call to %s in file %s at line %d\n", mmm, #statement, __FILE__, __LINE__); \
+allj=1;\
+}\
+if (allj ==1) exit (1);\
 }\
 }*/
 
