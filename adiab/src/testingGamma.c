@@ -15,11 +15,16 @@ void TestGammaValue() {
     printf("density %g\n", density);
     printf("%g", Gamma1(temp, density));
     */
-    /* real temp = 10.; */
+    real temp = 10.;
     real gamma = 0.;
     real density = 1e-12;
-    real temp = 1500;
 
+    while(temp < 1501){
+        gamma = Gamma1(temp, density);
+        /* temp, gamma */
+        printf("%g %g\n", temp, gamma);
+        temp = temp + 1.;
+    }
     while (temp< (1e6)){
         gamma = Gamma1(temp, density);
         /* temp, gamma */

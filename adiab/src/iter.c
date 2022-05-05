@@ -37,7 +37,12 @@ void ItereLevel (dt, level)
       while (Fluid != NULL) {
         SendToCurrent (Fluid);
 
-        if(!Isothermal) {
+        if(GlobalDate == 0){
+            TestGammaValue();
+        }
+
+        /* !Isothermal*/
+        if(FALSE) {
             double tchunk = DT * NTOT / 5.0;
             double cond1 = fabs(GlobalDate);
             double cond2 = fabs(GlobalDate - tchunk);
