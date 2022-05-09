@@ -17,7 +17,7 @@ long switches (argc, argv, parameter_file)
   for (i = 1; i < argc; i+=d) {
     d=1;
     if (*(argv[i]) == '-') {
-      if (strspn (argv[i], "-acegijkmnopqrstvxzSh") != strlen (argv[i]))
+      if (strspn (argv[i], "-acegijkmnopqrstvxzShy") != strlen (argv[i]))
 	PrintUsage (argv[0]);
       if (strchr (argv[i], 'o')) {
 	RedefineOptions = YES;

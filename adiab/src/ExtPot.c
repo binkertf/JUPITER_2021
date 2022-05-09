@@ -136,7 +136,7 @@ void ComputeExternalPotential (GlobalDate, fp, t, phi, flag)
     }*/
     
     limit=SMOOTHING;
-    if (SmoothTaper == YES && fp->desc->level == LevMax){
+    if (SmoothTaper == YES && fp->desc->level == LevMax && SmoothTaperCont == NO){
       if(GlobalDate<1*3.14159+GlobalDateInit){
 	// smooth-taper for half orbit of the planet
          completion = ((GlobalDate-GlobalDateInit)/(3.14159))*100.;
