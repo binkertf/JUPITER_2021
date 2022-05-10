@@ -72,7 +72,7 @@
 #define       	AU      	  1.496e+13  // Astronomical Unit in cm 
 #define       	BOLTZ   	  1.38e-16  // Boltzmann Constant
 #define       	CLIGHT		  2.99792458e+10  // Light speed
-#define       	GRAVC   	  6.67e-8  // Gravitation Constant
+#define       	GRAVC   	  6.67e-08  // Gravitation Constant
 #define       	ARC        	  7.56e-15  // Radiation Constant
 #define       	RGAS    	  8.314e+07  // Gas Constant
 #define      	RSUN    	  (6.96e+10) /* Sun Radius in cm */  
@@ -118,6 +118,7 @@
 #define DEG_z1     2  /* helium single ionization degree */
 #define DEG_z2     3  /* helium double ionization degree */
 #define HELIUM_IONIZATION   NO
+#define TESTING_GAMMA NO
 
 /*! Define the conversion constant between dimensionless
     temperature prs/rho and physical temperature in Kelvin,
