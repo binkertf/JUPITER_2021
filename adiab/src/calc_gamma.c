@@ -333,25 +333,25 @@ double Gamma1(double temperature, double density)
     Obtain pressure and fractions.
    --------------------------------------------- */
 
-    if(HELIUM_IONIZATION){
-        /* matches d'Angelo et al. paper */
-        ORTHO_PARA_MODE = 2;
-    }
+    if(!TESTING_GAMMA){
+        if (HELIUM_IONIZATION) {
+            /* matches d'Angelo et al. paper */
+            ORTHO_PARA_MODE = 2;
+        }
 
-    if(density>1e-7){
-        /* matches d'Angelo et al. paper */
-        ORTHO_PARA_MODE = 2;
-    }
-    else{
-        /* matches B. Vaidya et al. paper */
-        ORTHO_PARA_MODE = 1;
+        if (density > 1e-7) {
+            /* matches d'Angelo et al. paper */
+            ORTHO_PARA_MODE = 2;
+        } else {
+            /* matches B. Vaidya et al. paper */
+            ORTHO_PARA_MODE = 1;
+        }
     }
 
     T = temperature; /* temperature*/
     rho = density/RHO0; /* density, needs to be normalized */
 
     GetMu(T, rho, &mu);
-    /* printf("%g %g\n", T, mu); */
     pressure = (T*rho)/(KELVIN*mu);
 
 
@@ -364,7 +364,6 @@ double Gamma1(double temperature, double density)
 
     Tp = T*(1.0 + delta);
     Tm = T*(1.0 - delta);
-    /* printf("%g %g\n", T, InternalEnergyFunc(T, rho)*XMH/(rho*RHO0)); */
     em = InternalEnergyFunc(Tm, rho)/(rho); /* in code units */
     ep = InternalEnergyFunc(Tp, rho)/(rho); /* in code units */
 
@@ -388,7 +387,6 @@ double Gamma1(double temperature, double density)
     Compute first adiabatic index
    -------------------------------------------- */
     gmm1   = pressure/(cv*T*rho)*chiT*chiT  + chirho;
-    /* printf("%g %g\n", T, cv);*/
 
     return gmm1;
 }
