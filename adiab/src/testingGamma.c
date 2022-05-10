@@ -4,31 +4,27 @@
 
 /** calculates Gamma for cell at [0,0,0] for all times during simulation*/
 void TestGammaValue() {
-
+    /*
+    * checking units
     printf("KELVIN %g\n", KELVIN);
     printf("RHO0 %g\n", RHO0);
+    printf("V0 %g\n", V0);
+     */
 
-    /*
-    real density_input = 1e-12;
-    real density = density_input/RHO0;
-    printf("density_input %g\n", density_input);
-    printf("density %g\n", density);
-    printf("%g", Gamma1(temp, density));
-    */
     real temp = 10.;
     real gamma = 0.;
-    real density = 1e-12;
+    real density = 1e-3;
 
     while(temp < 1501){
         gamma = Gamma1(temp, density);
         /* temp, gamma */
-        printf("%g %g\n", temp, gamma);
+        /* printf("%g %g\n", temp, gamma); */
         temp = temp + 1.;
     }
-    while (temp< (1e6)){
+    while (temp< (1e5 + 500)){
         gamma = Gamma1(temp, density);
         /* temp, gamma */
-        printf("%g %g\n", temp, gamma);
+        /* printf("%g %g\n", temp, gamma); */
         temp = temp + 500.;
     }
 

@@ -35,33 +35,35 @@ void ItereLevel (dt, level)
       Fluid = item->Fluid;
       SetFluidProperties (Fluid);
       while (Fluid != NULL) {
-        SendToCurrent (Fluid);
+          SendToCurrent(Fluid);
 
-        if(GlobalDate == 0){
-            TestGammaValue();
-        }
+          if (TESTING_GAMMA){
+              if (GlobalDate == 0) {
+                  /* TestGammaValue(); */
+              }
 
-        /* !Isothermal*/
-        if(FALSE) {
-            double tchunk = DT * NTOT / 5.0;
-            double cond1 = fabs(GlobalDate);
-            double cond2 = fabs(GlobalDate - tchunk);
-            double cond3 = fabs(GlobalDate - tchunk * 2);
-            double cond4 = fabs(GlobalDate - tchunk * 3);
-            double cond5 = fabs(GlobalDate - tchunk * 4);
-            double epsilon = 1e-3;
-            if (cond1 < epsilon || cond2 < epsilon || cond3 < epsilon || cond4 < epsilon || cond5 < epsilon) {
-                if (printingCounter == 0) {
-                    /* prints only NTOT times, so once for every course timestep DT */
-                    /*
-                    TestGammaSingleCell();
-                    TestGammaFluidPatch();
-                    */
-                    WriteToFile();
-                    printingCounter++;
-                }
-            }
-        }
+              /* !Isothermal*/
+              if (!Isothermal) {
+                  double tchunk = DT * NTOT / 5.0;
+                  double cond1 = fabs(GlobalDate);
+                  double cond2 = fabs(GlobalDate - tchunk);
+                  double cond3 = fabs(GlobalDate - tchunk * 2);
+                  double cond4 = fabs(GlobalDate - tchunk * 3);
+                  double cond5 = fabs(GlobalDate - tchunk * 4);
+                  double epsilon = 1e-3;
+                  if (cond1 < epsilon || cond2 < epsilon || cond3 < epsilon || cond4 < epsilon || cond5 < epsilon) {
+                      if (printingCounter == 0) {
+                          /* prints only NTOT times, so once for every course timestep DT */
+                          /*
+                          TestGammaSingleCell();
+                          TestGammaFluidPatch();
+                          */
+                          WriteToFile();
+                          printingCounter++;
+                      }
+                  }
+              }
+      }
 
 
 
