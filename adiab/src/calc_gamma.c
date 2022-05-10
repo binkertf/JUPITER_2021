@@ -9,7 +9,7 @@
 * 1 : Equilibrium,
 * 2 : Ortho to para ratio of 3:1.
 */
-int ORTHO_PARA_MODE = 0;
+int ORTHO_PARA_MODE = 2;
 
 char     *Array1D (int, int);
 #define ARRAY_1D(nx,type)          (type    *)Array1D(nx,sizeof(type))
@@ -279,8 +279,14 @@ double InternalEnergyFunc(double T, double rho)
     GetSahaHFracs(T, rho, f);
 
     /* func_zetaR = 1.5;   to recover ideal EoS  */
-    GetFuncDum(T, &func_zetaR);
-    /* = (1.5 + e(rot) + e(vib)) */
+    if(T<10){
+        func_zetaR = 1.5;
+    }
+    /* case of changing gamma */
+    else {
+        GetFuncDum(T, &func_zetaR);
+    }
+
 
 /* -- Estimate contributions to Egas -- */
     eH   = 1.5*H_MASS_FRAC*(1.0 + f[DEG_x])*f[DEG_y];
@@ -326,6 +332,12 @@ double Gamma1(double temperature, double density)
 /* ---------------------------------------------
     Obtain pressure and fractions.
    --------------------------------------------- */
+
+    if(HELIUM_IONIZATION){
+        /* matches d'Angelo et al. paper */
+        ORTHO_PARA_MODE = 2;
+    }
+
     if(density>1e-7){
         /* matches d'Angelo et al. paper */
         ORTHO_PARA_MODE = 2;
