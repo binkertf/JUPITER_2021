@@ -102,3 +102,4 @@ real	STELLDEG;
 real	SMRATIO;
 real	R0;
 real	XMSTAR;
+boolean	CONST_GAMMA;

@@ -1,7 +1,7 @@
 #include "jupiter.h"
 
-inline boolean boundary (rho,e,u,v,w,rhog,eg,ug,vg,wg,x,xg,yg,zg,condition,line,predictive)
-     real rho,e,u,v,w,x,xg,yg,zg;
+inline boolean boundary (rho,e,gamma,u,v,w,rhog,eg,ug,vg,wg,x,xg,yg,zg,condition,line,predictive)
+     real rho,e,gamma,u,v,w,x,xg,yg,zg;
      boolean predictive;	/* Predictive is true whenever
      'boundary' is called from within a Riemann problem predictor. It
      is false otherwise (ie when filling the mesh boundaries) */
@@ -66,7 +66,7 @@ inline boolean boundary (rho,e,u,v,w,rhog,eg,ug,vg,wg,x,xg,yg,zg,condition,line,
     *wg = w; //Radial
     *ug = u; //Colat
     temp1 = (v+OMEGAFRAME)*(v+OMEGAFRAME)*zg*zg*cos(.5*(x+xg))/sin(.5*(x+xg));
-    temp2 = (GetGamma()-1.0)*e/rho;
+    temp2 = (gamma-1.0)*e/rho;
     *rhog = exp(log(rho)+(xg-x)*temp1/temp2);
     *eg = *rhog*e/rho;
     break;
@@ -141,8 +141,8 @@ case 98: //Colatitude 3D, for high altitude regions, ISOTHERMAL, probably not co
     *rhog = rho*pow(xg,-SIGMASLOPE);//keplerian_boundary(11,_density_,rho,x,xg,yg,zg);
     *eg = ASPECTRATIO*ASPECTRATIO*pow(xg,-1.+2.*FLARINGINDEX);//keplerian_boundary(11,_energy_,e,x,xg,yg,zg);
     if (!Isothermal) {
-      entropy = e/pow(rho,GetGamma());
-      *eg = entropy*pow(*rhog,GetGamma());
+      entropy = e/pow(rho,gamma);
+      *eg = entropy*pow(*rhog,gamma);
     }
     *ug = 0.0;//keplerian_boundary(11,_vrad_,u,x,xg,yg,zg);
     *vg = (v+x*OMEGAFRAME)*pow(x/xg,0.5)-xg*OMEGAFRAME; // Beware : v is LINEAR, not ANGULAR !
@@ -191,7 +191,7 @@ void TrueBC_fp (fluid) // this function gets called twice for each DT
   cpug = fluid->desc;
   dens = fluid->Density->Field;
   energy = fluid->Energy->Field;
-  // gamma = fluid->Gamma->Field; // gamma has no adress yet (04.04.22)
+  
 
   vtg1 = &foo1;
   vtg2 = &foo2;
@@ -203,51 +203,60 @@ void TrueBC_fp (fluid) // this function gets called twice for each DT
   for (dim = 0; dim < NDIM; dim++) {
     for (side = INF; side <= SUP; side++) {
       if ((bc = cpug->iface[dim][side]) > 0) {	/* True boundary conditions */
-	Sym = boundary (vt1,vt2,vp,vt1,vt2,&foo1,&foo2,&foo1,&foo2, \
-			&foo3,1.0,1.0,1.0,1.0,bc,cpug->Parent->linenumber, FALSE);
-	/* The above line is just meant to know the symmetry
-	   properties of the boundary condition */
-	dim1 = (dim == 0);
-	dim2 = 2-(dim == 2);
-	offside = (side == INF ? 0 : gncell[dim]-Nghost[dim]);
-	for (i_gh = offside; i_gh < offside+Nghost[dim]; i_gh++) {
-	  i_in = (2*Nghost[dim]-1)-i_gh;
-	  if (side == SUP) i_in += 2*(gncell[dim]-2*Nghost[dim]);
-	  if (!Sym)
-	    i_in = (side == INF ? Nghost[dim] : gncell[dim]-Nghost[dim]-1);
-	  for (j = 0; j < gncell[dim1]; j++) {
-	    for (k = 0; k < gncell[dim2]; k++) {
-	      m_in = i_in*stride[dim]+j*stride[dim1]+k*stride[dim2];
-	      m_gh = i_gh*stride[dim]+j*stride[dim1]+k*stride[dim2];
-	      vp = vel[dim][m_in];
-	      vpg=&vel[dim][m_gh];
-	      x = center[dim][m_in];
-	      xg= center[dim][m_gh];
-	      yg= center[dim1][m_gh];
-	      zg= center[dim2][m_gh];
-	      if (NDIM > 1) {
-		vt1 = vel[dim1][m_in];
-		vtg1=&vel[dim1][m_gh];
+	      Sym = boundary (vt1,vt2,GAMMA,vp,vt1,vt2,&foo1,&foo2,&foo1,&foo2, \
+			  &foo3,1.0,1.0,1.0,1.0,bc,cpug->Parent->linenumber, FALSE);
+	      /* The above line is just meant to know the symmetry
+	      properties of the boundary condition */
+	      dim1 = (dim == 0);
+	      dim2 = 2-(dim == 2);
+	      offside = (side == INF ? 0 : gncell[dim]-Nghost[dim]);
+	      for (i_gh = offside; i_gh < offside+Nghost[dim]; i_gh++) {
+	        i_in = (2*Nghost[dim]-1)-i_gh;
+	        if (side == SUP) i_in += 2*(gncell[dim]-2*Nghost[dim]);
+	        if (!Sym)
+	          i_in = (side == INF ? Nghost[dim] : gncell[dim]-Nghost[dim]-1);
+	        for (j = 0; j < gncell[dim1]; j++) {
+	          for (k = 0; k < gncell[dim2]; k++) {
+	            m_in = i_in*stride[dim]+j*stride[dim1]+k*stride[dim2];
+	            m_gh = i_gh*stride[dim]+j*stride[dim1]+k*stride[dim2];
+	            vp = vel[dim][m_in];
+	            vpg=&vel[dim][m_gh];
+	            x = center[dim][m_in];
+	            xg= center[dim][m_gh];
+	            yg= center[dim1][m_gh];
+	            zg= center[dim2][m_gh];
+	            if (NDIM > 1) {
+		            vt1 = vel[dim1][m_in];
+		            vtg1=&vel[dim1][m_gh];
+	            }
+	            if (NDIM > 2) {
+		            vt2 = vel[dim2][m_in];
+		            vtg2=&vel[dim2][m_gh];
+	            }
+              // Fabian added stuff here
+              //if (!Isothermal)
+              if ((bc==30) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
+                bc = 19;
+              }
+              if ((bc==99) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
+                bc = 19;
+              }
+              // til here
+
+              if(!Isothermal && Stellar && !CONST_GAMMA){
+                gamma = fluid->Gamma->Field;
+                boundary (dens[m_in],energy[m_in],gamma[m_in],vp,vt1,vt2,&dens[m_gh],\
+			          &energy[m_gh],vpg,vtg1,vtg2,x,xg,yg,zg, \
+			          bc,cpug->Parent->linenumber, FALSE);
+              }
+              else{
+                boundary (dens[m_in],energy[m_in],GAMMA,vp,vt1,vt2,&dens[m_gh],\
+			          &energy[m_gh],vpg,vtg1,vtg2,x,xg,yg,zg, \
+			          bc,cpug->Parent->linenumber, FALSE);
+              }
+            }
+	        }
 	      }
-	      if (NDIM > 2) {
-		vt2 = vel[dim2][m_in];
-		vtg2=&vel[dim2][m_gh];
-	      }
-        // Fabian added stuff here
-        //if (!Isothermal)
-        if ((bc==30) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
-          bc = 19;
-        }
-        if ((bc==99) && (strncasecmp(fluid->Name, "dust", 4) == 0)){
-          bc = 19;
-        }
-        // til here
-	      boundary (dens[m_in],energy[m_in],vp,vt1,vt2,&dens[m_gh],\
-			&energy[m_gh],vpg,vtg1,vtg2,x,xg,yg,zg, \
-			bc,cpug->Parent->linenumber, FALSE);
-	    }
-	  }
-	}
       }
     }
   }

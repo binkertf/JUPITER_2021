@@ -99,4 +99,5 @@ void InitVariables ()
   var("SMRATIO", &SMRATIO, REAL, NO, "2.0");
   var("R0", &R0, REAL, NO, "77792000000000.0");
   var("XMSTAR", &XMSTAR, REAL, NO, "1.0");
+  var("CONST_GAMMA", &CONST_GAMMA, BOOL, NO, "YES");
 }

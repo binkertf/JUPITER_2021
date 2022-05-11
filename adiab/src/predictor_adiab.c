@@ -5,7 +5,7 @@ void Predictor_adiab (dt)
 {
   long i, j, k, l, m, n, p, Size;
   FluidWork *fw;
-  real *rho, *rhop, *e, *ep, var, temperature;
+  real *rho, *rhop, *e, *ep, *gamma, var, temperature;
   real *v[3], *vp[3], *source_v[3], *source_div;
   real *slope_rho[3], *slope_v[3][3], *slope_e[3];
   long gncell[3], stride[3], ngh[3];
@@ -18,6 +18,7 @@ void Predictor_adiab (dt)
   Size = gncell[0]*gncell[1]*gncell[2];
   rho = fw->Density;
   rhop = fw->Density_Pred;
+  gamma = fw->Gamma;
   e = fw->Energy;
   ep = fw->Energy_Pred;
   source_div = fw->SourceDiv;
@@ -90,9 +91,15 @@ void Predictor_adiab (dt)
 	    vel *= metric[n][0][ind[ip1]]*metric[n][1][ind[ip2]]; // converted to linear
 	    slope_vel = slope_v[n][n][m]; //linear (v)-linear (dx)
 	    var -= vel        * slope_e[n][m];
-	    var -= GetGamma()*e[m] * slope_vel;
+		if(!Isothermal && Stellar && !CONST_GAMMA)
+	    	var -= gamma[m]*e[m] * slope_vel;
+		else
+			var -= GAMMA*e[m] * slope_vel;
 	  }
-	  var -= GetGamma()*source_div[m]*e[m];  //Source sign OK: evaluated as LHS.
+	  if(!Isothermal && Stellar && !CONST_GAMMA)
+	  	var -= gamma[m]*source_div[m]*e[m];  //Source sign OK: evaluated as LHS.
+	  else
+	  	var -= GAMMA*source_div[m]*e[m];  //Source sign OK: evaluated as LHS.
 	  ep[m] = e[m] + .5*dt*var;
 
 #ifdef TEMPFLOOR

@@ -45,7 +45,7 @@ void AdjustBeamBoundaries (beam)
     x    = beam->rawcoord[NGH];
     myBC = beam->true_bc[INF];
     myBC = 1;
-    boundary (rhoi,ei,ui,vi,wi,rhog,eg,\
+    boundary (rhoi,ei,GetGamma(),ui,vi,wi,rhog,eg,\
 	      ug,vg,wg,x,xg,yg,zg,myBC,-1,TRUE);
      if (Isothermal || (strncasecmp(CurrentFluidPatch->Fluid->Name, "dust", 4) == 0))
       *eg = sqrt(*eg);
@@ -82,7 +82,7 @@ void AdjustBeamBoundaries (beam)
     zg   = beam->rawcoord2;
 
     myBC = beam->true_bc[SUP];
-    boundary (rhoi,ei,ui,vi,wi,rhog,eg,\
+    boundary (rhoi,ei,GetGamma(),ui,vi,wi,rhog,eg,\
 	      ug,vg,wg,x,xg,yg,zg,myBC,-1,TRUE);
     if (Isothermal || (strncasecmp(CurrentFluidPatch->Fluid->Name, "dust", 4) == 0)) *eg = sqrt(*eg);
   }

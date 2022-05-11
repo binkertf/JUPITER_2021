@@ -24,7 +24,7 @@ real CourantLimit (fp)
   long i_mon_crit[] = {0, 0, 0};
   long i_mon_visc[] = {0, 0, 0};
   boolean ViscosityLimited = NO;
-  real *vel[3], *cs2, cs, *rho, *temp, *gamma, dt_min=1e20, dt, sum;
+  real *vel[3], *cs2, cs, *rho, *gamma,  dt_min=1e20, dt, sum;
   real dt_visc_min = 1e20, dt_visc = 1e20;
   real *edges[3], radius=0.0;
   real dx, u;
@@ -35,8 +35,6 @@ real CourantLimit (fp)
   }
   cs2 = fp->Energy->Field;
   rho = fp->Density->Field;
-  temp = fp->Temperature->Field;
-  //gamma = fp->Gamma->Field;
   for (i[2] = Nghost[2]; i[2] < gncell[2]-Nghost[2]; i[2]++) {
     /* We do not scan the ghosts */
     for (i[1] = Nghost[1]; i[1] < gncell[1]-Nghost[1]; i[1]++) {
@@ -71,8 +69,14 @@ real CourantLimit (fp)
 	  	if (Isothermal || (strncasecmp(fp->Name, "dust", 4) == 0))
 	    	cs = sqrt(cs2[m]); //isothermal sound speed
 	  	else{
-			// Gamma = Gamma1(double temp, double rho) -> temp[m], rho[m] are both of type real 
-			cs = sqrt(cs2[m]/rho[m]*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
+			if(!Isothermal && Stellar && !CONST_GAMMA){
+				gamma = fp->Gamma->Field;
+				cs = sqrt(cs2[m]/rho[m]*gamma[m]*(gamma[m]-1.0));
+			}
+			else{
+				cs = sqrt(cs2[m]/rho[m]*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
+			}
+
 	  	}
 	  dxmon[dim] = dx;
 	  uxmon[dim] = u;
@@ -148,7 +152,7 @@ real StoppingTimeLimit (fp)
 {
   long i[3], gncell[3], dim, m, b, stride[3];
   boolean ViscosityLimited = NO;
-  real *vel[3], *cs2, cs, *rho, tau_s_min=1e20, dt, sum, tau_s, dustsz, dustsolidrho, omegakep;
+  real *vel[3], *cs2, cs, *rho, *gamma, tau_s_min=1e20, dt, sum, tau_s, dustsz, dustsolidrho, omegakep;
   real *edges[3], radius=0.0;
   getgridsize (fp->desc, gncell, stride);
 
@@ -195,10 +199,29 @@ real StoppingTimeLimit (fp)
 					}
 
 				}
-			}else{//radiative
-				// Gamma = Gamma1(double temp, double rho) -> temp[m], rho[m] are both of type real
-	    		cs = sqrt(cs2[m]/rho[m]*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
-				tau_s = sqrt(GetGamma() * M_PI / 8.0) * dustsz * dustsolidrho / (cs * rho[m]);
+			}
+			else{//radiative
+
+				/*if(Stellar && CONST_GAMMA){
+					cs = sqrt(cs2[m]/rho[m]*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
+					tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / (cs * rho[m]);
+				}
+				else{
+					gamma = fp->Gamma->Field;
+					cs = sqrt(cs2[m]/rho[m]*gamma[m]*(gamma[m]-1.0)); //adiabatic sound speed
+					tau_s = sqrt(gamma[m] * M_PI / 8.0) * dustsz * dustsolidrho / (cs * rho[m]);
+				}
+				*/
+				if(Stellar && (CONST_GAMMA==FALSE)){
+					gamma = fp->Gamma->Field;
+					cs = sqrt(cs2[m]/rho[m]*gamma[m]*(gamma[m]-1.0)); //adiabatic sound speed
+					tau_s = sqrt(gamma[m] * M_PI / 8.0) * dustsz * dustsolidrho / (cs * rho[m]);
+				}
+				else{
+					cs = sqrt(cs2[m]/rho[m]*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
+					tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / (cs * rho[m]);
+				}
+
 			}
 	  	if (tau_s < tau_s_min){
 		  tau_s_min = tau_s;

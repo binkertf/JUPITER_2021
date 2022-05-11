@@ -10,7 +10,7 @@ real dt;
 {
   FluidWork *fw;
   real *center[3];
-  real *vel[3], *dens, *ene, ramp=0.0, lambda, R_in, R_out;
+  real *vel[3], *dens, *ene, *gamma, ramp=0.0, lambda, R_in, R_out;
   real Tau=0.0, rho0, ene0, vrad0, vtheta0, Rmin, Rmax;
   real margin, Colmin, Colmax, damp_zone_min, damp_zone_max;
   long i, j, k, m, gncell[3], stride[3], dim;
@@ -87,10 +87,18 @@ real dt;
 
 	  lambda = 30.0*ramp*ramp/Tau*dt;
 
-	  entropy = ene[m]/pow(dens[m],GetGamma());
-	  entropy0= ene0/pow(rho0,GetGamma());
+    if(Stellar && CONST_GAMMA == FALSE){
+      gamma = fw->Gamma;
+      entropy = ene[m]/pow(dens[m],gamma[m]);
+	    entropy0= ene0/pow(rho0,gamma[m]);
+    }
+    else{
+	    entropy = ene[m]/pow(dens[m],GAMMA);
+	    entropy0= ene0/pow(rho0,GAMMA);
+    }
 	  entropy = (entropy+lambda*entropy0)/(1.+lambda);
 	  dens[m] = (dens[m]+lambda*rho0)/(1.+lambda);
+    
 	  if (!Isothermal){
 	    //ene[m] = entropy*pow(dens[m],GetGamma());
 	    ene[m] = (ene[m]+lambda*ene0)/(1.+lambda);

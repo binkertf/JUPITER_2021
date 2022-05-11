@@ -5,7 +5,7 @@ void FillSources_Predict ()
   long i, j, k, l, m, mp[3], mm[3], smp, smm, Size;
   FluidWork *fw;
   tGrid_CPU *d;
-  real *inter[3], *center[3], *invvol, *rho, *pot, *v[3], *e;
+  real *inter[3], *center[3], *invvol, *rho, *gamma, *pot, *v[3], *e;
   real *sv[3], *met[3][2];
   real metric_coef=1.0;
   real sinvdx, vphi, vtheta, vrad, rad, cot, sine, *invm[3][2];
@@ -19,6 +19,7 @@ void FillSources_Predict ()
   getgridsize (d, gncell, stride);
   Size = gncell[0]*gncell[1]*gncell[2];
   rho = fw->Density;
+  gamma = fw->Gamma;
   e   = fw->Energy;
   pot = fw->Potential;
   invvol = d->InvVolume;
@@ -55,7 +56,10 @@ void FillSources_Predict ()
 	  			/* Pressure gradient below */
 				  if (mMUSCL) {
 	    			if (!Isothermal){
-	    				sv[l][m] = -se[l][m]*(GetGamma()-1.0)/rho[m];
+						if(CONST_GAMMA == TRUE)
+	    					sv[l][m] = -se[l][m]*(GAMMA-1.0)/rho[m];
+						else
+							sv[l][m] = -se[l][m]*(gamma[m]-1.0)/rho[m];
 					}else{
 						sv[l][m] = (e[smm]*rho[smm]-e[smp]*rho[smp])*sinvdx/rho[m];
 					}
