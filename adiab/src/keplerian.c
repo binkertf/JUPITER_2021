@@ -30,11 +30,11 @@ inline real keplerian_init(component, radius, colatitude, sigma0, a, h, f)
       init = sigma0*pow(radius,-a);
     else if (NDIM ==3) {
       init = sigma0/sqrt(2.0*M_PI)/h	\
-	*pow(radius,-xi) * pow(isc, w);
+	    *pow(radius,-xi) * pow(isc, w);
       if (fabs(f) < 1e-10)
-	init *= pow(isc , -hm2); // flat case
+	      init *= pow(isc , -hm2); // flat case
       else
-	init *= exp(hm2 * (1. - isc2f)/2./f);// flaring case
+	      init *= exp(hm2 * (1. - isc2f)/2./f);// flaring case
     }
     break;
   case _vazimuth_:		// Same in 2 and 3D
@@ -44,8 +44,9 @@ inline real keplerian_init(component, radius, colatitude, sigma0, a, h, f)
     if (NDIM == 2){ // Check different cases (iso. no iso)
       if (Isothermal){
         init = DISKSPEEDFACTOR*pow(radius, -1.5);
-      }else{
-        init = DISKSPEEDFACTOR*pow(radius, -1.5)*sqrt(1.-2.*b*(GetGamma()-1.0)/GetGamma()*h2);
+      }
+      else{
+        init = DISKSPEEDFACTOR*pow(radius, -1.5)*sqrt(1.-2.*b*(GAMMA-1.0)/GAMMA*h2);
       }
       init *= sqrt(isc2f - h2*w);
       init *= isc;
@@ -55,17 +56,18 @@ inline real keplerian_init(component, radius, colatitude, sigma0, a, h, f)
     init = h*h*pow(radius, -2.*b);
     if (!Isothermal) {
       if (NDIM == 3) {
-	// e is not defined the same way in adiabatic.
-	// But we want P to be the same in IsoT and adiabatic:
-	rho = sigma0/sqrt(2.0*M_PI)/h		\
-	  *pow(radius,-xi) * pow(isc, w);
-	if (fabs(f) < 1e-10) // flat case
-	  rho *= pow(isc , -hm2);
-	else		   // flaring case
-	  rho *= exp(hm2 * (1. - isc2f)/2./f);
-	init *= rho/(GetGamma()-1.);
-      } else {
-	init *= sigma0*pow(radius,-a)/(GetGamma()-1.0);
+	    // e is not defined the same way in adiabatic.
+	    // But we want P to be the same in IsoT and adiabatic:
+	      rho = sigma0/sqrt(2.0*M_PI)/h		\
+	      *pow(radius,-xi) * pow(isc, w);
+	      if (fabs(f) < 1e-10) // flat case
+	        rho *= pow(isc , -hm2);
+	      else		   // flaring case
+	        rho *= exp(hm2 * (1. - isc2f)/2./f);
+        init *= rho/(GAMMA-1.);
+      }
+      else {
+	      init *= sigma0*pow(radius,-a)/(GAMMA-1.0);
       }
     }
     break;
