@@ -38,3 +38,4 @@ char     *Array1D (int, size_t);
 #define ORTHO_PARA_MODE 1
 
 double Gamma1(double temperature, double pressure);
+

@@ -389,3 +389,4 @@ double Gamma1(double temperature, double density)
 
     return gmm1;
 }
+

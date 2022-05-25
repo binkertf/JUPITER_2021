@@ -355,5 +355,5 @@ void TestGammaFluidPatch();
 void TestGammaValue();
 void WriteToFile();
 double Gamma1(double temperature, double density);
-real secant_method(real e, real rho, real rel_err);
+
 
