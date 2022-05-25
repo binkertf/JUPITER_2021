@@ -88,7 +88,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
      tGrid_CPU *item;
      real dt;
 {
-  real ***v, **d, **cs;
+  real ***v, **d, **cs, **gamma;
   long gncell[3], stride[3], m, i, j, k, l;
   real e, d1, d2, cs2, acs, acs2, acs2_2, v1, v2, idenom, dustsz, dustsolidrho, stokes, mfp, diff_f, delta, tau_s, omega_coll, lamba_mfp;
   FluidPatch *fluid;
@@ -110,12 +110,16 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
   v = (real ***)prs_malloc (sizeof(real *) * NbFluids);
   d = (real **)prs_malloc (sizeof(real **) * NbFluids);
   cs = (real **)prs_malloc (sizeof(real **) * NbFluids);
+  if(Stellar && !CONST_GAMMA)
+    gamma = (real **)prs_malloc (sizeof(real **) * NbFluids);
   fluid = item->Fluid;
   i = 0;
   while (fluid != NULL) {
     d[i] = fluid->Density->Field;
     v[i] = fluid->Velocity->Field;
     cs[i]= fluid->Energy->Field;
+    if(Stellar && !CONST_GAMMA)
+      gamma[i] = fluid->Gamma->Field;
     fluid = fluid->next;
     i++;
   }
@@ -245,7 +249,7 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
      tGrid_CPU *item;
      real dt;
 {
-  real ***v, **d, **cs;
+  real ***v, **d, **cs, **gamma;
   long gncell[3], stride[3], m, i, j, k, l;
   real e, d1, d2, cs2, acs, acs2, acs2_min, acs2_2, v1, v2, idenom, dustsz, dustsolidrho, stokes, mfp, diff_f, delta, tau_s;
   FluidPatch *fluid;
@@ -262,12 +266,16 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
   v = (real ***)prs_malloc (sizeof(real *) * NbFluids);
   d = (real **)prs_malloc (sizeof(real **) * NbFluids);
   cs = (real **)prs_malloc (sizeof(real **) * NbFluids);
+  if(!Isothermal && Stellar && !CONST_GAMMA)
+    gamma = (real **)prs_malloc (sizeof(real **) * NbFluids);
   fluid = item->Fluid;
   i = 0;
   while (fluid != NULL) {
     d[i] = fluid->Density->Field;
     v[i] = fluid->Velocity->Field;
     cs[i]= fluid->Energy->Field;
+    if(!Isothermal && Stellar && !CONST_GAMMA)
+      gamma[i]= fluid->Gamma->Field;
     fluid = fluid->next;
     i++;
   }
@@ -320,15 +328,22 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
             }
           }
         }else{//radiative
-          acs2 = cs2/d2*(GetGamma()-1.0); //adiabatic sound speed squared
+          if(!Isothermal && Stellar && !CONST_GAMMA)
+            acs2 = cs2/d2*(gamma[0][m]-1.0); //adiabatic sound speed squared
+          else
+            acs2 = cs2/d2*(GAMMA-1.0); //adiabatic sound speed squared
           if(constSt==TRUE){
             prs_error ("ERROR: Constant Stokes number not implemented in radiative setup. Use constant particle size instead. \n");
-          }else{ //constant particle size
-            tau_s = sqrt(GetGamma() * M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(acs2) * d2);
+          }
+          else{ //constant particle size
+            if(!Isothermal && Stellar && !CONST_GAMMA)
+              tau_s = sqrt(gamma[0][m] * M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(acs2) * d2);
+            else
+              tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(acs2) * d2);
             cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/(acs2));
           }
         }
-      }
+      } 
     }
   }
 }
