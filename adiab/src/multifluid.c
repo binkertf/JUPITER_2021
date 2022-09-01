@@ -110,7 +110,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
   v = (real ***)prs_malloc (sizeof(real *) * NbFluids);
   d = (real **)prs_malloc (sizeof(real **) * NbFluids);
   cs = (real **)prs_malloc (sizeof(real **) * NbFluids);
-  if(Stellar && !CONST_GAMMA)
+  if(!Isothermal && Stellar && !CONST_GAMMA)
     gamma = (real **)prs_malloc (sizeof(real **) * NbFluids);
   fluid = item->Fluid;
   i = 0;
@@ -118,7 +118,7 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
     d[i] = fluid->Density->Field;
     v[i] = fluid->Velocity->Field;
     cs[i]= fluid->Energy->Field;
-    if(Stellar && !CONST_GAMMA)
+    if(!Isothermal && Stellar && !CONST_GAMMA)
       gamma[i] = fluid->Gamma->Field;
     fluid = fluid->next;
     i++;
@@ -189,9 +189,15 @@ void FluidCoupling (item, dt)	/* A simple implicit function for 2-fluid situatio
             prs_error ("ERROR: Constant Stokes number not implemented in radiative setup. Use constant particle size instead -> CONSTSTOKES FALSE \n");
           }else{ //constant dust particle size
             omegakep = 1.0*sin(colat)/(sqrt(radius)*sqrt(radius)*sqrt(radius));
-            acs = sqrt(cs2/d2*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
+            if(!Isothermal && Stellar && !CONST_GAMMA){
+              acs = sqrt(cs2/d2*gamma[1][m]*(gamma[1][m]-1.0)); //adiabatic sound speed
+              tau_s = sqrt(gamma[1][m] * M_PI / 8.0) * dustsz * dustsolidrho / acs / d2;
+            }
+            else{
+              acs = sqrt(cs2/d2*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
+              tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / acs / d2;
+            }
             C=1.334*acs/(dustsz*dustsolidrho);
-            tau_s = sqrt(GetGamma() * M_PI / 8.0) * dustsz * dustsolidrho / acs / d2;
             C=C*(1.0+pow((DUSTDENSFLOOR*100/d1),5)); //smooth coupling limiter
           }
         }
@@ -253,7 +259,6 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
   long gncell[3], stride[3], m, i, j, k, l;
   real e, d1, d2, cs2, acs, acs2, acs2_min, acs2_2, v1, v2, idenom, dustsz, dustsolidrho, stokes, mfp, diff_f, delta, tau_s;
   FluidPatch *fluid;
-
   real *_radius, *_colat, *_azimuth;
   real radius, colat, azimuth, omegakep, C;
 
@@ -328,8 +333,9 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
             }
           }
         }else{//radiative
-          if(!Isothermal && Stellar && !CONST_GAMMA)
-            acs2 = cs2/d2*(gamma[0][m]-1.0); //adiabatic sound speed squared
+          if(!Isothermal && Stellar && !CONST_GAMMA){
+            acs2 = cs2/d2*(gamma[1][m]-1.0); //adiabatic sound speed squared (gas)
+          }
           else
             acs2 = cs2/d2*(GAMMA-1.0); //adiabatic sound speed squared
           if(constSt==TRUE){
@@ -337,7 +343,7 @@ void MultifluidDiffusionPressure (item, dt)	/* Turbulent diffusion pressure in d
           }
           else{ //constant particle size
             if(!Isothermal && Stellar && !CONST_GAMMA)
-              tau_s = sqrt(gamma[0][m] * M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(acs2) * d2);
+              tau_s = sqrt(gamma[1][m] * M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(acs2) * d2);
             else
               tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / (sqrt(acs2) * d2);
             cs[0][m] = VISCOSITY / (tau_s + VISCOSITY/(acs2));
