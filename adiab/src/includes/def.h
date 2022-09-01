@@ -118,6 +118,8 @@
 #define DEG_z1     2  /* helium single ionization degree */
 #define DEG_z2     3  /* helium double ionization degree */
 #define HELIUM_IONIZATION   NO
+#define H_DISSOCIATION NO
+#define H_IONIZATION NO
 #define TESTING_GAMMA NO
 
 /*! Define the conversion constant between dimensionless

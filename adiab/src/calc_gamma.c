@@ -70,31 +70,40 @@ void GetSahaHFracs(double T, double rho, double *fdeg)
     double hbar = CONST_h/(2.0*PI);
 
     rho *= RHO0;
+    fdeg[DEG_y] = 0.0; // corresponds to no dissocitation
+    fdeg[DEG_x] = 0.0; // corresponds to no ionization
 
+    
+#if H_DISSOCIATION == YES
+    /* molecular hydrogen dissociation degree */
     rhs1 = XMH/(2.0*H_MASS_FRAC*rho);
     rhs2 = XMH*kT/(4.0*PI*hbar*hbar);
     rhs3 = exp(-4.48*CONST_eV/kT);
     b    = rhs1*rhs2*sqrt(rhs2)*rhs3;
-
     fdeg[DEG_y] = 2.0/(1.0 + sqrt(1.0 + 4.0/b)); /* solution of quadratic equation */
+#endif
 
+#if H_IONIZATION == YES
+    /* hydrogen ionization degree */
     rhs1 = XMH/(H_MASS_FRAC*rho);
     rhs2 = CONST_me*kT/(2.0*PI*hbar*hbar);
     rhs3 = exp(-13.60*CONST_eV/kT);
     b    = rhs1*rhs2*sqrt(rhs2)*rhs3;
-
     fdeg[DEG_x] = 2.0/(1.0 + sqrt(1.0 + 4.0/b)); /* solution of quadratic equation */
+#endif
 
 #if HELIUM_IONIZATION == YES
+    /* helium single ionization degree */
     rhs3  = 4.0*XMH /rho*rhs2*sqrt(rhs2)*exp(-24.59*CONST_eV/kT);
     b     = 4.0/He_MASS_FRAC*(H_MASS_FRAC + rhs3);
     c     = -rhs3*4.0/He_MASS_FRAC;
-    fdeg[DEG_z1] = -2.0*c/(b + sqrt(b*b - 4.0*c));
+    fdeg[DEG_z1] = -2.0*c/(b + sqrt(b*b - 4.0*c)); // limes is 1 for high temp.
 
+    /* helium double ionization degree */
     rhs3  = XMH /rho*rhs2*sqrt(rhs2)*exp(-54.42*CONST_eV/kT);
     b     = 4.0/He_MASS_FRAC*(H_MASS_FRAC + 0.25*He_MASS_FRAC + rhs3);
     c     = -rhs3*4.0/He_MASS_FRAC;
-    fdeg[DEG_z2] = -2.0*c/(b + sqrt(b*b - 4.0*c));
+    fdeg[DEG_z2] = -2.0*c/(b + sqrt(b*b - 4.0*c)); // limes is 1 for high temp.
 #endif
 }
 /* ********************************************************************* */
@@ -224,7 +233,6 @@ void GetFuncDum(double T, double *funcdum_val)
     } else{
         dy   = lnT[1] - lnT[0];
         indx = floor((y - lnT[0])/dy);
-
         if (indx >= nsteps || indx < 0){
             printf("! GetFuncDum: indx out of range, indx = %d\n",indx);
             printf("! T = %12.6e\n",T);
@@ -250,6 +258,7 @@ void GetMu(double T, double rho, double *mu)
     double f[4]={};
 
     GetSahaHFracs(T, rho, f);
+    
     #if HELIUM_IONIZATION == YES
         *mu = 4.0/(  2.*H_MASS_FRAC*(1.0 + f[DEG_y] + 2.0*f[DEG_x]*f[DEG_y])
                  + He_MASS_FRAC*(1.0 + f[DEG_z1]*(1.0 + f[DEG_z2])));
@@ -277,16 +286,8 @@ double InternalEnergyFunc(double T, double rho)
     double f[4]={};
 
     GetSahaHFracs(T, rho, f);
-
-    /* func_zetaR = 1.5;   to recover ideal EoS  */
-    if(T<10){
-        func_zetaR = 1.5;
-    }
-    /* case of changing gamma */
-    else {
-        GetFuncDum(T, &func_zetaR);
-    }
-
+   
+    GetFuncDum(T, &func_zetaR); // func_zetaR = 1.5 for temperatures below ~50K
 
 /* -- Estimate contributions to Egas -- */
     eH   = 1.5*H_MASS_FRAC*(1.0 + f[DEG_x])*f[DEG_y];
@@ -348,11 +349,12 @@ double Gamma1(double temperature, double density)
         }
     }
 
-    T = temperature; /* temperature*/
-    rho = density/RHO0; /* density, needs to be normalized */
 
+    T = temperature; /* temperature in KELVIN*/
+    rho = density/RHO0; /* density in code units */
+    
     GetMu(T, rho, &mu);
-    pressure = (T*rho)/(KELVIN*mu);
+    pressure = (T*rho)/(KELVIN * mu);
 
 /* ---------------------------------------------------
     Compute cV (Specific heat capacity for constant
@@ -386,7 +388,6 @@ double Gamma1(double temperature, double density)
     Compute first adiabatic index
    -------------------------------------------- */
     gmm1   = pressure/(cv*T*rho)*chiT*chiT  + chirho;
-
     return gmm1;
 }
 

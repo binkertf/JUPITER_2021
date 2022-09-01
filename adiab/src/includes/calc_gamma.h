@@ -17,17 +17,17 @@
 #define DEG_z1     2  /* helium single ionization degree */
 #define DEG_z2     3  /* helium double ionization degree */
 
-#define HELIUM_IONIZATION   YES
-#define RECALCULATE_GAMMA NO
+#define HELIUM_IONIZATION   NO
+#define H_DISSOCIATION NO
+#define H_IONIZATION NO
 
-/* Vibrational and Rotational Temperatures for molecular hydrogen  */
-#define THETA_V  6140.0
-#define THETA_R    85.5
+/* Vibrational and Rotational Temperatures for molecular hydrogen in Kelvin  */
+#define THETA_V  6140.0 /* 0.529104 eV */
+#define THETA_R    85.5 /* 0.0073678 eV */
 
 #define T_CUT_RHOE  10.0
 
-#define NONZERO_INITIALIZE YES /* Fill arrays to nonsense values to catch
-                                  uninitialized values later in the code */
+#define NONZERO_INITIALIZE YES /* Fill arrays to nonsense values to catch uninitialized values later in the code */
 char     *Array1D (int, size_t);
 #define ARRAY_1D(nx,type)          (type    *)Array1D(nx,sizeof(type))
 
@@ -35,7 +35,8 @@ char     *Array1D (int, size_t);
  * 0 : Only Para hydrogen ,
  * 1 : Equilibrium (DEFAULT),
  * 2 : Ortho to para ratio of 3:1.                                 */
-#define ORTHO_PARA_MODE 1
+#define ORTHO_PARA_MODE 2
+
 
 double Gamma1(double temperature, double pressure);
 
