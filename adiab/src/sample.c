@@ -124,9 +124,9 @@ void Compute_Fluxes_Adi (beam, dt)
      real dt;
 {
   long i,dim,ip[2],k;
-  real rhoL, rhoR, aL, aR, uL, uR, pL, pR, vpL[2], vpR[2];
-  real us, ps, S_shock, rhoS, aS;
-  real rho_i, u_i, p_i, a_i, vp_i[2]; 	// _i like 'interface'
+  real rhoL, rhoR, eL, eR, aL, aR, uL, uR, pL, pR, vpL[2], vpR[2], gammaL, gammaR;
+  real us, ps, S_shock, rhoS, aS, gammaS;
+  real rho_i, u_i, p_i, a_i, vp_i[2], gamma_i; 	// _i like 'interface'
   real ekp; // perpendicular kinetic energy (over rho)
   real mass_flux, pu_flux, ene_flux;
   real surfdt, SLStar, SRStar;
@@ -160,15 +160,30 @@ void Compute_Fluxes_Adi (beam, dt)
     }
     rhoL = beam->rhoL[i];
     rhoR = beam->rhoR[i];
-    pL = beam->eL[i]*(GetGamma()-1); // pressure
-    pR = beam->eR[i]*(GetGamma()-1); // pressure
-    aR = sqrt(GetGamma()*pR/rhoR); // sound speed
-    aL = sqrt(GetGamma()*pL/rhoL); // sound speed
+    eL = beam->eL[i];
+    eR = beam->eR[i];
+
+    if(!Isothermal && Stellar && !CONST_GAMMA){
+      pL = secant_method(eL, rhoL, 0.00001); // pressure
+      pR = secant_method(eR, rhoR, 0.00001); // pressure
+      gammaL = Gamma1(pL * MU / rhoL * TEMP0, rhoL);
+      gammaR = Gamma1(pR * MU / rhoR * TEMP0, rhoR);
+    }
+    
+    else{
+      gammaL = GAMMA;
+      gammaR = GAMMA;
+      pL = beam->eL[i]*(gammaL-1.); // pressure
+      pR = beam->eR[i]*(gammaR-1.); // pressure
+    }    
+    
+    aR = sqrt(gammaL*pR/rhoR); // sound speed
+    aL = sqrt(gammaR*pL/rhoL); // sound speed
     // Call the Riemann solver
-    VacuumCreated =   GetStar_AdiabaticSolver (rhoL, rhoR, uL, uR, aL, aR, &us, &ps);
+    VacuumCreated =   GetStar_AdiabaticSolver (rhoL, rhoR, uL, uR, aL, aR, &us, &ps, gammaL, gammaR);
     if (VacuumCreated) {
-      SRStar = uR - aR * 2.0/(GetGamma()-1.0); 
-      SLStar = uL + aL * 2.0/(GetGamma()-1.0);
+      SRStar = uR - aR * 2.0/(gammaR-1.0); 
+      SLStar = uL + aL * 2.0/(gammaL-1.0);
       // Since vacuum is created, we know that SRStar > SLStar. Vacuum
       // resides in between these two characteristics. On each side,
       // we have rarefaction waves.  See Toro, p.142, fig. 4.17 and
@@ -176,156 +191,187 @@ void Compute_Fluxes_Adi (beam, dt)
       // this case.
       if (SLStar > 0.0) { //We are in the left region or left fan:
 			  //vacuum is in right space
-	for (k = 0; k < NDIM-1; k++)
-	  vp_i[k] = vpL[k];
-	if (uL - aL > 0.0) { // Left state
-	  u_i = uL;
-	  rho_i = rhoL;
-	  a_i = aL;
-	} else {  // Left fan
-	  wratio = (GetGamma()-1.0)/(GetGamma()+1.0)*uL/aL;
-	  u_i = 2.0/(GetGamma()+1.0) * (aL + uL*(GetGamma()-1.)*0.5);
-	  rho_i = rhoL * pow(2.0/(GetGamma()+1.0)  + wratio, 2.0/(GetGamma()-1.0));
-	  p_i = pL * pow(2.0/(GetGamma()+1.0) + wratio, GetGamma()*2.0/(GetGamma()-1.0));
-	  a_i = sqrt(GetGamma()*p_i/rho_i);
-	}
+	      for (k = 0; k < NDIM-1; k++)
+	        vp_i[k] = vpL[k];
+	      if (uL - aL > 0.0) { // Left state
+	        u_i = uL;
+	        rho_i = rhoL;
+	        a_i = aL;
+          gamma_i = gammaL;
+	      }
+        else {  // Left fan
+	        wratio = (gammaL-1.0)/(gammaL+1.0)*uL/aL;
+	        u_i = 2.0/(gammaL+1.0) * (aL + uL*(gammaL-1.)*0.5);
+	        rho_i = rhoL * pow(2.0/(gammaL+1.0)  + wratio, 2.0/(gammaL-1.0));
+	        p_i = pL * pow(2.0/(gammaL+1.0) + wratio, gammaL*2.0/(gammaL-1.0));
+	        a_i = sqrt(gammaL*p_i/rho_i);
+          gamma_i = gammaL;
+	      }
       }
       if (SRStar < 0.0) { //We are in the right region or right fan:
 	                  //vacuum is in left space.  This condition
 	                  //is mutually exclusive of the previous one.
-	for (k = 0; k < NDIM-1; k++)
-	  vp_i[k] = vpR[k];
-	if (uR + aR < 0.0) { // Right state
-	  u_i = uR;
-	  rho_i = rhoR;
-	  a_i = aR;
-	} else { // Right fan
-	  wratio = (GetGamma()-1.0)/(GetGamma()+1.0)*uR/aR;
-	  u_i = 2.0/(GetGamma()+1.0) * (-aR + uR*(GetGamma()-1.)*0.5);
-	  rho_i = rhoR * pow(2.0/(GetGamma()+1.0) - wratio, 2.0/(GetGamma()-1.0));
-	  p_i = pR * pow(2.0/(GetGamma()+1.0) - wratio, GetGamma()*2.0/(GetGamma()-1.0));
-	  a_i = sqrt(GetGamma()*p_i/rho_i);
-	}
+	      for (k = 0; k < NDIM-1; k++)
+	        vp_i[k] = vpR[k];
+	      if (uR + aR < 0.0) { // Right state
+	        u_i = uR;
+	        rho_i = rhoR;
+	        a_i = aR;
+          gamma_i = gammaR;
+	      }
+        else { // Right fan
+	        wratio = (gammaR-1.0)/(gammaR+1.0)*uR/aR;
+	        u_i = 2.0/(gammaR+1.0) * (-aR + uR*(gammaR-1.)*0.5);
+	        rho_i = rhoR * pow(2.0/(gammaR+1.0) - wratio, 2.0/(gammaR-1.0));
+	        p_i = pR * pow(2.0/(gammaR+1.0) - wratio, gammaR*2.0/(gammaR-1.0));
+	        a_i = sqrt(gammaR*p_i/rho_i);
+          gamma_i = gammaR;
+	      }
       }
       if ((SLStar <= 0.0) && (SRStar >= 0.0)) {// Vacuum is on the interface.
-	for (k = 0; k < NDIM-1; k++)
-	  vp_i[k] = .5*(vpL[k]+vpR[k]); // This value does not matter: associated fluxes vanish
-	u_i = 0.0; // This is the linear interpolation of SLStar and
-		   // SRStar at the interface :)
-	rho_i = 0.0;
-	p_i = a_i = 0.0;
-      }
-    } else {
-      // Schematic code : I=Interface ; S=Shock ; D=contact Discontinuity ; F=Fan
-      if (0.0 < us) { //0.0, as we need the solution on the interface
-	// we are in the star or left region or fan
-	for (k = 0; k < NDIM-1; k++)
-	  vp_i[k] = vpL[k];
-	if (ps > pL) {            // There is a left shock
-	  S_shock = uL + (pL - ps)/((uL - us)*rhoL);
-	  wratio = ps/pL;
-	  rhoS = rhoL * (wratio + (GetGamma()-1.0)/(GetGamma()+1.0))  // rhoS(on shock side)
-	    /(wratio * (GetGamma()-1.0)/(GetGamma()+1.0) + 1.);
-	  aS = sqrt(GetGamma()*ps/rhoS);
-	  if (0.0 < S_shock) {    // We are at the left of the left shock: ISD
-	    u_i = uL;
-	    rho_i = rhoL;
-	    a_i = aL;
-	  } else {                // we are in the left star region: SID
-	    u_i = us;
-	    rho_i = rhoS;
-	    a_i = aS;
-	  }
-	} else {                    // There is a left rarefaction
-	  rhoS = rhoL * pow(ps/pL, 1.0/GetGamma()); // rhoS(on rarefaction side)
-	  aS = sqrt(GetGamma()*ps/rhoS);
-	  if (0.0 < uL-aL) {      // We are in the left region: IFD
-	    u_i = uL;
-	    rho_i = rhoL;
-	    a_i = aL;
-	  } else {
-	    if (0.0 > us-aS) {  // We are in the left star region FID
-	      u_i = us;
-	      rho_i = rhoS;
-	      a_i = aS;
-	    } else {            // We are in the fan: FIFD
-	      wratio = (GetGamma()-1.0)/(GetGamma()+1.0)*uL/aL;
-	      u_i = 2.0/(GetGamma()+1.0) * (aL + uL*(GetGamma()-1.)*0.5);
-	      rho_i = rhoL * pow(2.0/(GetGamma()+1.0) + wratio, 2.0/(GetGamma()-1.0));
-	      p_i = pL * pow(2.0/(GetGamma()+1.0) + wratio, GetGamma()*2.0/(GetGamma()-1.0));
-	      a_i = sqrt(GetGamma()*p_i/rho_i);
-	    }
-	  }
-	}
-      } else {                        // We are in the star or right region or fan
-	for (k = 0; k < NDIM-1; k++)
-	  vp_i[k] = vpR[k];
-	if (ps > pR) {            // There is a right shock
-	  S_shock = uR + (pR - ps)/(uR - us)/rhoR;
-	  wratio = ps/pR;
-	  rhoS = rhoR * (wratio + (GetGamma()-1.0)/(GetGamma()+1.0)) //rhoS (on shock side)
-	    /(wratio * (GetGamma()-1.0)/(GetGamma()+1.0) + 1.);
-	  aS = sqrt(GetGamma()*ps/rhoS);
-	  if (0.0 > S_shock) {    // we are at the right of the right shock: DSI
-	    u_i = uR;
-	    rho_i = rhoR;
-	    a_i = aR;
-	  } else {                // we are in the right star region: DIS
-	    u_i = us;
-	    rho_i = rhoS;
-	    a_i = aS;
-	  }
-	} else {                    // There is a right rarefaction
-	  rhoS = rhoR * pow(ps/pR,1.0/GetGamma()); //rhoS(on rarefaction side)
-	  aS = sqrt(GetGamma()*ps/rhoS);
-	  if (0.0 > uR+aR) {      // we are in the right part: DFI
-	    u_i = uR;
-	    rho_i = rhoR;
-	    a_i = aR;
-	  } else {
-	    if (0.0 < us+aS) {  // we are in the right star region: DIF
-	      u_i = us;
-	      rho_i = rhoS;
-	      a_i = aS;
-	    } else {            // we are in the fan: DFIF
-	      wratio = (GetGamma()-1.0)/(GetGamma()+1.0)*uR/aR;
-	      u_i = 2.0/(GetGamma()+1.0) * (-aR + uR*(GetGamma()-1.)*0.5);
-	      rho_i = rhoR * pow(2.0/(GetGamma()+1.0) - wratio, 2.0/(GetGamma()-1.0));
-	      p_i = pR * pow(2.0/(GetGamma()+1.0) - wratio, GetGamma()*2.0/(GetGamma()-1.0));
-	      a_i = sqrt(GetGamma()*p_i/rho_i);
-	    }
-	  }
-	}
+	      for (k = 0; k < NDIM-1; k++)
+	        vp_i[k] = .5*(vpL[k]+vpR[k]); // This value does not matter: associated fluxes vanish
+	      u_i = 0.0; // This is the linear interpolation of SLStar and
+		    // SRStar at the interface :)
+	      rho_i = 0.0;
+	      p_i = a_i = 0.0;
       }
     }
-// Modified by Judit: we set the colat & radial velocties to zero in the first active cells:
+    else {
+      // Schematic code : I=Interface ; S=Shock ; D=contact Discontinuity ; F=Fan
+      if (0.0 < us) { //0.0, as we need the solution on the interface
+	      // we are in the star or left region or fan
+	      for (k = 0; k < NDIM-1; k++)
+	        vp_i[k] = vpL[k];
+	      if (ps > pL) {            // There is a left shock
+	        S_shock = uL + (pL - ps)/((uL - us)*rhoL);
+	        wratio = ps/pL;
+	        rhoS = rhoL * (wratio + (gammaL-1.0)/(gammaL+1.0))  // rhoS(on shock side)
+	        /(wratio * (gammaL-1.0)/(gammaL+1.0) + 1.);
+	        aS = sqrt(gammaL*ps/rhoS);
+          gammaS = gammaL;
+	        if (0.0 < S_shock) {    // We are at the left of the left shock: ISD
+	          u_i = uL;
+	          rho_i = rhoL;
+	          a_i = aL;
+            gamma_i = gammaL;
+	        }
+          else {                // we are in the left star region: SID
+	          u_i = us;
+	          rho_i = rhoS;
+	          a_i = aS;
+            gamma_i = gammaS;
+	        }
+	      }
+        else {                    // There is a left rarefaction
+	        rhoS = rhoL * pow(ps/pL, 1.0/gammaL); // rhoS(on rarefaction side)
+	        aS = sqrt(gammaL*ps/rhoS);
+          gammaS = gammaL;
+	        if (0.0 < uL-aL) {      // We are in the left region: IFD
+	          u_i = uL;
+	          rho_i = rhoL;
+	          a_i = aL;
+            gamma_i = gammaL;
+	        }
+          else {
+	          if (0.0 > us-aS) {  // We are in the left star region FID
+	            u_i = us;
+	            rho_i = rhoS;
+	            a_i = aS;
+              gamma_i = gammaS;
+	          }
+            else {            // We are in the fan: FIFD
+	            wratio = (gammaL-1.0)/(gammaL+1.0)*uL/aL;
+	            u_i = 2.0/(gammaL+1.0) * (aL + uL*(gammaL-1.)*0.5);
+	            rho_i = rhoL * pow(2.0/(gammaL+1.0) + wratio, 2.0/(gammaL-1.0));
+	            p_i = pL * pow(2.0/(gammaL+1.0) + wratio, gammaL*2.0/(gammaL-1.0));
+	            a_i = sqrt(gammaL*p_i/rho_i);
+              gamma_i = gammaL;
+	          }
+	        }
+	      }
+      } 
+      else {                        // We are in the star or right region or fan
+	      for (k = 0; k < NDIM-1; k++)
+	        vp_i[k] = vpR[k];
+	      if (ps > pR) {            // There is a right shock
+	        S_shock = uR + (pR - ps)/(uR - us)/rhoR;
+	        wratio = ps/pR;
+	        rhoS = rhoR * (wratio + (gammaR-1.0)/(gammaR+1.0)) //rhoS (on shock side)
+	        /(wratio * (gammaR-1.0)/(gammaR+1.0) + 1.);
+	        aS = sqrt(gammaR*ps/rhoS);
+          gammaS = gammaR;
+	        if (0.0 > S_shock) {    // we are at the right of the right shock: DSI
+	          u_i = uR;
+	          rho_i = rhoR;
+	          a_i = aR;
+            gamma_i = gammaR;
+	        }
+          else {                // we are in the right star region: DIS
+	          u_i = us;
+	          rho_i = rhoS;
+	          a_i = aS;
+            gamma_i = gammaS;
+	        }
+	      }
+        else {                    // There is a right rarefaction
+	        rhoS = rhoR * pow(ps/pR,1.0/gammaR); //rhoS(on rarefaction side)
+	        aS = sqrt(gammaR*ps/rhoS);
+          gammaS = gammaR;
+	        if (0.0 > uR+aR) {      // we are in the right part: DFI
+	          u_i = uR;
+	          rho_i = rhoR;
+	          a_i = aR;
+            gamma_i = gammaR;
+	        }
+          else {
+	          if (0.0 < us+aS) {  // we are in the right star region: DIF
+	            u_i = us;
+	            rho_i = rhoS;
+	            a_i = aS;
+              gamma_i = gammaS;
+	          }
+            else {            // we are in the fan: DFIF
+	            wratio = (gammaR-1.0)/(gammaR+1.0)*uR/aR;
+	            u_i = 2.0/(gammaR+1.0) * (-aR + uR*(gammaR-1.)*0.5);
+	            rho_i = rhoR * pow(2.0/(gammaR+1.0) - wratio, 2.0/(gammaR-1.0));
+	            p_i = pR * pow(2.0/(gammaR+1.0) - wratio, gammaR*2.0/(gammaR-1.0));
+	            a_i = sqrt(gammaR*p_i/rho_i);
+              gamma_i = gammaR;
+	          }
+	        }
+	      }
+      }
+    }
+    // Modified by Judit: we set the colat & radial velocties to zero in the first active cells:
     if((dim == _COLAT_ && i==2 && beam->rawcoord[i] < RANGE3LOW+(beam->rawcoord[1]-beam->rawcoord[0])) || (dim == _RAD_ && i==2 && beam->rawcoord[i] < RANGE2LOW+.5*(beam->rawcoord[1]-beam->rawcoord[0]))){
       u_i = 0.0; // CHECK IF OK (beambound.c)
     }
-// modification made till here
+    // modification made till here
     ekp = 0.5*u_i*u_i;
     for (k = 0; k < NDIM-1; k++)
       ekp += vp_i[k]*vp_i[k]*0.5;
     if (dim == _RAD_) {
       beam->centrifugal_acc[i] = vp_i[0]*vp_i[0];
       if (_COLAT_ < NDIM)
-	beam->centrifugal_acc[i] += vp_i[1]*vp_i[1];
+	      beam->centrifugal_acc[i] += vp_i[1]*vp_i[1];
       beam->centrifugal_acc[i] /= beam->edge[i];
       beam->coriolis[i] = rho_i*vp_i[0]*u_i;
       if (__SPHERICAL)
-	beam->coriolis[i] *= sin(beam->colatitude);
+	      beam->coriolis[i] *= sin(beam->colatitude);
     }
     if ((__CYLINDRICAL || __SPHERICAL) && (dim == _AZIM_)) {
       uf = u_i+v0;
       mass_flux = rho_i * (uf*C_mass_1 - v0*C_mass_2);
-      pu_flux   = (a_i*a_i/GetGamma() + uf*uf)*C_mom_1 - v0*uf*C_mom_2;
+      pu_flux   = (a_i*a_i/gamma_i + uf*uf)*C_mom_1 - v0*uf*C_mom_2;
       pu_flux  *= radius * rho_i;     // angular momentum in inertial frame...
-      ene_flux = uf*rho_i * (a_i*a_i/(GetGamma()-1.0) + ekp)* C_ene_1-	\
-	v0*rho_i * (a_i*a_i/(GetGamma()-1.0) + ekp)*C_ene_2;
-    } else {
+      ene_flux = uf*rho_i * (a_i*a_i/(gamma_i-1.0) + ekp)* C_ene_1-	\
+	    v0*rho_i * (a_i*a_i/(gamma_i-1.0) + ekp)*C_ene_2;
+    }
+    else {
       mass_flux = rho_i * u_i;
-      pu_flux   = rho_i * (a_i*a_i/GetGamma() + u_i*u_i);
-      ene_flux  = u_i*rho_i * (a_i*a_i/(GetGamma()-1.0) + ekp);
+      pu_flux   = rho_i * (a_i*a_i/gamma_i + u_i*u_i);
+      ene_flux  = u_i*rho_i * (a_i*a_i/(gamma_i-1.0) + ekp);
     }
 
     surfdt = beam->intersurface[i] * dt;
@@ -340,7 +386,7 @@ void Compute_Fluxes_Adi (beam, dt)
     for (k = 0; k < NDIM-1; k++)    // will be corrected in FillFluxes
       beam->momentum_flux[k+1][i] = rho_i*vp_i[k]*u_i * surfdt;
     beam->tot_energy_flux[i] = ene_flux * surfdt;
-    beam->pressure_godunov[i] = a_i*a_i*rho_i*GetGamma();
+    beam->pressure_godunov[i] = a_i*a_i*rho_i*gamma_i;
   }
 }
 
@@ -757,9 +803,9 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
      real dt;
 {
   long i,dim,k;
-  real rhoL, rhoR, rhogL, rhogR, dtgL, dtgR;
+  real rhoL, rhoR, rhogL, rhogR, dtgL, dtgR, gammaL, gammaR, eL, eR, pL, pR;
   real D_d,Pi,surfdt, j, dx, radius, omegakep, St, cs, csL, csR, v_d, v_d_max, t_diff, t_stop, dustsz, dustsolidrho;
-
+  
   dustsz = DUSTSIZE / R0; // diameter of dust grains in code units
   dustsolidrho = DUSTSOLIDRHO / RHO0; // solid density of dust grains in code units, typically 3 g/cm^3 in physical units
 
@@ -771,14 +817,34 @@ void Compute_Fluxes_Diffusion(beam,beam2,dt)
     rhogL = beam2->rho[i-1]; //gas density
     rhogR = beam2->rho[i]; //gas density
 
+    eL = beam->eL[i];
+    eR = beam->eR[i];
+
     dx = beam->center[i]-beam->center[i-1];
     D_d = VISCOSITY;
 
+
+    if(!Isothermal && Stellar && !CONST_GAMMA){
+      pL = secant_method(eL, rhoL, 0.00001); // pressure
+      pR = secant_method(eR, rhoR, 0.00001); // pressure
+      gammaL = Gamma1(pL * MU / rhoL * TEMP0, rhoL);
+      gammaR = Gamma1(pR * MU / rhoR * TEMP0, rhoR);
+      printf("gammaL: %f, gammaR: %f \n", gammaL, gammaR);
+    }
+    
+    else{
+      gammaL = GAMMA;
+      gammaR = GAMMA;
+      pL = beam->eL[i]*(gammaL-1.); // pressure
+      pR = beam->eR[i]*(gammaR-1.); // pressure
+    }
+
+
     if (!Isothermal){
-      csL = sqrt(beam2->cs[i-1]/rhogL*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
-      csR = sqrt(beam2->cs[i]/rhogR*GetGamma()*(GetGamma()-1.0)); //adiabatic sound speed
+      csL = sqrt(beam2->cs[i-1]/rhogL*gammaL*(gammaL-1.0)); //adiabatic sound speed
+      csR = sqrt(beam2->cs[i]/rhogR*gammaR*(gammaR-1.0)); //adiabatic sound speed
       if(!constSt==YES){
-        t_stop = sqrt(M_PI*GetGamma()/8.0)*dustsolidrho*dustsz/(sqrt(rhogL*rhogR)*sqrt(csL*csR));; //local stopping time
+        t_stop = sqrt(M_PI*sqrt(gammaL*gammaR)/8.0)*dustsolidrho*dustsz/(sqrt(rhogL*rhogR)*sqrt(csL*csR));; //local stopping time
       }
     }else{
       csL = beam2->cs[i-1];

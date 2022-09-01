@@ -5,8 +5,8 @@ void plm_adiab (beam, dt)
      real dt;
 {
   long i, j, k, n, dim, lev;
-  real rhoL, rhoR, a, uL, uR, vperpL[2], vperpR[2];
-  real *dxe[3], dxp, dxm, sa1, sa2, roa, aor, source_vperp[2];
+  real rhoL, rhoR, p0, gamma, a, uL, uR, vperpL[2], vperpR[2];
+  real *dxe[3], dxp, dxm, sa1, sa2, source_vperp[2];
   /* In the expression below, the first index in the dxrho and dxv
      arrays is for the dimension along which the derivative is to be
      taken, while the second in dxv is for which component of the
@@ -22,6 +22,7 @@ void plm_adiab (beam, dt)
   u   = beam->u;
   rho = beam->rho;
   e   = beam->cs;		/* volumic internal energy */
+  gamma = GAMMA;
   inter= beam->intersurface;
   if (CorrHydroStat[dim]) 
     prs_error ("PLM adiabatic method incompatible with hydrostatic equilibrium enforcement\n");
@@ -39,11 +40,19 @@ void plm_adiab (beam, dt)
     u0   = u[i];
     e0   = e[i];      // Volumic internal energy
     rho0 = rho[i];
-    a    = sqrt(GetGamma()*(GetGamma()-1.0)*e0/rho0); // Adiabatic sound speed
-    aor  = a/rho0;
-    roa  = rho0/a;
     eL   = eR   = e0;    //
     rhoL = rhoR = rho0;  //   R : right state on zone left interface
+
+    if(!Isothermal && Stellar && !CONST_GAMMA){
+      p0 = secant_method(e0, rho0, 0.00001); // pressure in code units
+      gamma = Gamma1(p0 * MU / rho0 * TEMP0, rho0);
+    }
+    else{
+      gamma = GAMMA;
+      p0 = e0*(gamma-1.); // pressure
+    }
+
+    a    = sqrt(gamma*(gamma-1.0)*e0/rho0); // Adiabatic sound speed
     if (NDIM>1) vperpR[0] = vperpL[0] = vperp[0][i];
     if (NDIM>2) vperpR[1] = vperpL[1] = vperp[1][i];
     cont_transv  = 0.0;		/* Perpendicular terms for continuity eq. */
@@ -52,7 +61,7 @@ void plm_adiab (beam, dt)
     for (k = 0; k < NDIM-1; k++) {
       cont_transv += vperp[k][i]*dxrho[k+1][i] + rho0*dxv[k+1][k+1][i];
       euler_transv += vperp[k][i]*dxv[k+1][0][i];
-      energ_transv += vperp[k][i]*dxe[k+1][i] + e0*GetGamma()*dxv[k+1][k+1][i];
+      energ_transv += vperp[k][i]*dxe[k+1][i] + e0*gamma*dxv[k+1][k+1][i];
     }
 
     uL   = uR   = u0;    //   L : left state on zone right interface
@@ -71,36 +80,36 @@ void plm_adiab (beam, dt)
     uL   += .5*dt*beam->source[i];
     uR   += .5*dt*beam->source[i];
 
-    sa1  = dxe[0][i]+(GetGamma()*e0/a)*dxv[0][0][i];  // Slopes homogeneous
-    sa2  = dxe[0][i]-(GetGamma()*e0/a)*dxv[0][0][i];  // to that of the energy
+    sa1  = dxe[0][i]+(gamma*e0/a)*dxv[0][0][i];  // Slopes homogeneous
+    sa2  = dxe[0][i]-(gamma*e0/a)*dxv[0][0][i];  // to that of the energy
     da1p = .25*(dxp-(u0+a)*dt)*sa1;
     da2p = .25*(dxp-(u0-a)*dt)*sa2;
     da1m = .25*(-dxm-(u0+a)*dt)*sa1;
     da2m = .25*(-dxm-(u0-a)*dt)*sa2;
 
-    s_ent= dxrho[0][i]-rho0/(GetGamma()*e0)*dxe[0][i]; // All these quantities are
+    s_ent= dxrho[0][i]-rho0/(gamma*e0)*dxe[0][i]; // All these quantities are
     dentp= .5*(dxp-u0*dt)*s_ent;                    // homogeneous to density derivatives
     dentm= .5*(-dxm-u0*dt)*s_ent;                   // despite of their names
 
     if ((u0+a) >= 0.0) {               /* These tests have to be written like that */
       eL   += da1p;                    /* In order to enforce left/right symmetry */
-      rhoL += da1p*rho0/(GetGamma()*e0);
-      uL   += da1p*a/(GetGamma()*e0);
+      rhoL += da1p*rho0/(gamma*e0);
+      uL   += da1p*a/(gamma*e0);
     }
     if ((u0+a) <= 0.0) {
       eR   += da1m;
-      rhoR += da1m*rho0/(GetGamma()*e0);
-      uR   += da1m*a/(GetGamma()*e0);
+      rhoR += da1m*rho0/(gamma*e0);
+      uR   += da1m*a/(gamma*e0);
     }
     if ((u0-a) >= 0.0) {
       eL   += da2p;
-      rhoL += da2p*rho0/(GetGamma()*e0);
-      uL   += -da2p*a/(GetGamma()*e0);
+      rhoL += da2p*rho0/(gamma*e0);
+      uL   += -da2p*a/(gamma*e0);
     }
     if ((u0-a) <= 0.0) {
       eR   += da2m;
-      rhoR += da2m*rho0/(GetGamma()*e0);
-      uR   += -da2m*a/(GetGamma()*e0);
+      rhoR += da2m*rho0/(gamma*e0);
+      uR   += -da2m*a/(gamma*e0);
     }
     if (u0 >= 0.0) {
       rhoL += dentp;
@@ -123,8 +132,8 @@ void plm_adiab (beam, dt)
 	 velocities, as this term is no longer calculated in
 	 fillsource_predict.c (if method is PLM) */
       if (beam->dim[k+1] != _COLAT_) {
-	vperpL[k] += (source_vperp[k]-(GetGamma()-1.0)*dxe[k+1][i]/rho0)*.5*dt;
-	vperpR[k] += (source_vperp[k]-(GetGamma()-1.0)*dxe[k+1][i]/rho0)*.5*dt;
+	vperpL[k] += (source_vperp[k]-(gamma-1.0)*dxe[k+1][i]/rho0)*.5*dt;
+	vperpR[k] += (source_vperp[k]-(gamma-1.0)*dxe[k+1][i]/rho0)*.5*dt;
       }
       beam->v_perp_L[k][i+1] = vperpL[k];
       beam->v_perp_R[k][i]   = vperpR[k];
@@ -137,22 +146,22 @@ void plm_adiab (beam, dt)
 
     if (rhoL <= min_rho) {
       rhoL = min_rho;
-      eL = a*a*rhoL/(GetGamma()*(GetGamma()-1.0));
+      eL = a*a*rhoL/(gamma*(gamma-1.0));
     }
 
     if (eL <= 0.0) {
       eL = min_e;
-      rhoL = eL*GetGamma()*(GetGamma()-1.0)/(a*a);
+      rhoL = eL*gamma*(gamma-1.0)/(a*a);
     }
 
     if (rhoR <= min_rho) {
       rhoR = min_rho;
-      eR = a*a*rhoR/(GetGamma()*(GetGamma()-1.0));
+      eR = a*a*rhoR/(gamma*(gamma-1.0));
     }
 
     if (eR <= 0.0) {
       eR = min_e;
-      rhoR = eR*GetGamma()*(GetGamma()-1.0)/(a*a);
+      rhoR = eR*gamma*(gamma-1.0)/(a*a);
     }
 
     beam->eL[i+1] = eL;

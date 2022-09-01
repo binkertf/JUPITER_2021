@@ -81,7 +81,7 @@ real MomentumFluxInertial (point)
 				+IC_Energy(point));
   else
     return IC_Density(point)*r*(r*r*(IC_Vazimuth(point)+OMEGAFRAME)*(IC_Vazimuth(point)+OMEGAFRAME) \
-				+IC_Energy(point)*(GetGamma()-1.0)/IC_Density(point));
+				+IC_Energy(point)*(IC_Gamma(point) -1.0)/IC_Density(point));
 }
 
 real MomentumFluxSolidRotation (point)
@@ -227,7 +227,7 @@ real IC_Pressure (point)
   if(Isothermal)
     return IC_Density(point)*IC_Energy(point);
   else
-    return IC_Energy(point)*(GetGamma()-1.);
+    return IC_Energy(point)*(IC_Gamma(point)-1.);
 }
 
 real IC_PressureByRad (point)
@@ -238,7 +238,7 @@ real IC_PressureByRad (point)
   if(Isothermal)
     return IC_Density(point)*IC_Energy(point)*radius;
   else
-    return IC_Energy(point)*(GetGamma()-1.)*radius;
+    return IC_Energy(point)*(IC_Gamma(point)-1.)*radius;
 }
 
 real IC_Density (point)
@@ -277,19 +277,26 @@ real IC_Energy_tot (point)
   return GetInitialValue (point, _tot_energy_);
 }
 
+real IC_Gamma (point)
+  real point[3];
+{
+  return GetInitialValue (point, _gamma_);
+}
+
 real GetInitialValue (point, type)
      real point[3];
      long type;
 {
   real radius, azimuth, colatitude;
   real x=0.0, y=0.0, z, value;
-  real density, energy, vrad, v_azimuth, v_colatitude, vx, vy, vz;
+  real density, energy, vrad, v_azimuth, v_colatitude, vx, vy, vz, gamma, pressure;
   real interm1, interm2, interm3;
   real axial_radius;
   radius = point[0];
   azimuth = point[1];
   z = colatitude = point[2];
   density = energy = -1e20;
+  gamma = GAMMA;
 #include "libinit.cx"
   value = density;
   if (type == _vrad_)
@@ -302,5 +309,12 @@ real GetInitialValue (point, type)
     value = energy;
   if (type == _tot_energy_)
     value = energy+.5*pow(v_azimuth*radius,2.0)*density;
+  if (type == _gamma_){
+    if (!Isothermal && Stellar && !CONST_GAMMA){
+      pressure = secant_method(energy, density, 0.00001); // pressure
+      gamma = Gamma1(pressure * MU / density * TEMP0, density);
+    }
+    value = gamma;
+  }
   return value;
 }
