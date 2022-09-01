@@ -25,7 +25,7 @@ High lev proj works but in seq built only
 void InitialCondition (fp)
      FluidPatch *fp;
 {
-  real *energy_field, *density_field, *velocity[3], *center[3];
+  real *energy_field, *density_field, *velocity[3], *center[3], *gamma_field;
   long stride[3], gncell[3], dim, i, j, k, m;
   real x,y,z,radius,azimuth,colatitude; /* Will have to be used coherently together with the input file */
   real vx, vy, vz, vrad, v_azimuth, v_colatitude;
@@ -35,6 +35,7 @@ void InitialCondition (fp)
   /* They are unused in most setups */
   energy_field = fp->Energy->Field;
   density_field = fp->Density->Field;
+  gamma_field = fp->Gamma->Field;
   getgridsize (fp->desc, gncell, stride);
   for (dim = 0; dim < 3; dim++) { /* Do NOT change this 3 to NDIM (see below) */
     velocity[dim] = fp->Velocity->Field[dim];
@@ -91,6 +92,7 @@ void InitialCondition (fp)
 	  break;
 	}
 	density_field[m] += density;
+	gamma_field[m] = GAMMA;
 	if (density_field[m] < _Small_Rho)
 	  _Small_Rho = density_field[m];
 	energy_field[m] += energy;
@@ -133,17 +135,17 @@ void InitWholeHierarchy (NbRestart)
 	    getgridsize (Fluid->desc, gncell, stride);
 	    for (k = Nghost[2]; k < gncell[2]-Nghost[2]; k++) {
 	      for (j = Nghost[1]; j < gncell[1]-Nghost[1]; j++) {
-		for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
-		  m = i*stride[0]+j*stride[1]+k*stride[2];
-		  if (density_field[m] < _Small_Rho)
-		    _Small_Rho = density_field[m];
-		}
+			for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
+		  		m = i*stride[0]+j*stride[1]+k*stride[2];
+		  		if (density_field[m] < _Small_Rho)
+		    		_Small_Rho = density_field[m];
+			}
 	      }
 	    }
 	  }
 	}
 	else
-	  	 ReadField(Fluid, *NbRestart);
+	  	ReadField(Fluid, *NbRestart);
 	if (SuperImpose)
 	  InitialCondition (Fluid);
 	TrueBC_fp (Fluid);
