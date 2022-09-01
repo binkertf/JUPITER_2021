@@ -1,5 +1,4 @@
 #include "jupiter.h"
-#include "calc_gamma.h"
 
 #define MAXLEVELIRRAD 100
 static MPI_Comm RadialCPUBeam[MAXLEVELIRRAD];
@@ -71,8 +70,8 @@ void ComputeGammaField() {
   fw = CurrentFluidPatch;
   getgridsize (fw->desc, gncell, stride);
 
-  nr = gncell[1];
   ns = gncell[0];
+  nr = gncell[1];
   ni = gncell[2];
 
   dens = fw->Density;
@@ -83,12 +82,10 @@ void ComputeGammaField() {
     for ( i = 0; i < nr; i++ ) {
       for ( j = 0; j < ns; j++ ) {
 	      l = j+i*stride[1]+h*stride[2];
-        gamma_out[l] = Gamma1(temp[l], dens[l]);
-  
+        gamma_out[l] = Gamma1(temp[l] * TEMP0, dens[l]);
       }
     }
-  }
-  
+  } 
 }
 
 
