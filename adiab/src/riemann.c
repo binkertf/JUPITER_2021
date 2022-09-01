@@ -97,20 +97,20 @@ real *us, *ps;
 ////////////////////////////////////
 ////////////////////////////////////
 
-boolean GetStar_ADI_SS (rhoL, rhoR, uL, uR, aL, aR, us, ps)
-     real rhoL, rhoR, uL, uR, aL, aR;
+boolean GetStar_ADI_SS (rhoL, rhoR, uL, uR, aL, aR, us, ps, gammaL, gammaR)
+     real rhoL, rhoR, uL, uR, aL, aR, gammaL, gammaR;
      real *us, *ps;
 {
   real AL, AR, BL, BR;
-  real pL=rhoL*aL*aL/GetGamma(), pR=rhoR*aR*aR/GetGamma();
+  real pL=rhoL*aL*aL/gammaL, pR=rhoR*aR*aR/gammaR;
   real df, deltau, a, prs, prs0;
   int count=0;
   deltau = uL - uR;
   prs0 = prs = *ps; // The initial guess (PVRS) is evaluated in the calling function
-  AL = (2.0/(GetGamma()+1.0))/rhoL; 
-  AR = (2.0/(GetGamma()+1.0))/rhoR;
-  BL = (GetGamma()-1.0)/(GetGamma()+1.0) * pL;
-  BR = (GetGamma()-1.0)/(GetGamma()+1.0) * pR;
+  AL = (2.0/(gammaL+1.0))/rhoL; 
+  AR = (2.0/(gammaR+1.0))/rhoR;
+  BL = (gammaL-1.0)/(gammaL+1.0) * pL;
+  BR = (gammaR-1.0)/(gammaR+1.0) * pR;
   df = (prs - pL)*sqrt(AL/(prs+BL)) + (prs - pR)*sqrt(AR/(prs+BR));
   while ((fabs(df-deltau)>=1.0e-10) && (count < 20)) {
     count++;
@@ -143,91 +143,95 @@ boolean GetStar_ADI_SS (rhoL, rhoR, uL, uR, aL, aR, us, ps)
   return NO;
 }
 
-boolean GetStar_ADI_SR (rhoL, rhoR, uL, uR, aL, aR, us, ps)
-     real rhoL, rhoR, uL, uR, aL, aR;
+boolean GetStar_ADI_SR (rhoL, rhoR, uL, uR, aL, aR, us, ps, gammaL, gammaR)
+     real rhoL, rhoR, uL, uR, aL, aR, gammaL, gammaR;
      real *us, *ps;
 {	/* Left shock, right rarefaction */
   real AL, BL;
-  real pL=rhoL*aL*aL/GetGamma(), pR=rhoR*aR*aR/GetGamma(); // a is sound speed (Ideal gas)
+  real pL=rhoL*aL*aL/gammaL, pR=rhoR*aR*aR/gammaR; // a is sound speed (Ideal gas)
   real df, deltau, a, prs;
   prs = *ps;  // The initial guess (PVRS) is evaluated in the calling function
-  AL = (2.0/(GetGamma()+1.0))/rhoL;
-  BL = (GetGamma()-1.0)/(GetGamma()+1.0) * pL;
+  AL = (2.0/(gammaL+1.0))/rhoL;
+  BL = (gammaL-1.0)/(gammaL+1.0) * pL;
   deltau = uL - uR;
-  df = (prs-pL)*sqrt(AL/(prs+BL)) + 2.0/(GetGamma()-1.0)*aR*(pow(prs/pR,.5*(GetGamma()-1.)/GetGamma())-1.);
+  df = (prs-pL)*sqrt(AL/(prs+BL)) + 2.0/(gammaR-1.0)*aR*(pow(prs/pR,.5*(gammaR-1.)/gammaR)-1.);
   while (fabs(df-deltau)>=1.e-10){
-    a = sqrt(AL/(prs+BL))*(1.-0.5*(prs-pL)/(prs+BL)) + aR/(GetGamma()*pR)*pow(prs/pR,-.5*(GetGamma()+1.)/GetGamma());
+    a = sqrt(AL/(prs+BL))*(1.-0.5*(prs-pL)/(prs+BL)) + aR/(gammaR*pR)*pow(prs/pR,-.5*(gammaR+1.)/gammaR);
     prs += -(df-deltau)/a;
-    if (prs < 0.0) prs = rhoL*aL*aL/GetGamma(); // Overshoot with initial guess: we adopt the smallest pressure (here, left side) as a new initial guess
-    df = (prs-pL)*sqrt(AL/(prs+BL)) + 2.0/(GetGamma()-1.0)*aR*(pow(prs/pR,.5*(GetGamma()-1.)/GetGamma())-1.);
+    if (prs < 0.0) prs = rhoL*aL*aL/gammaL; // Overshoot with initial guess: we adopt the smallest pressure (here, left side) as a new initial guess
+    df = (prs-pL)*sqrt(AL/(prs+BL)) + 2.0/(gammaR-1.0)*aR*(pow(prs/pR,.5*(gammaR-1.)/gammaR)-1.);
   }
   CHECK_CONVERGENCE;
   *ps = prs;
   *us = 0.5*( uL + uR )							\
-    + 0.5*(2.0/(GetGamma()-1.0)*aR*(pow(prs/pR,.5*(GetGamma()-1.)/GetGamma())-1.) - (prs-pL)*sqrt(AL/(prs+BL)));
+    + 0.5*(2.0/(gammaR-1.0)*aR*(pow(prs/pR,.5*(gammaR-1.)/gammaR)-1.) - (prs-pL)*sqrt(AL/(prs+BL)));
   return NO;
 }
 
-boolean GetStar_ADI_RS (rhoL, rhoR, uL, uR, aL, aR, us, ps)
-     real rhoL, rhoR, uL, uR, aL, aR;
+boolean GetStar_ADI_RS (rhoL, rhoR, uL, uR, aL, aR, us, ps, gammaL, gammaR)
+     real rhoL, rhoR, uL, uR, aL, aR, gammaL, gammaR;
      real *us, *ps;
 {	/* Right shock, left rarefaction */
   real AR, BR;
-  real pL=rhoL*aL*aL/GetGamma(), pR=rhoR*aR*aR/GetGamma();
+  real pL=rhoL*aL*aL/gammaL, pR=rhoR*aR*aR/gammaR;
   real df, deltau, a, prs;
   prs = *ps; // The initial guess (PVRS) is evaluated in the calling function
-  AR = (2.0/(GetGamma()+1.0))/rhoR;
-  BR = (GetGamma()-1.0)/(GetGamma()+1.0) * pR;
+  AR = (2.0/(gammaR+1.0))/rhoR;
+  BR = (gammaR-1.0)/(gammaR+1.0) * pR;
   deltau = uL - uR;
-  df = (prs-pR)*sqrt(AR/(prs+BR)) + 2.0/(GetGamma()-1.0)*aL*(pow(prs/pL,.5/GetGamma()*(GetGamma()-1.))-1.);
+  df = (prs-pR)*sqrt(AR/(prs+BR)) + 2.0/(gammaL-1.0)*aL*(pow(prs/pL,.5/gammaL*(gammaL-1.))-1.);
   while (fabs(df-deltau)>=1.e-10){
-    a = sqrt(AR/(prs+BR)) * (1.-0.5*(prs-pR)/(prs+BR)) + aL/(GetGamma()*pL)*pow(prs/pL,-.5/GetGamma()*(GetGamma()+1.));
+    a = sqrt(AR/(prs+BR)) * (1.-0.5*(prs-pR)/(prs+BR)) + aL/(gammaL*pL)*pow(prs/pL,-.5/gammaL*(gammaL+1.));
     prs += -(df-deltau)/a;
-    if (prs < 0.0) prs = rhoR*aR*aR/GetGamma(); // Overshoot with initial guess: we adopt the smallest pressure (here, right side) as a new initial guess
-    df = (prs-pR)*sqrt(AR/(prs+BR)) + 2.0/(GetGamma()-1.0)*aL*(pow(prs/pL,.5/GetGamma()*(GetGamma()-1.))-1.);
+    if (prs < 0.0) prs = rhoR*aR*aR/gammaR; // Overshoot with initial guess: we adopt the smallest pressure (here, right side) as a new initial guess
+    df = (prs-pR)*sqrt(AR/(prs+BR)) + 2.0/(gammaL-1.0)*aL*(pow(prs/pL,.5/gammaL*(gammaL-1.))-1.);
   }
   CHECK_CONVERGENCE;
   *ps = prs;
   *us = 0.5*( uL + uR )							\
-    + 0.5*(-2.0/(GetGamma()-1.0)*aL*(pow(prs/pL,.5/GetGamma()*(GetGamma()-1.))-1.) + (prs-pR)*sqrt(AR/(prs+BR)));
+    + 0.5*(-2.0/(gammaL-1.0)*aL*(pow(prs/pL,.5/gammaL*(gammaL-1.))-1.) + (prs-pR)*sqrt(AR/(prs+BR)));
   return NO;
 }
 
-boolean GetStar_AdiabaticSolver (rhoL, rhoR, uL, uR, aL, aR, us, ps)
-real rhoL, rhoR, uL, uR, aL, aR;
+boolean GetStar_AdiabaticSolver (rhoL, rhoR, uL, uR, aL, aR, us, ps, gammaL, gammaR)
+real rhoL, rhoR, uL, uR, aL, aR, gammaL, gammaR;
 real *us, *ps;
 {
-  real eg, prs, ust, rhomean, amean;
+  real egL, egR, prs, ust, rhomean, amean, gammamean;
   real pL,pR;	
   real deltau = uL-uR;
 
-  pL = rhoL*aL*aL/GetGamma(); 
-  pR = rhoR*aR*aR/GetGamma(); 
+  
+  pL = rhoL*aL*aL/gammaL; 
+  pR = rhoR*aR*aR/gammaR; 
+
 
   rhomean = .5*(rhoL+rhoR);
   amean   = .5*(aL+aR);
+  gammamean = .5*(gammaL + gammaR);
   *ps     = .5*(pL+pR)+.5*deltau*rhomean*amean;
   *us     = .5*(uL+uR)+.5*(pL-pR)/(rhomean*amean);
 
   if ((*ps > pL) && (*ps > pR)) // Two-shock solution
-    return GetStar_ADI_SS (rhoL, rhoR, uL, uR, aL, aR, us, ps);
+    return GetStar_ADI_SS (rhoL, rhoR, uL, uR, aL, aR, us, ps, gammaL, gammaR);
 
   if ((pL > *ps) && (*ps > pR)) // Left Rarefaction, right shock solution
-    return GetStar_ADI_RS (rhoL, rhoR, uL, uR, aL, aR, us, ps);
+    return GetStar_ADI_RS (rhoL, rhoR, uL, uR, aL, aR, us, ps, gammaL, gammaR);
  
   if ((pL < *ps) && (*ps < pR)) // Right Rarefaction, left shock solution
-    return GetStar_ADI_SR (rhoL, rhoR, uL, uR, aL, aR, us, ps);
+    return GetStar_ADI_SR (rhoL, rhoR, uL, uR, aL, aR, us, ps, gammaL, gammaR);
  
   /// Staying on the 2-rarefaction (RR) solver below
 
-  prs = ( deltau*0.5 * (GetGamma()-1.) + aL+aR );
+  prs = ( deltau*0.5 * (gammamean-1.) + aL+aR );
   if (prs < 0.0) // <== in that case vacuum is generated
     return YES;
-  eg = (GetGamma()-1.)/(2.*GetGamma());
-  prs = prs / ( pow(pL,-eg)*aL + pow(pR,-eg)*aR);
-  prs = pow(prs, 2.0/(GetGamma()-1.0) * GetGamma());
+  egL = (gammaL-1.)/(2.*gammaL);
+  egR = (gammaR-1.)/(2.*gammaR);
+  prs = prs / ( pow(pL,-egL)*aL + pow(pR,-egR)*aR);
+  prs = pow(prs, 2.0/(gammamean-1.0) * gammamean);
   CHECK_CONVERGENCE;
-  ust = (uL+uR)*0.5 + (aR*(pow(prs/pR,eg)-1.) - aL*(pow(prs/pL,eg)-1.)) /(GetGamma()-1.0);
+  ust = (uL+uR)*0.5 + aR*(pow(prs/pR,egR)-1.)/(gammaR-1.0) - aL*(pow(prs/pL,egL)-1.) /(gammaL-1.0);
   *ps = prs;
   *us = ust;
   return NO;
