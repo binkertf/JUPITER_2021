@@ -58,8 +58,9 @@ void FillSources_Predict ()
 	    			if (!Isothermal){
 						if(CONST_GAMMA == TRUE)
 	    					sv[l][m] = -se[l][m]*(GAMMA-1.0)/rho[m];
-						else
+						else{
 							sv[l][m] = -se[l][m]*(gamma[m]-1.0)/rho[m];
+						}
 					}else{
 						sv[l][m] = (e[smm]*rho[smm]-e[smp]*rho[smp])*sinvdx/rho[m];
 					}

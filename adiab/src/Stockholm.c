@@ -45,7 +45,6 @@ real dt;
 //      for (i = Nghost[0]; i < gncell[0]-Nghost[0]; i++) {
 
   damp_zone_min = damp_zone_max = 0.0; //Quick & dirty fix to damping in colatitude
-
   for (k = 0; k < gncell[2]; k++) {
     for (j = 0; j < gncell[1]; j++) {
       for (i = 0; i < gncell[0]; i++) {
@@ -87,7 +86,7 @@ real dt;
 
 	  lambda = 30.0*ramp*ramp/Tau*dt;
 
-    if(Stellar && CONST_GAMMA == FALSE){
+    if(!Isothermal && Stellar && !CONST_GAMMA){
       gamma = fw->Gamma;
       entropy = ene[m]/pow(dens[m],gamma[m]);
 	    entropy0= ene0/pow(rho0,gamma[m]);

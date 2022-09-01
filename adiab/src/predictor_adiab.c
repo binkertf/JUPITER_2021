@@ -91,13 +91,15 @@ void Predictor_adiab (dt)
 	    vel *= metric[n][0][ind[ip1]]*metric[n][1][ind[ip2]]; // converted to linear
 	    slope_vel = slope_v[n][n][m]; //linear (v)-linear (dx)
 	    var -= vel        * slope_e[n][m];
-		if(!Isothermal && Stellar && !CONST_GAMMA)
+		if(!Isothermal && Stellar && !CONST_GAMMA){
 	    	var -= gamma[m]*e[m] * slope_vel;
+		}
 		else
 			var -= GAMMA*e[m] * slope_vel;
 	  }
-	  if(!Isothermal && Stellar && !CONST_GAMMA)
+	  if(!Isothermal && Stellar && !CONST_GAMMA){
 	  	var -= gamma[m]*source_div[m]*e[m];  //Source sign OK: evaluated as LHS.
+	  }
 	  else
 	  	var -= GAMMA*source_div[m]*e[m];  //Source sign OK: evaluated as LHS.
 	  ep[m] = e[m] + .5*dt*var;

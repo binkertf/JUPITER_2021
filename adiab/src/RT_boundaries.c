@@ -22,11 +22,11 @@ void SetRTBoundaryConditions () {
   for( h = 1; h < gncell[2]-1; h++) {
     for (i = 0; i <= Nghost[1]; i++) {
       for (j = 1; j < gncell[0]-1; j++) {
-	l = j+i*stride[1]+h*stride[2];
-	if(rad[l] < RANGE2LOW+steprad){
-	  bb[l] +=  aar[l];
-	  aar[l] = 0.;
-	}
+	      l = j+i*stride[1]+h*stride[2];
+	      if(rad[l] < RANGE2LOW+steprad){
+	        bb[l] +=  aar[l];
+	        aar[l] = 0.;
+	      }
       }
     }
   }
@@ -35,11 +35,11 @@ void SetRTBoundaryConditions () {
   for( h = 1; h < gncell[2]-1; h++) {
     for (i = gncell[1]-1; i >= gncell[1]-Nghost[1]-1; i--) {
       for (j = 1; j < gncell[0]-1; j++) {
-	l = j+i*stride[1]+h*stride[2];
-	if(rad[l] > RANGE2HIGH-steprad){
-	  bb[l] +=  ccr[l];
-	  ccr[l] = 0.;
-	}
+	      l = j+i*stride[1]+h*stride[2];
+	      if(rad[l] > RANGE2HIGH-steprad){
+	        bb[l] +=  ccr[l];
+	        ccr[l] = 0.;
+	      }
       }
     }
   }
@@ -47,14 +47,14 @@ void SetRTBoundaryConditions () {
   //  if(HalfDisk){
     for (h = gncell[2]-1; h >= gncell[2]-Nghost[2]-1; h--) {
       for (i = 1; i < gncell[1]-1; i++) {
-	for (j = 1; j < gncell[0]-1; j++) {
-	  l = j+i*stride[1]+h*stride[2];
-	  if(col[l] > RANGE3HIGH-stepcol) {
-	    bb[l] += ccp[l];
-	    ccp[l] = 0;
-	  }
-	}
+	      for (j = 1; j < gncell[0]-1; j++) {
+	        l = j+i*stride[1]+h*stride[2];
+	        if(col[l] > RANGE3HIGH-stepcol) {
+	          bb[l] += ccp[l];
+	          ccp[l] = 0;
+	        }
+	      }
       }
     }
-    //  }
+  //}
 }

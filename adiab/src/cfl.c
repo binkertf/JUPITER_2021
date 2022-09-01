@@ -71,7 +71,7 @@ real CourantLimit (fp)
 	  	else{
 			if(!Isothermal && Stellar && !CONST_GAMMA){
 				gamma = fp->Gamma->Field;
-				cs = sqrt(cs2[m]/rho[m]*gamma[m]*(gamma[m]-1.0));
+				cs = sqrt(cs2[m]/rho[m]*gamma[m]*(gamma[m]-1.0)); // adiabatic sound speed
 			}
 			else{
 				cs = sqrt(cs2[m]/rho[m]*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
@@ -202,17 +202,7 @@ real StoppingTimeLimit (fp)
 			}
 			else{//radiative
 
-				/*if(Stellar && CONST_GAMMA){
-					cs = sqrt(cs2[m]/rho[m]*GAMMA*(GAMMA-1.0)); //adiabatic sound speed
-					tau_s = sqrt(GAMMA * M_PI / 8.0) * dustsz * dustsolidrho / (cs * rho[m]);
-				}
-				else{
-					gamma = fp->Gamma->Field;
-					cs = sqrt(cs2[m]/rho[m]*gamma[m]*(gamma[m]-1.0)); //adiabatic sound speed
-					tau_s = sqrt(gamma[m] * M_PI / 8.0) * dustsz * dustsolidrho / (cs * rho[m]);
-				}
-				*/
-				if(Stellar && (CONST_GAMMA==FALSE)){
+				if(Stellar && !CONST_GAMMA){
 					gamma = fp->Gamma->Field;
 					cs = sqrt(cs2[m]/rho[m]*gamma[m]*(gamma[m]-1.0)); //adiabatic sound speed
 					tau_s = sqrt(gamma[m] * M_PI / 8.0) * dustsz * dustsolidrho / (cs * rho[m]);
