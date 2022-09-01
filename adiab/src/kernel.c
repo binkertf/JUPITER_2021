@@ -147,7 +147,6 @@ void DustKernel (dt)
 
   JUP_SAFE(FillSources_pot (UPDATE, EVERYWHERE));
   JUP_SAFE(Source (dt));
-
   /* Apply source terms (potential gradient, centrifugal force) */
   if (KEPLERIAN && !NoStockholm) {
     ApplyStockholmBoundaryConditionsDust (dt);
@@ -214,12 +213,8 @@ void DustDiffKernel (dt)
   JUP_SAFE(Source (dt));
   JUP_SAFE(FillSources_pot (UPDATE, EVERYWHERE));
   JUP_SAFE(Source (dt));
+
   /* Apply source terms (potential gradient, centrifugal force) */
-
-
-
-
-
   if (KEPLERIAN && !NoStockholm) {
     ApplyStockholmBoundaryConditionsDust (dt);
   }
