@@ -287,6 +287,7 @@ real IC_Vazimuth ();
 real IC_Vcolatitude ();
 real IC_Energy ();
 real IC_Energy_tot ();
+real IC_Gamma ();
 real GetInitialValue ();
 real MassFluxRotating ();
 real MassFluxSolidRotation ();
@@ -355,5 +356,6 @@ void TestGammaFluidPatch();
 void TestGammaValue();
 void WriteToFile();
 double Gamma1(double temperature, double density);
+real secant_method(real e, real rho, real rel_err);
 
 
