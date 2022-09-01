@@ -204,7 +204,9 @@ void WriteFluid (patch, number)
      long number;
 {
   char filename[MAXLINELENGTH];
-  long i;
+  long i, n_stellar;
+  n_stellar = 7; // number of additional properties that are called if Stellar == True
+                  // (OpticalDepth, EnergyRad, StellarHeating, Temperature, Opacity, TauCell, Gamma)
   ScalarField *sf=NULL;
   VectorField *vf=NULL;
   boolean WriteScalar=YES;
@@ -217,7 +219,7 @@ void WriteFluid (patch, number)
     patch->desc->number, patch->desc->level);
     WriteCommDest (patch->Density, filename); 
   */
-  for (i = 0; i < 4+7*(Stellar == YES ? 1:0); i++) { //Set to 6 temporarily to output the
+  for (i = 0; i < 4+n_stellar*(Stellar == YES ? 1:0); i++) { //Set to n_stellar = 7 temporarily to output the
 			    //optical depth and energy rad... can be skipped in
 			    //production runs
     switch (i) {

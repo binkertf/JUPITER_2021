@@ -217,7 +217,7 @@ struct fluidpatch {
   ScalarField *Opacity;       /**< Opacity */
   ScalarField *TauCell;       /**< Optical Depth value in a given cell */
   ScalarField *Diffcoeff;        /**< DiffCoefficients */
-  real *Ptr[22];		/**< Short cut to fields */
+  real *Ptr[23];		/**< Short cut to fields */
   InterfaceFlux  *MassFlux;     /**< Pointer to the structure that handles the mass flux at the grid boundary */
   InterfaceFlux  *DiffFlux;
   InterfaceFlux  *MomentumFlux[3]; /**< Pointer to the 3 structures that handles the momenta fluxes at the grid boundary */
