@@ -172,7 +172,7 @@ case 98: //Colatitude 3D, for high altitude regions, ISOTHERMAL, probably not co
   return Sym;
 }
 
-void TrueBC_fp (fluid) // this function gets called twice for each DT
+void TrueBC_fp (fluid)
      FluidPatch *fluid;
 {
   long gncell[3], stride[3], dim, side, dim1, dim2;
@@ -272,7 +272,7 @@ void TrueBC (level)
     if ((level == item->level) && (item->cpu == CPU_Rank)) {
       fluid = item->Fluid;
       while (fluid != NULL) {
-      	TrueBC_fp (fluid);
+      	TrueBC_fp (fluid); 
       	fluid = fluid->next;
       }
     }
