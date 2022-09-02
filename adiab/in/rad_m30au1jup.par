@@ -42,7 +42,8 @@ ASPECTRATIO         	0.05
 Viscosity           	1.0e-5
 SIGMA0              	1.479e-3
 SIGMASLOPE          	0.5
-GAMMA	              	1.43
+GAMMA	              	1.67
+CONST_GAMMA             False
 ADIABATIC           	YES
 Flaringindex        	0.28
 
